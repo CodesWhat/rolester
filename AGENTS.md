@@ -316,6 +316,7 @@ chat.
 | A mailbox sync request (Apple Mail / Gmail / Outlook) | `ingest-mail` | `communications[]` |
 | An in-platform message sync request (LinkedIn / Wellfound DMs) | `ingest-messages` | `communications[]` |
 | A company name / "tell me about X" / a company homepage URL | `research-company` | `workspace/research/<slug>.md` |
+| A wishlist of employers to target / "find companies like X to add" | `discover-companies` | `config/sourced-scan.json` `tracked_companies[]` (confirm-first) |
 | A standalone fact / preference / constraint (comp, location, an exclusion) | `configure` / `ingest-profile` | `candidate/` config, confirm-first |
 | Anything else with no obvious owner (a note, a stray link, a screenshot) | capture as a dated note | `workspace/intake/<slug>-<date>.md`, linked to the nearest application or company |
 
@@ -352,6 +353,15 @@ Rules for intake:
   ask competitive", or "what should I be asking for": use `research-comp`.
 - If the user says "find more job boards", "discover new sources", "what boards
   should I be on", or `search-jobs` has gone dry: use `research-boards`.
+- If the user says "find new companies", "what companies should I be targeting",
+  "find cool companies hiring <role>", "add companies to my search", or the sweep
+  keeps returning only roles at companies already in play (the tracked-company set
+  is exhausted): use `discover-companies`. It web-searches employers likely hiring
+  the candidate's target roles, resolves each to a scannable ATS board, and
+  proposes adding them to `config/sourced-scan.json` `tracked_companies[]`
+  (confirm-first). It is the company analog of `research-boards` and upstream of
+  `search-jobs` — `research-boards` finds boards/aggregators, `discover-companies`
+  finds employers and wires their board into the sweep.
 - If the user says "gate", "evaluate", "is this a fit", "should I apply", or
   gives a JD URL without application intent: use `evaluate-job`.
 - If the user asks to tailor a resume, cover letter, short answer, or
@@ -493,7 +503,7 @@ Canonical gate files (all under `candidate/`, gitignored/private):
 
 | File | Governs | Read by |
 | --- | --- | --- |
-| `targeting.yml` | `role_buckets`, `keep_signals`, `cut_signals`, `excluded_companies`, `degree_policy`, `fit_bands`, OE bucket | evaluate-job, search-jobs, setup-searches, tailor-application, track-outcomes, reevaluate-strategy, interview-prep, optimize-linkedin |
+| `targeting.yml` | `role_buckets`, `keep_signals`, `cut_signals`, `excluded_companies`, `degree_policy`, `fit_bands`, OE bucket | evaluate-job, search-jobs, setup-searches, discover-companies, tailor-application, track-outcomes, reevaluate-strategy, interview-prep, optimize-linkedin |
 | `profile.yml` | `domain`, `toolchain`, `location.*`, `compensation.*` (minimum/target/expected base, OE range, relo; **`current_base` is private**) | nearly all skills |
 | `honesty.yml` | `education` policy, `tools.confirmed` / `tools.do_not_claim`, `claims.do_not_fabricate` | tailor-application, apply-job, email-comms, interview-prep, evaluate-job, optimize-linkedin |
 | `application-limits.yml` | per-company caps/cooldowns, reevaluation thresholds | apply-job (step-zero), evaluate-job (ACTION), search-jobs (deprioritize), track-outcomes (thresholds) |
@@ -756,6 +766,7 @@ event at the end of that action** — the same "the writer records it" disciplin
   | `track-outcomes` | `status_change` / `interview` / `offer` / `failure` | world | after the outcome is recorded (it is the only writer of status transitions, including those handed up by `sync-status`) |
   | `ingest-mail` / `ingest-messages` | `message` | world | one event per inbound thread captured into `communications[]` |
   | `research-company` / `research-comp` / `research-boards` | `research` | agent | after `npm run research -- record --write` |
+  | `discover-companies` | `research` | agent | after companies are added to `config/sourced-scan.json` — one summary event ("N companies added to track") |
   | `interview-prep` | `interview` | agent | after a packet / debrief is captured to `conversations[]` |
   | `reevaluate-strategy` | `system` | agent | after a strategy retune is recorded |
   | `optimize-linkedin` | `system` | agent | after a profile pass — title "LinkedIn profile pass", summary names surfaces reviewed / fields applied (or "suggest-only") |
@@ -1117,6 +1128,7 @@ runtime *this phase parallelizes cleanly*.
 | `research-company` | per-axis web research | one subagent per research axis (≈6), parallel |
 | `research-comp` | market-data gathering | one subagent per source/search, parallel |
 | `research-boards` | per-board legitimacy screen | one subagent per candidate board, parallel |
+| `discover-companies` | per-company resolve + legitimacy screen | one subagent per candidate company, parallel |
 | `search-jobs` | hand top roles to `evaluate-job` | one subagent per role (cap ≈5), parallel |
 | `reevaluate-strategy` | read-only analysis (funnel/reject/win) | analysis fans out; the write stays inline |
 | `ingest-mail` / `ingest-messages` | body-pull for matched threads | batched subagents (browser pulls stay sequential) |

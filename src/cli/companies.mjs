@@ -1,0 +1,252 @@
+#!/usr/bin/env node
+// Rolester companies CLI — manage config/sourced-scan.json#tracked_companies.
+//
+// Commands:
+//   --list (default)         Print tracked companies as a numbered list with providers.
+//   --add "<name>" --url "<careers_url>"
+//                            Append a company (dry-run by default, --write to commit).
+//   --remove "<name>"        Remove by name (dry-run by default, --write to commit).
+//   --json                   Machine-readable output for any mode.
+//   --help / -h              Show usage.
+import { existsSync, mkdirSync, renameSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { displayPath, userPath } from "../core/paths/workspace.mjs";
+import { inferProvider, loadScannerConfig } from "../core/scoring/sourced-scanner.mjs";
+
+const root = join(fileURLToPath(new URL("../..", import.meta.url)));
+const pathCtx = { repoRoot: root };
+const CONFIG_REL = "config/sourced-scan.json";
+const CONFIG_PATH = userPath(pathCtx, CONFIG_REL);
+const CONFIG_DISPLAY = displayPath(pathCtx, CONFIG_REL);
+
+const SUPPORTED_HOSTS = [
+  "jobs.ashbyhq.com",
+  "job-boards.greenhouse.io",
+  "boards.greenhouse.io",
+  "jobs.lever.co",
+  "apply.workable.com",
+  "careers.smartrecruiters.com",
+  "jobs.smartrecruiters.com",
+];
+
+const args = process.argv.slice(2);
+const json = args.includes("--json");
+const write = args.includes("--write");
+
+if (args.includes("--help") || args.includes("-h")) {
+  printHelp();
+  process.exit(0);
+}
+
+let exitCode = 0;
+if (args.includes("--add")) {
+  exitCode = runAdd();
+} else if (args.includes("--remove")) {
+  exitCode = runRemove();
+} else {
+  exitCode = runList();
+}
+process.exit(exitCode);
+
+// ---------------------------------------------------------------------------
+// Modes
+// ---------------------------------------------------------------------------
+
+function runList() {
+  const config = loadConfig();
+  const companies = config.tracked_companies || [];
+  if (json) {
+    const rows = companies.map((entry, i) => ({
+      index: i + 1,
+      name: entry.name,
+      careers_url: entry.careers_url,
+      provider: inferProvider(entry),
+    }));
+    console.log(JSON.stringify({ total: companies.length, companies: rows }, null, 2));
+    return 0;
+  }
+  if (companies.length === 0) {
+    console.log("No tracked companies yet.");
+    console.log(
+      `Add one: npm run companies -- --add "Acme" --url "https://jobs.ashbyhq.com/acme" --write`
+    );
+    return 0;
+  }
+  for (const [i, entry] of companies.entries()) {
+    const provider = inferProvider(entry) || "unknown";
+    console.log(`${String(i + 1).padStart(2)} ${entry.name} — ${entry.careers_url} (${provider})`);
+  }
+  console.log(`\n${companies.length} tracked ${companies.length === 1 ? "company" : "companies"}.`);
+  return 0;
+}
+
+function runAdd() {
+  const name = optValue("--add");
+  const url = optValue("--url");
+
+  if (!name || !url) {
+    console.error('Usage: npm run companies -- --add "<name>" --url "<careers_url>" [--write]');
+    return 2;
+  }
+
+  const provider = inferProvider({ careers_url: url });
+  if (!provider) {
+    console.error(`Unsupported ATS host — cannot scan "${url}".`);
+    console.error(`Supported hosts: ${SUPPORTED_HOSTS.join(", ")}`);
+    return 2;
+  }
+
+  const config = loadConfig();
+  const companies = config.tracked_companies || [];
+
+  const duplicate = companies.find(
+    (entry) => entry.name.toLowerCase() === name.toLowerCase() || entry.careers_url === url
+  );
+  if (duplicate) {
+    if (json) {
+      console.log(
+        JSON.stringify({
+          status: "already-tracked",
+          name: duplicate.name,
+          careers_url: duplicate.careers_url,
+          provider: inferProvider(duplicate),
+        })
+      );
+    } else {
+      console.log(
+        `Already tracked: ${duplicate.name} — ${duplicate.careers_url} (${inferProvider(duplicate)})`
+      );
+    }
+    return 0;
+  }
+
+  const entry = { name, careers_url: url };
+
+  if (!write) {
+    if (json) {
+      console.log(
+        JSON.stringify({ status: "dry-run", would_add: { name, careers_url: url, provider } })
+      );
+    } else {
+      console.log(`Dry run — would add: ${name} — ${url} (${provider})`);
+      console.log("Pass --write to commit.");
+    }
+    return 0;
+  }
+
+  const next = { ...config, tracked_companies: [...companies, entry] };
+  writeConfig(next);
+
+  if (json) {
+    console.log(
+      JSON.stringify({
+        status: "added",
+        name,
+        careers_url: url,
+        provider,
+        total: next.tracked_companies.length,
+      })
+    );
+  } else {
+    console.log(`Added ${name} — ${url} (${provider})`);
+    console.log(
+      `${next.tracked_companies.length} tracked ${next.tracked_companies.length === 1 ? "company" : "companies"} total.`
+    );
+  }
+  return 0;
+}
+
+function runRemove() {
+  const name = optValue("--remove");
+  if (!name) {
+    console.error('Usage: npm run companies -- --remove "<name>" [--write]');
+    return 2;
+  }
+
+  const config = loadConfig();
+  const companies = config.tracked_companies || [];
+  const match = companies.find((entry) => entry.name.toLowerCase() === name.toLowerCase());
+
+  if (!match) {
+    if (json) {
+      console.log(JSON.stringify({ status: "not-found", name }));
+    } else {
+      console.log(`Not found: "${name}" is not in the tracked list.`);
+    }
+    return 0;
+  }
+
+  if (!write) {
+    if (json) {
+      console.log(
+        JSON.stringify({
+          status: "dry-run",
+          would_remove: {
+            name: match.name,
+            careers_url: match.careers_url,
+            provider: inferProvider(match),
+          },
+        })
+      );
+    } else {
+      console.log(
+        `Dry run — would remove: ${match.name} — ${match.careers_url} (${inferProvider(match) || "unknown"})`
+      );
+      console.log("Pass --write to commit.");
+    }
+    return 0;
+  }
+
+  const next = { ...config, tracked_companies: companies.filter((entry) => entry !== match) };
+  writeConfig(next);
+
+  if (json) {
+    console.log(
+      JSON.stringify({ status: "removed", name: match.name, total: next.tracked_companies.length })
+    );
+  } else {
+    console.log(`Removed ${match.name} — ${match.careers_url}`);
+    console.log(
+      `${next.tracked_companies.length} tracked ${next.tracked_companies.length === 1 ? "company" : "companies"} total.`
+    );
+  }
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function loadConfig() {
+  return loadScannerConfig(CONFIG_PATH);
+}
+
+function writeConfig(config) {
+  mkdirSync(dirname(CONFIG_PATH), { recursive: true });
+  const tmp = `${CONFIG_PATH}.tmp`;
+  writeFileSync(tmp, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+  renameSync(tmp, CONFIG_PATH);
+}
+
+function optValue(flag) {
+  const i = args.indexOf(flag);
+  return i !== -1 && i + 1 < args.length ? args[i + 1] : null;
+}
+
+function printHelp() {
+  console.log(`rolester companies — manage config/sourced-scan.json#tracked_companies
+
+Usage:
+  npm run companies                                         List tracked companies (default)
+  npm run companies -- --list                               List tracked companies
+  npm run companies -- --add "<name>" --url "<url>"         Dry-run add (print what would be added)
+  npm run companies -- --add "<name>" --url "<url>" --write Append a company and save
+  npm run companies -- --remove "<name>"                    Dry-run remove
+  npm run companies -- --remove "<name>" --write            Remove a company and save
+  npm run companies -- --json                               Machine-readable output for any mode
+
+Supported ATS hosts: ${SUPPORTED_HOSTS.join(", ")}
+
+Only scannable ATS URLs are accepted. Non-scannable boards are rejected at --add time.`);
+}
