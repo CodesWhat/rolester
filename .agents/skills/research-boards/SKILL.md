@@ -193,17 +193,18 @@ Where `<url>` is:
 
 And `<label>` is the human-readable board name from the proposed table.
 
-**Registry write-back:** After any board is added (auto or confirmed), record it in the
-`docs/SOURCES.md` Curated Board Registry table by appending a row with:
-- Board name
-- Domain tag derived from `candidate.domain` and the board's scope
-- Type (aggregator / niche-board / RSS / browser)
-- Confidence tier (`high` or `borderline`)
-- Status `vetted`
-- URL and a brief note including "NOT a field-neutral shipped default" if it is domain-specific
+**Registry write-back — to the candidate's own files ONLY, never `docs/SOURCES.md`.** A
+discovered board is candidate-specific (it matches *this* user's domain and role families), so
+it must never touch `docs/SOURCES.md` — that file is shipped and published, and writing a
+discovered board there leaks one user's targeting into the public package. The durable record
+of every added board is:
+- its entry in the gitignored `config/search-sources.yml` (added above — this is what future
+  `setup-searches` runs read back as the user's own starter set), plus
+- the research log recorded in the next step (gitignored `workspace/research/`).
 
-This keeps the registry the durable curated list so future `setup-searches` runs can
-offer it as a starter menu.
+Leave `docs/SOURCES.md` untouched. It ships only field-neutral provider infrastructure
+(`implemented`/`planned` rows); a guard test (`tests/release-safety.test.mjs`) fails the build
+if a candidate-discovered board lands in it.
 
 After adding all boards, run:
 
@@ -296,8 +297,9 @@ REGISTRY-UPDATED: <yes | no>
 - **Quality gate.** A board must show at least one real, dated, domain-relevant listing
   to be proposed. An evergreen landing page or talent-pool gate is a rejection.
 - **Use the existing CLI.** Additions go through `npm run searches -- --add-url "<url>" --label "<label>"`. Do not edit `config/search-sources.yml` directly.
-- **Registry write-back.** Every board added (auto or confirmed) must be recorded in
-  `docs/SOURCES.md` Curated Board Registry so the registry stays current.
+- **Registry write-back.** Record every added board in the candidate's gitignored files only —
+  `config/search-sources.yml` (via the CLI above) plus the `workspace/research/` log. NEVER write
+  discovered boards to `docs/SOURCES.md`; it ships and is published, so it stays field-neutral.
 
 ---
 

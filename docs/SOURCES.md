@@ -83,15 +83,17 @@ Touch these files in order, replacing `<name>` with the provider key (lowercase,
 
 ## Curated Board Registry
 
-A domain-tagged menu of vetted and planned board/aggregator entries. Skills read this
-table to offer a filtered starter menu — it is NOT a universal set of defaults. The
-`general` tag means suitable for all domains; domain-specific tags (e.g. `tech/software`,
-`tech/AI`, `remote`) indicate narrower scope.
+A domain-tagged menu of the board/aggregator providers Rolester ships support for
+(`implemented`) or has on the roadmap (`planned`). Skills read this table to offer a filtered
+starter menu — it is NOT a universal set of defaults. The `general` tag means suitable for all
+domains; domain-specific tags (e.g. `tech/software`, `tech/AI`, `remote`) indicate narrower scope.
 
-**Note:** this registry is currently seeded with tech/software/AI boards because that is
-what has been built and vetted so far. Boards for other domains (healthcare, finance,
-trades, logistics, etc.) should be added here as they are vetted via `research-boards`
-— do not add unvetted entries.
+**Field-neutral only.** This file ships and is published, so it lists provider infrastructure
+ONLY — never one user's discovered boards. The registry currently leans tech/software/AI because
+that is what has been built so far; provider support for other domains (healthcare, finance,
+trades, logistics, etc.) gets added here as it ships. Boards you discover via `research-boards`
+are candidate-specific and persist to your own gitignored `config/search-sources.yml` — they are
+never written here.
 
 | Board | Domain tag(s) | Type | Confidence | Status | Notes |
 |---|---|---|---|---|---|
@@ -112,16 +114,20 @@ trades, logistics, etc.) should be added here as they are vetted via `research-b
 | Working Nomads | remote | niche-board | high | planned | remote-only; curated listings |
 | We Work Remotely | remote | niche-board | high | planned | remote-only; well-established |
 | Remotive | remote | niche-board | high | planned | remote-only; RSS feed available |
-| Forward Deployed Engineer Board | tech/AI | niche-board | high | vetted | `fwddeploy.com`; dated live listings from real companies; url-query; NOT a field-neutral shipped default |
-| Agentic Engineering Jobs | tech/AI | niche-board | high | vetted | `agentic-engineering-jobs.com`; AI-agent / RAG / LLM niche (1,200+ listings, salary + seniority filters); url-query; NOT a field-neutral shipped default |
-| AI Jobs | tech/AI | niche-board | borderline | vetted | `aijobs.net`; AI/ML-only aggregator; borderline (weak per-listing company attribution, no RSS); confirm before adding; NOT a field-neutral shipped default |
 
 ### Registry legend
 
 - **Domain tag(s):** `general` = all domains; `tech/software` = software engineering domain only; `tech/AI` = AI/ML/agent roles; `remote` = remote-posture candidates across domains. Combine tags with commas for entries that span multiple.
 - **Type:** `aggregator` = collects from many sources; `ATS` = company-level ATS API adapter; `niche-board` = curated domain-specific board; `RSS` = feed-only.
 - **Confidence:** `high` = real dated listings, stable URL, identifiable companies; `medium` = unvetted but reputable; `borderline` = real but with noted quality caveats.
-- **Status:** `implemented` = provider code ships with Rolester; `vetted` = legitimacy-screened via `research-boards`, provider impl pending; `planned` = on roadmap, not yet vetted or implemented.
+- **Status:** `implemented` = provider code ships with Rolester; `planned` = on roadmap, not yet implemented.
+
+> **This shipped registry lists only field-neutral provider infrastructure.** Boards you
+> discover via `research-boards` are candidate-specific (they match your domain and role
+> families), so they are NEVER written here — they persist to your own gitignored
+> `config/search-sources.yml` and your `workspace/research/` log. Keeping this file neutral is
+> a hard invariant (enforced by `tests/release-safety.test.mjs`): a shipped, published doc must
+> not carry one user's discovered boards.
 
 ---
 
@@ -138,15 +144,9 @@ Aggregators and broad sources:
 - LinkedIn — ✓ implemented (DOM extractor `extractLinkedIn` in `capture-search-sources.mjs`; disabled by default, requires `--include-disabled`)
 - Google Jobs — planned
 
-Discovered via `research-boards` (vetted, provider impl pending — domain-specific, kept
-here as reference; they are NOT part of the field-neutral shipped defaults):
-
-- Forward Deployed Engineer Board (`fwddeploy.com`) — niche AI/forward-deployed board with
-  dated live listings from real companies; url-query.
-- Agentic Engineering Jobs (`agentic-engineering-jobs.com`) — AI-agent / RAG / LLM niche
-  board (1,200+ listings, salary + seniority filters); url-query.
-- AI Jobs (`aijobs.net`) — AI/ML-only aggregator (borderline: weak per-listing company
-  attribution, no RSS); url-query.
+Boards discovered via `research-boards` are domain-specific to whoever runs it, so they are
+NOT listed here (this file ships publicly). They persist to the user's own gitignored
+`config/search-sources.yml` and `workspace/research/` log instead.
 
 ATS and company APIs:
 

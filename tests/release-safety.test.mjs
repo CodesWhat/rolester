@@ -109,6 +109,20 @@ test("tracked app files do not contain known production personal sentinels", () 
   }
 });
 
+test("shipped docs/SOURCES.md carries no candidate-discovered (vetted) boards", async () => {
+  // research-boards must persist discovered boards to the user's gitignored
+  // config/search-sources.yml + workspace/research log — NEVER to this shipped, published
+  // doc. Discovered boards are recorded with Status `vetted`; a `vetted` row here means one
+  // user's targeting (their domain/role-specific niche boards) leaked into the package.
+  // This is the guard for the research-boards → docs/SOURCES.md write-back leak.
+  const sources = await readText("docs/SOURCES.md");
+  assert.doesNotMatch(
+    sources,
+    /\|\s*vetted\s*\|/,
+    "docs/SOURCES.md has a `vetted` registry row — a candidate-discovered board leaked into the shipped doc. research-boards must write discovered boards to the gitignored config/search-sources.yml only, never here."
+  );
+});
+
 test("operational scripts do not hardcode an absolute personal-home path", async () => {
   const { readdirSync, statSync } = await import("node:fs");
   const scriptsDir = join(root, "scripts");

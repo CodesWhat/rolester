@@ -155,9 +155,9 @@ Curated Board Registry. This step is optional — skip it if the user declines o
    [1] HiringCafe (general / aggregator / high confidence) — already configured, skipped
    [2] Wellfound (tech/software / aggregator / high confidence) — already configured, skipped
    [3] Remote Vibe Coding Jobs (tech/software, remote / aggregator / high confidence) — already configured, skipped
-   [4] Forward Deployed Engineer Board (tech/AI / niche-board / high confidence) — NEW
-   [5] Agentic Engineering Jobs (tech/AI / niche-board / high confidence) — NEW
-   [6] AI Jobs (tech/AI / niche-board / borderline) — NEW (borderline: weak company attribution)
+   [4] Example Niche Board (your domain / niche-board / high confidence) — NEW
+   [5] Example Specialist Aggregator (your domain / aggregator / high confidence) — NEW
+   [6] Example Field Board (your domain / niche-board / borderline) — NEW (borderline: weak company attribution)
 
    Pick all, a subset by number, or none to skip.
    ```

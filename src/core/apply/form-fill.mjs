@@ -323,8 +323,7 @@ export const DOMAIN_QUIRKS = [
   {
     // Job-board AGGREGATORS: the page is not the apply form. Find the outbound
     // "Apply on <ATS>" / "Apply now" link and route to the real ATS instead.
-    match:
-      /fwddeploy\.com$|agentic-engineering-jobs\.com$|hiring\.cafe$|builtin\.com$|wellfound\.com$|ycombinator\.com$|jobboardly/i,
+    match: /hiring\.cafe$|builtin\.com$|wellfound\.com$|ycombinator\.com$|jobboardly/i,
     portal: "aggregator",
     quirks: [
       "This host is a job-board AGGREGATOR, not the employer's ATS. The apply form lives behind an outbound 'Apply on Ashby' / 'Apply now' link. Extract that href (often Ashby/Greenhouse/Lever/Workday), navigate to it, and run the matching recipe — do not try to submit on the aggregator page.",

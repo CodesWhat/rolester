@@ -175,9 +175,10 @@ test("parses search-sources.example.yml — ignores leading comment line", () =>
 test("parses search-sources.example.yml — nested filter arrays", () => {
   const { title_filter, location_filter } = parseYaml(readConfig("search-sources.example.yml"));
   assert.ok(Array.isArray(title_filter.positive));
-  assert.ok(title_filter.positive.includes("Forward Deployed"));
+  assert.ok(title_filter.positive.length > 0);
+  assert.ok(title_filter.positive.every((t) => typeof t === "string"));
   assert.ok(Array.isArray(title_filter.negative));
-  assert.ok(title_filter.negative.includes("Intern"));
+  assert.ok(title_filter.negative.length > 0);
   assert.ok(Array.isArray(location_filter.always_allow));
   assert.ok(Array.isArray(location_filter.block));
 });
