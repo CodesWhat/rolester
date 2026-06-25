@@ -1,0 +1,37 @@
+name: publish
+
+# Publishes rolester to npm when a GitHub Release is published (or run manually).
+#
+# Setup (one-time): add a repo secret NPM_TOKEN = an npm Granular Access Token with
+# read-write on the rolester package. For a de-identified maintainer, generate that
+# token from a codeswhat-org machine account (not a personal one) — the publish is
+# attributed to whoever owns the token.
+#
+# Each release: bump package.json "version" first. npm rejects republishing an
+# existing version, so the release tag must be a new version (0.1.0 is already live).
+#
+# Provenance: this publishes with --provenance, so the npm package page shows a
+# verified "Built and signed on GitHub Actions" attestation linking back to this repo.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required for npm provenance
+
+jobs:
+  npm-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+      - name: Publish to npm (unscoped, public, with provenance)
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
