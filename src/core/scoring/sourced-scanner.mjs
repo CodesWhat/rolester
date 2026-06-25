@@ -4,9 +4,61 @@ import { setTimeout as delay } from "node:timers/promises";
 import { userPath } from "../paths/workspace.mjs";
 import { scannerLikelyKeepThreshold } from "../profile/modes.mjs";
 import { feedItemsToOffers, parseFeed } from "../providers/rss.mjs";
+import { classifyRoleFamily } from "../tracker/outcome-analysis.mjs";
 import { normalizeCompanyRoleKey } from "../tracker/tracker-data.mjs";
 
 export { normalizeCompanyRoleKey };
+
+// --- Cold-family down-weight (outcome-aware scoring) ---------------------------
+// The coarse scanner scores on title/keep-signal matching and is otherwise blind
+// to how the candidate's applications actually convert. Every role it sources is
+// a cold-board lead, so when the candidate's own recorded outcomes show a role
+// family that never converts via cold apply (enough applications, zero advances,
+// repeated rejections), a keep-signal title match should NOT keep surfacing that
+// dead lane at "high". `computeFamilyOutcomes` derives the per-family signal; the
+// scorer applies the penalty. Domain-neutral: families come from the candidate's
+// targeting, nothing role-specific is hardcoded. The reevaluation lesson lives in
+// outcomes — this is where it reaches the score.
+const COLD_FAMILY_MIN_APPS = 8; // don't penalize thin samples
+const COLD_FAMILY_MIN_REJECTS = 3; // mirrors reevaluation rejectionPerFamily
+const COLD_FAMILY_PENALTY = 22; // knocks a keep-signal high (~86) down out of "high"
+
+// A status that means the application got past the resume filter to a human —
+// anything short of this (still in the awaiting void) is not yet a positive signal.
+const ADVANCED_STATUSES = new Set([
+  "interview",
+  "offer",
+  "recruiter screen",
+  "screen",
+  "onsite",
+  "technical",
+  "hiring manager",
+  "final",
+]);
+
+/**
+ * Per-family conversion stats from recorded application outcomes.
+ * @param {Array<{role?:string,status?:string}>} apps - tracker applications (loadTrackerData shape)
+ * @param {object} [targeting] - targeting.yml contents (role_families / role_buckets)
+ * @returns {Record<string,{total:number,advanced:number,rejected:number,cold:boolean}>}
+ */
+export function computeFamilyOutcomes(apps = [], targeting) {
+  const stats = {};
+  for (const a of apps) {
+    const fam = classifyRoleFamily(a.role || "", targeting);
+    if (!stats[fam]) stats[fam] = { total: 0, advanced: 0, rejected: 0, cold: false };
+    const s = stats[fam];
+    s.total += 1;
+    if (a.status === "rejected" || a.status === "passed") s.rejected += 1;
+    else if (ADVANCED_STATUSES.has(a.status)) s.advanced += 1;
+  }
+  for (const fam of Object.keys(stats)) {
+    const s = stats[fam];
+    s.cold =
+      s.total >= COLD_FAMILY_MIN_APPS && s.advanced === 0 && s.rejected >= COLD_FAMILY_MIN_REJECTS;
+  }
+  return stats;
+}
 
 const DEFAULT_TIMEOUT_MS = 15000;
 
@@ -59,7 +111,7 @@ export function buildLocationFilter(locationFilter = null) {
   };
 }
 
-function scoreSourcedOfferFromConfig(offer = {}, { targeting, profile, modes }) {
+function scoreSourcedOfferFromConfig(offer = {}, { targeting, profile, modes, familyOutcomes }) {
   const title = String(offer.title || "").toLowerCase();
   const company = String(offer.company || "").toLowerCase();
   const location = String(offer.location || "").toLowerCase();
@@ -123,6 +175,22 @@ function scoreSourcedOfferFromConfig(offer = {}, { targeting, profile, modes }) 
       const kebab = term.replace(/\s+/g, "-");
       add(-30, `cut signal: ${term}`);
       flag(`cut-risk-${kebab}`);
+    }
+  }
+
+  // --- Cold-family down-weight from recorded outcomes ---
+  // Every scanner-sourced role is a cold-board lead. If the candidate's own
+  // outcomes show this role family never converts via cold apply, discount it so
+  // a keep-signal title match doesn't keep surfacing a dead lane at "high".
+  if (familyOutcomes) {
+    const offerFamily = classifyRoleFamily(offer.title || "", targeting);
+    const fam = familyOutcomes[offerFamily];
+    if (fam?.cold) {
+      add(
+        -COLD_FAMILY_PENALTY,
+        `cold-board lane: ${offerFamily} has 0 advances in ${fam.total} apps`
+      );
+      flag("family-cold");
     }
   }
 
@@ -208,7 +276,10 @@ function gateFromScoreAndFlags(score, flags, modes = {}) {
   if (
     flags.some(
       (flag) =>
-        flag === "comp-unposted" || flag === "top-of-band-only" || flag === "ca-comp-unverified"
+        flag === "comp-unposted" ||
+        flag === "top-of-band-only" ||
+        flag === "ca-comp-unverified" ||
+        flag === "family-cold"
     )
   )
     return "review";

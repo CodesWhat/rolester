@@ -9,6 +9,7 @@ import { renderSourcedIntake } from "../src/core/scoring/sourced-intake.mjs";
 import {
   buildLocationFilter,
   buildTitleFilter,
+  computeFamilyOutcomes,
   filterAndDedupeOffers,
   loadScannerConfig,
   scanCompanies,
@@ -77,7 +78,19 @@ const timestamped = args.includes("--timestamped");
 
 const config = loadScannerConfig(configPath);
 const candidateConfig = loadCandidateConfig();
-const { seenUrls, seenReqIds, seenCompanyRoles } = buildSeenSets(_scriptRoot);
+const { seenUrls, seenReqIds, seenCompanyRoles, tracker } = buildSeenSets(_scriptRoot);
+
+// Outcome-aware scoring: down-weight role families the candidate's own results
+// show never convert via cold board apply (see computeFamilyOutcomes). Attaching
+// it to candidateConfig threads it into scoreSourcedOffer via filterAndDedupeOffers.
+const familyOutcomes = computeFamilyOutcomes(tracker?.apps || [], candidateConfig.targeting);
+candidateConfig.familyOutcomes = familyOutcomes;
+const coldFamilies = Object.entries(familyOutcomes)
+  .filter(([, s]) => s.cold)
+  .map(([fam, s]) => `${fam} (0/${s.total})`);
+if (coldFamilies.length > 0) {
+  console.log(`Cold-board lanes down-weighted: ${coldFamilies.join(", ")}`);
+}
 const titleFilter = buildTitleFilter(config.title_filter);
 const locationFilter = buildLocationFilter(config.location_filter);
 
