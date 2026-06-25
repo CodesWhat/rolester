@@ -1,7 +1,10 @@
 {
   "name": "rolester",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "description": "Agentic job-search workspace for finding, vetting, tailoring, tracking, and preparing for roles.",
   "author": "CodesWhat",
