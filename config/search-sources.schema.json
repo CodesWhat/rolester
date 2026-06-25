@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/search-sources.schema.json",
+  "title": "Rolester Search Sources",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "title_filter": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "location_filter": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "searches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["provider", "label", "enabled"],
+        "properties": {
+          "provider": { "type": "string" },
+          "source_type": {
+            "type": "string",
+            "enum": ["url-query", "rss", "ats", "aggregator", "manual-auth", "browser"]
+          },
+          "auth": {
+            "type": "boolean",
+            "description": "True = this source needs a logged-in session (authenticated scrape). Gated by the automation 'authenticated_search' capability + consent for `platform`; see AGENTS.md → Browser Automation Contract. Defaults off; created enabled:false."
+          },
+          "platform": {
+            "type": "string",
+            "description": "For auth browser sources, the automation platform this maps to (linkedin | indeed | wellfound | glassdoor) — used to check `mayRun({capability:'authenticated_search', platform})`."
+          },
+          "label": { "type": "string" },
+          "query": { "type": "string" },
+          "url": { "type": "string" },
+          "rssUrl": { "type": "string" },
+          "enabled": { "type": "boolean" },
+          "lastRunAt": { "type": "string" },
+          "recency": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": ["since-last-run", "fixed-hours", "manual"]
+              },
+              "hours": { "type": "number" },
+              "windowHours": { "type": "number" },
+              "safetyMinutes": { "type": "number" },
+              "lastRunAt": { "type": "string" }
+            }
+          },
+          "searchState": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "anyOf": [
+          { "required": ["query"] },
+          { "required": ["url"] },
+          { "required": ["rssUrl"] }
+        ]
+      }
+    },
+    "tracked_companies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "source_catalog": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    }
+  },
+  "required": ["searches"]
+}

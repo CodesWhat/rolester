@@ -1,0 +1,48 @@
+education:
+  highest_degree: null
+  add_education_section: false
+
+tools:
+  confirmed:
+    - "Python"
+    - "Node.js / JavaScript (ESM)"
+    - "TypeScript"
+    - "Claude API (Anthropic)"
+    - "OpenAI API"
+    - "LangChain"
+    - "PostgreSQL"
+    - "Redis"
+    - "Docker"
+    - "Git"
+    - "GitHub Actions"
+    - "AWS (S3, Lambda, ECS)"
+    - "Playwright"
+  adjacent:
+    - "Go (read code fluently; have shipped small services)"
+    - "Kubernetes (operated clusters; have not designed cluster architecture)"
+    - "Terraform (have applied plans; have not authored complex modules)"
+    - "dbt (familiar; not a primary skill)"
+  do_not_claim:
+    - "Rust"
+    - "CUDA / GPU programming"
+    - "ML model training or fine-tuning"
+    - "C / C++"
+    - "Java"
+    - "security clearances"
+
+claims:
+  do_not_fabricate:
+    - "degrees or certifications"
+    - "employers or company names"
+    - "metrics or quantitative outcomes"
+    - "tools or languages"
+    - "security clearances"
+    - "work authorization status"
+    - "publications or patents"
+
+style:
+  avoid:
+    - "buzzword-heavy summaries without evidence"
+    - "unsupported superlatives (best, world-class, unparalleled)"
+    - "vague action verbs with no object (leveraged, utilized, synergized)"
+    - "claiming sole credit for team achievements"

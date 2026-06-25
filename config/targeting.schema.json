@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/targeting.schema.json",
+  "title": "Rolester Targeting",
+  "type": "object",
+  "required": ["role_buckets", "keep_signals", "cut_signals"],
+  "additionalProperties": false,
+  "properties": {
+    "role_buckets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "priority", "titles"],
+        "additionalProperties": true,
+        "properties": {
+          "name": { "type": "string" },
+          "priority": { "type": "string", "enum": ["primary", "secondary", "stretch", "oe"] },
+          "titles": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "keep_signals": { "type": "array", "items": { "type": "string" } },
+    "cut_signals": { "type": "array", "items": { "type": "string" } },
+    "excluded_companies": { "type": "array", "items": { "type": "string" } },
+    "tracked_companies": { "type": "array", "items": { "type": "string" } },
+    "degree_policy": { "type": "string" },
+    "fit_bands": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "high_min": { "type": "number" },
+        "med_min": { "type": "number" },
+        "fit_floor": { "type": "number" }
+      }
+    },
+    "role_families": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "patterns"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "patterns": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "reevaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rejection_total": { "type": "number" },
+        "rejection_per_family": { "type": "number" }
+      }
+    },
+    "legitimacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "max_posting_age_days": { "type": "number" },
+        "min_body_chars": { "type": "number" },
+        "evergreen_seen_count": { "type": "number" },
+        "evergreen_span_days": { "type": "number" },
+        "evergreen_phrases": { "type": "array", "items": { "type": "string" } },
+        "recruiter_farm_phrases": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "follow_up": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "app_nudge": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "after_days": { "type": "number" },
+            "max_count": { "type": "number", "description": "Stop nudging after this many follow-ups have been sent (app.followUp.sentCount). Default 2." }
+          }
+        },
+        "post_interview": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "after_days": { "type": "number" }
+          }
+        },
+        "waiting_stale": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "after_days": { "type": "number" }
+          }
+        },
+        "interview_thank_you": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "after_hours": { "type": "number" }
+          }
+        },
+        "needs_reply": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" }
+          }
+        },
+        "comm_due": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}

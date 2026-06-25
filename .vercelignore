@@ -1,0 +1,32 @@
+# Keep Vercel uploads to just what the website build needs. Mirrors the
+# generated/private trees already ignored in .gitignore so a monorepo deploy
+# doesn't waste bandwidth on build output, node_modules, or candidate data.
+node_modules
+**/node_modules
+.next
+**/.next
+.turbo
+**/.turbo
+out
+**/out
+**/*.tsbuildinfo
+
+# CLI / product internals — the Vercel build only needs website/.
+candidate
+workspace
+.internal
+.rolester
+.playwright-mcp
+.agents
+.claude
+bin
+src
+config
+templates
+scripts
+mockups
+examples
+tests
+docs/COMPARISON.md
+ROADMAP.md
+ROADMAP-ARCHIVE.md

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/evidence.schema.json",
+  "title": "Rolester Evidence Bank",
+  "type": "object",
+  "required": ["claims"],
+  "additionalProperties": false,
+  "properties": {
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "claim", "evidence"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "claim": { "type": "string" },
+          "evidence": { "type": "string" },
+          "metrics": { "type": "array", "items": { "type": "string" } },
+          "links": { "type": "array", "items": { "type": "string" } },
+          "role_signals": { "type": "array", "items": { "type": "string" } },
+          "allowed_wording": { "type": "array", "items": { "type": "string" } },
+          "forbidden_wording": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

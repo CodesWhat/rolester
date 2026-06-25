@@ -1,0 +1,27 @@
+# Rolester Claude Instructions
+
+Follow [AGENTS.md](AGENTS.md). It is the source of truth for intent routing,
+the body-read gate, artifact completeness, and submit safety. If
+`candidate/AGENTS.md` exists, read it too for candidate-specific context; if the
+workspace is not set up yet, run `ingest-profile` (or `npm run ingest`) first.
+
+Key rule: when the user asks to apply, run the `apply-job` workflow. `apply-job`
+must run or verify `evaluate-job` before tailoring, filling, or submitting.
+
+When the user asks to draft, reply to, follow up on, summarize, or negotiate a
+job-search email or recruiter message, run `email-comms` and update tracker
+communication state.
+
+When the user asks to schedule, propose times for, confirm, or reschedule a
+recruiter or hiring-team call or interview, run `schedule-meeting` (it owns
+timezone resolution, double-booking avoidance, calendar-ready holds, and
+scheduling write-back; non-scheduling threads hand back to `email-comms`).
+
+When the user is in a live or verbal offer or negotiation call, or wants to
+rehearse or script a verbal comp conversation, run `interview-prep` (live
+negotiation channel).
+
+When the user asks to optimize, review, or improve their LinkedIn profile, or to
+make it read for the roles they're targeting, run `optimize-linkedin`. It produces
+a read-only before→after diff first (the default), and only writes edits back when
+`profile_apply` is enabled, confirm-first per field.

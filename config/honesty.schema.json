@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/honesty.schema.json",
+  "title": "Rolester Honesty Boundaries",
+  "type": "object",
+  "required": ["claims"],
+  "additionalProperties": true,
+  "properties": {
+    "education": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "highest_degree": { "type": ["string", "null"] },
+        "add_education_section": { "type": "boolean" }
+      }
+    },
+    "tools": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "confirmed": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "adjacent": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "do_not_claim": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "do_not_fabricate": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "avoid": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,325 @@
+// Tests for candidate-setup.mjs
+// Operates entirely inside a fresh temp directory — never writes into the
+// real repo's candidate/ directory.
+
+import assert from "node:assert/strict";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after, before, describe, it } from "node:test";
+import { fileURLToPath } from "node:url";
+import { userPath } from "../src/core/paths/workspace.mjs";
+import {
+  CANDIDATE_FILES,
+  COPY_ONLY_CANDIDATE_FILES,
+  ensureCandidateFiles,
+  lintPlaceholders,
+  loadCandidate,
+  OPTIONAL_CANDIDATE_FILES,
+} from "../src/core/profile/candidate-setup.mjs";
+
+import { stringifyYaml } from "../src/core/profile/yaml.mjs";
+
+// ---------------------------------------------------------------------------
+// Resolve real repo root (this test file lives at tests/, one level below root)
+// ---------------------------------------------------------------------------
+
+const REAL_ROOT = fileURLToPath(new URL("..", import.meta.url));
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function buildTempRoot() {
+  const tempRoot = mkdtempSync(join(tmpdir(), "rolester-test-"));
+
+  // Create templates/ and config/ dirs
+  mkdirSync(join(tempRoot, "templates"), { recursive: true });
+  mkdirSync(join(tempRoot, "config"), { recursive: true });
+
+  // Copy the 5 real templates and 5 real schemas into the temp root
+  for (const entry of CANDIDATE_FILES) {
+    copyFileSync(join(REAL_ROOT, entry.templatePath), join(tempRoot, entry.templatePath));
+    copyFileSync(join(REAL_ROOT, entry.schemaPath), join(tempRoot, entry.schemaPath));
+  }
+
+  for (const entry of OPTIONAL_CANDIDATE_FILES) {
+    copyFileSync(join(REAL_ROOT, entry.templatePath), join(tempRoot, entry.templatePath));
+    copyFileSync(join(REAL_ROOT, entry.schemaPath), join(tempRoot, entry.schemaPath));
+  }
+
+  // Copy the freeform copy-only templates (e.g. SOURCE_RESUME.md) — no schema.
+  for (const entry of COPY_ONLY_CANDIDATE_FILES) {
+    copyFileSync(join(REAL_ROOT, entry.templatePath), join(tempRoot, entry.templatePath));
+  }
+
+  return tempRoot;
+}
+
+function candidatePath(root, relPath) {
+  return userPath({ repoRoot: root }, relPath);
+}
+
+// ---------------------------------------------------------------------------
+// Test suite
+// ---------------------------------------------------------------------------
+
+describe("candidate-setup", () => {
+  let tempRoot;
+
+  before(() => {
+    tempRoot = buildTempRoot();
+  });
+
+  after(() => {
+    try {
+      rmSync(tempRoot, { recursive: true, force: true });
+    } catch {
+      // best-effort cleanup
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  it("CANDIDATE_FILES has exactly 5 entries with required shape", () => {
+    assert.equal(CANDIDATE_FILES.length, 5);
+    for (const entry of CANDIDATE_FILES) {
+      assert.ok(typeof entry.name === "string", "name must be string");
+      assert.ok(typeof entry.candidatePath === "string", "candidatePath must be string");
+      assert.ok(typeof entry.templatePath === "string", "templatePath must be string");
+      assert.ok(typeof entry.schemaPath === "string", "schemaPath must be string");
+      // Forward-slash paths
+      assert.ok(!entry.candidatePath.includes("\\"), "candidatePath must use forward slashes");
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  it("OPTIONAL_CANDIDATE_FILES has required shape", () => {
+    assert.equal(OPTIONAL_CANDIDATE_FILES.length, 1);
+    for (const entry of OPTIONAL_CANDIDATE_FILES) {
+      assert.ok(typeof entry.name === "string", "name must be string");
+      assert.ok(typeof entry.candidatePath === "string", "candidatePath must be string");
+      assert.ok(typeof entry.templatePath === "string", "templatePath must be string");
+      assert.ok(typeof entry.schemaPath === "string", "schemaPath must be string");
+      assert.ok(!entry.candidatePath.includes("\\"), "candidatePath must use forward slashes");
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  it("ensureCandidateFiles — first run creates 7 files (5 required config + modes + source résumé)", () => {
+    const result = ensureCandidateFiles({ root: tempRoot });
+    assert.equal(result.created.length, 7, "should create 7 files on first run");
+    assert.equal(result.existing.length, 0, "no files should already exist");
+
+    // Verify files actually exist on disk
+    for (const entry of CANDIDATE_FILES) {
+      assert.ok(
+        existsSync(candidatePath(tempRoot, entry.candidatePath)),
+        `${entry.candidatePath} should exist on disk`
+      );
+    }
+    for (const entry of OPTIONAL_CANDIDATE_FILES) {
+      assert.ok(
+        existsSync(candidatePath(tempRoot, entry.candidatePath)),
+        `${entry.candidatePath} should exist on disk`
+      );
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  it("ensureCandidateFiles — second run does NOT overwrite existing files", () => {
+    // Write a sentinel into the first candidate file
+    const firstEntry = CANDIDATE_FILES[0];
+    const firstPath = candidatePath(tempRoot, firstEntry.candidatePath);
+    const sentinelText = "# SENTINEL-DO-NOT-OVERWRITE\n";
+    writeFileSync(firstPath, sentinelText, "utf8");
+
+    const result = ensureCandidateFiles({ root: tempRoot });
+    assert.equal(result.created.length, 0, "no files should be created on second run");
+    assert.equal(result.existing.length, 7, "all 7 should be reported as existing");
+
+    // Sentinel must still be present
+    const content = readFileSync(firstPath, "utf8");
+    assert.ok(content.includes("SENTINEL-DO-NOT-OVERWRITE"), "sentinel must not be overwritten");
+  });
+
+  // -------------------------------------------------------------------------
+  it("loadCandidate — ok after restoring valid files", () => {
+    // Restore the first candidate file to a valid copy from the template
+    const firstEntry = CANDIDATE_FILES[0];
+    copyFileSync(
+      join(tempRoot, firstEntry.templatePath),
+      candidatePath(tempRoot, firstEntry.candidatePath)
+    );
+
+    const result = loadCandidate({ root: tempRoot });
+    assert.equal(result.ok, true, "ok should be true when all files are valid");
+    assert.equal(result.files.length, 5, "should have 5 file results");
+    for (const f of result.files) {
+      assert.equal(f.exists, true, `${f.name} should exist`);
+      assert.equal(f.valid, true, `${f.name} should be valid`);
+      assert.equal(f.errors.length, 0, `${f.name} should have no errors`);
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  it("loadCandidate — invalid profile yields ok=false and non-empty errors", () => {
+    // Overwrite profile.yml with an object missing required 'email'
+    const profileEntry = CANDIDATE_FILES.find((e) => e.name === "profile");
+    const profilePath = candidatePath(tempRoot, profileEntry.candidatePath);
+
+    // Only provides candidate.full_name; missing email, and missing top-level
+    // required keys: compensation, location, authorization
+    const badData = {
+      candidate: { full_name: "X" },
+    };
+    writeFileSync(profilePath, stringifyYaml(badData), "utf8");
+
+    const result = loadCandidate({ root: tempRoot });
+    assert.equal(result.ok, false, "ok should be false when a file is invalid");
+
+    const profileResult = result.files.find((f) => f.name === "profile");
+    assert.ok(profileResult, "profile result must be present");
+    assert.equal(profileResult.exists, true, "profile file exists");
+    assert.equal(profileResult.valid, false, "profile should be invalid");
+    assert.ok(profileResult.errors.length > 0, "profile should have validation errors");
+  });
+
+  // -------------------------------------------------------------------------
+  it("loadCandidate — missing file reported with exists=false and file-missing error", () => {
+    // Temporarily rename one file to simulate missing
+    const lastEntry = CANDIDATE_FILES[CANDIDATE_FILES.length - 1];
+    const realPath = candidatePath(tempRoot, lastEntry.candidatePath);
+    const hiddenPath = `${realPath}.hidden`;
+
+    // Move it out of the way
+    copyFileSync(realPath, hiddenPath);
+    rmSync(realPath);
+
+    const result = loadCandidate({ root: tempRoot });
+    assert.equal(result.ok, false, "ok should be false when a file is missing");
+
+    const missing = result.files.find((f) => f.name === lastEntry.name);
+    assert.ok(missing, "missing file entry must be present");
+    assert.equal(missing.exists, false);
+    assert.equal(missing.valid, false);
+    assert.ok(
+      missing.errors.some((e) => e.message === "file missing"),
+      "error should say 'file missing'"
+    );
+
+    // Restore
+    copyFileSync(hiddenPath, realPath);
+    rmSync(hiddenPath);
+  });
+
+  // -------------------------------------------------------------------------
+  it("lintPlaceholders — freshly-copied templates contain placeholder findings", () => {
+    // Restore all candidate files from templates so they have placeholder values
+    for (const entry of CANDIDATE_FILES) {
+      copyFileSync(
+        join(tempRoot, entry.templatePath),
+        candidatePath(tempRoot, entry.candidatePath)
+      );
+    }
+
+    const result = lintPlaceholders({ root: tempRoot });
+    assert.equal(result.clean, false, "freshly-copied templates should NOT be clean");
+    assert.ok(result.findings.length > 0, "should have at least one placeholder finding");
+
+    // Verify findings have required shape
+    for (const finding of result.findings) {
+      assert.ok(typeof finding.file === "string", "finding.file must be string");
+      assert.ok(
+        typeof finding.line === "number" && finding.line >= 1,
+        "finding.line must be 1-based number"
+      );
+      assert.ok(typeof finding.text === "string", "finding.text must be string");
+      // file is relative to root (no absolute path)
+      assert.ok(!finding.file.startsWith("/"), "finding.file must be relative");
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  it("lintPlaceholders — realistic profile clears profile-specific findings", () => {
+    // Write a realistic, non-placeholder profile
+    const profileEntry = CANDIDATE_FILES.find((e) => e.name === "profile");
+    const profilePath = candidatePath(tempRoot, profileEntry.candidatePath);
+
+    const realisticProfile = {
+      candidate: {
+        full_name: "Sam Smith",
+        preferred_name: "Sam",
+        email: "sam@example.org",
+        phone: "+1-415-555-9999",
+        location: "San Francisco, CA",
+        linkedin: "https://linkedin.com/in/samsmith",
+        github: "https://github.com/samsmith",
+        portfolio: "https://samsmith.dev",
+      },
+      compensation: {
+        currency: "USD",
+        current_comp_shareable: false,
+        current_base: null,
+        target_base: 200000,
+        minimum_base: 180000,
+        target_total_comp: null,
+        cash_over_equity: true,
+      },
+      location: {
+        home: "San Francisco, CA",
+        remote: true,
+        hybrid: true,
+        onsite: false,
+        relocation: [],
+        travel_tolerance: "low",
+      },
+      authorization: {
+        work_authorized: true,
+        requires_sponsorship: false,
+        notice_period: "2 weeks",
+      },
+    };
+    writeFileSync(profilePath, stringifyYaml(realisticProfile), "utf8");
+
+    const result = lintPlaceholders({ root: tempRoot });
+
+    // Findings from profile.yml should be gone
+    const profileFindings = result.findings.filter((f) =>
+      f.file.endsWith(profileEntry.candidatePath)
+    );
+    assert.equal(
+      profileFindings.length,
+      0,
+      `profile should have no placeholder findings after rewrite; got: ${JSON.stringify(profileFindings)}`
+    );
+  });
+
+  // -------------------------------------------------------------------------
+  it("lintPlaceholders — returns clean=true when no candidate files exist", () => {
+    // Build a fresh temp root with no candidate/ dir
+    const emptyRoot = mkdtempSync(join(tmpdir(), "rolester-empty-"));
+    try {
+      mkdirSync(join(emptyRoot, "templates"), { recursive: true });
+      mkdirSync(join(emptyRoot, "config"), { recursive: true });
+      // Copy templates/schemas but do NOT run ensureCandidateFiles
+      for (const entry of CANDIDATE_FILES) {
+        copyFileSync(join(REAL_ROOT, entry.templatePath), join(emptyRoot, entry.templatePath));
+        copyFileSync(join(REAL_ROOT, entry.schemaPath), join(emptyRoot, entry.schemaPath));
+      }
+
+      const result = lintPlaceholders({ root: emptyRoot });
+      assert.equal(result.clean, true, "no candidate files → clean");
+      assert.equal(result.findings.length, 0, "no findings when no candidate files");
+    } finally {
+      rmSync(emptyRoot, { recursive: true, force: true });
+    }
+  });
+});

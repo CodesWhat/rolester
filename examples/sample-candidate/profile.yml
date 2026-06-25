@@ -1,0 +1,33 @@
+candidate:
+  full_name: "Riley Chen"
+  preferred_name: "Riley"
+  email: "riley.chen@rolester.dev"
+  phone: "+1-555-0148"
+  location: "Austin, TX"
+  linkedin: "https://linkedin.com/in/rileychendev"
+  github: "https://github.com/rileychendev"
+  portfolio: "https://rileychen.dev"
+
+compensation:
+  currency: "USD"
+  current_comp_shareable: false
+  current_base:
+  target_base: 215000
+  minimum_base: 190000
+  target_total_comp: 260000
+  cash_over_equity: true
+
+location:
+  home: "Austin, TX"
+  remote: true
+  hybrid: true
+  onsite: false
+  relocation:
+    - "San Francisco, CA"
+    - "New York, NY"
+  travel_tolerance: "low"
+
+authorization:
+  work_authorized: true
+  requires_sponsorship: false
+  notice_period: "2 weeks"

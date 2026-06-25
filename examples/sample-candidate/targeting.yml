@@ -1,0 +1,68 @@
+role_buckets:
+  - name: "Forward Deployed / Applied AI"
+    priority: "primary"
+    titles:
+      - "Forward Deployed Engineer"
+      - "Applied AI Engineer"
+      - "AI Solutions Engineer"
+    notes: "Roles where Riley's prototype-to-production + customer-facing deployment experience is the core edge."
+
+  - name: "Staff / Principal Software Engineer"
+    priority: "secondary"
+    titles:
+      - "Staff Software Engineer"
+      - "Principal Engineer"
+      - "Senior Staff Engineer"
+    notes: "Strong fit at companies with AI-adjacent products; less fit at pure infra or systems shops."
+
+  - name: "Technical Lead / Engineering Manager"
+    priority: "stretch"
+    titles:
+      - "Technical Lead"
+      - "Engineering Manager"
+    notes: "Stretch — Riley has led small teams but has not held a formal EM title. Open to player-coach roles."
+
+  - name: "Open Exploration"
+    priority: "oe"
+    titles:
+      - "AI Platform Engineer"
+      - "ML Platform Engineer"
+    notes: "Worth investigating; depends heavily on whether the role is build-and-deploy vs. research-and-train."
+
+keep_signals:
+  - "customer-facing deploy-and-adopt"
+  - "prototype-to-production"
+  - "RAG, agents, tool use, or workflow automation"
+  - "LLM integration or AI product development"
+  - "cross-functional collaboration with non-engineering stakeholders"
+
+cut_signals:
+  - "core platform SWE with no AI surface"
+  - "ML research or model pre-training"
+  - "DevRel or developer advocacy"
+  - "pure data engineering / ETL pipelines"
+
+excluded_companies:
+  - "Acme Defense Contractors Inc."
+
+degree_policy: "Do not fabricate education. Apply despite stated degree requirements — Riley's track record speaks for itself."
+
+# Riley doesn't chase cold applications (the silence usually means no) but does
+# follow through after every interview and keeps inbound threads moving.
+follow_up:
+  app_nudge:
+    enabled: false        # never send a follow-up just because an application went quiet
+    # max_count: 2        # (when enabled) stop after this many sent follow-ups; default 2
+  post_interview:
+    enabled: true         # always follow up when an interview-stage application goes silent
+    after_days: 5
+  waiting_stale:
+    enabled: true         # flag threads where Riley's been waiting too long
+    after_days: 5
+  interview_thank_you:
+    enabled: true         # always send a thank-you note after a logged interview
+    after_hours: 24
+  needs_reply:
+    enabled: true         # always flag when someone is waiting on Riley's reply
+  comm_due:
+    enabled: true         # always surface explicitly scheduled actions when they come due

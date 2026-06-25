@@ -1,0 +1,56 @@
+candidate:
+  full_name: "Jane Candidate"
+  preferred_name: "Jane"
+  headline: "Senior AI Engineer"
+  email: "jane@example.com"
+  phone: "+1-555-0100"
+  location: "New York, NY"
+  linkedin: "https://linkedin.com/in/janecandidate"
+  github: "https://github.com/janecandidate"
+  portfolio: "https://janecandidate.example"
+  domain: "software engineering"   # illustrative — replace with your field/toolchain
+  toolchain: "markdown-only"       # illustrative — replace with your field/toolchain
+
+compensation:
+  currency: "USD"
+  current_comp_shareable: false
+  current_base:
+  target_base: 165000
+  minimum_base: 140000
+  target_total_comp:
+  cash_over_equity: true
+  expected_base: 165000
+  oe_min_base:
+  oe_max_base:
+  relo_package_needs: ""
+
+location:
+  home: "New York, NY"
+  remote: true
+  hybrid: true
+  onsite: false
+  relocation: []
+  travel_tolerance: "low"
+
+authorization:
+  work_authorized: true
+  requires_sponsorship: false
+  notice_period: "2 weeks"
+
+# Optional — scheduling preferences read by schedule-meeting. Omit the whole block to
+# stay neutral: the skill derives your timezone from location and asks you once, then
+# offers to save your answers here. Nothing here is required.
+availability:
+  timezone: "America/New_York"        # IANA tz; if omitted, derived from location.home
+  working_hours: "09:00-18:00"        # meetable hours in your local time
+  preferred_days:
+    - Mon
+    - Tue
+    - Wed
+    - Thu
+  preferred_times: "afternoons"
+  buffer_minutes: 15                  # minimum gap between meetings
+  default_meeting_minutes: 30
+  blackout:                           # windows to never book
+    - "daily 12:00-13:00"
+  scheduling_link: ""                 # optional self-serve scheduling URL to share instead

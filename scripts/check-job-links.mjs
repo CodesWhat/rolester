@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { checkUrlLiveness } from "../src/core/liveness/job-link-checker.mjs";
+import { displayPath, userPath } from "../src/core/paths/workspace.mjs";
+import { loadTrackerData } from "../src/core/tracker/tracker-data.mjs";
+
+const root = join(fileURLToPath(new URL("..", import.meta.url)));
+const pathCtx = { repoRoot: root };
+const args = process.argv.slice(2);
+const fileArg = valueAfter("--file");
+const strict = args.includes("--strict");
+let urls = [];
+
+if (fileArg) {
+  urls = readFileSync(fileArg, "utf8")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+} else {
+  const trackerPath = userPath(pathCtx, "workspace/tracker.json");
+  if (!existsSync(trackerPath)) {
+    console.error(
+      `Tracker not found at ${displayPath(pathCtx, "workspace/tracker.json")}. Seed one from templates/tracker.json.`
+    );
+    process.exit(1);
+  }
+  const data = loadTrackerData(trackerPath);
+  urls = [...data.apps, ...data.sourced].map((row) => row.link).filter(Boolean);
+}
+
+const results = [];
+for (const url of urls) {
+  const result = await checkUrlLiveness(url);
+  results.push(result);
+  console.log(`${result.result.padEnd(9)} ${url} - ${result.reason}`);
+}
+
+const bad = results.filter(
+  (result) => result.result === "expired" || (strict && result.result === "uncertain")
+);
+if (bad.length > 0) process.exitCode = 1;
+
+function valueAfter(flag) {
+  const index = args.indexOf(flag);
+  return index === -1 ? null : args[index + 1];
+}

@@ -1,0 +1,388 @@
+// tailor.mjs — deterministic assembly of tailored resume/cover-letter artifacts.
+// Selection, assembly, and validation only — NEVER fabricates content.
+// Zero runtime dependencies.
+
+import { lintArtifact } from "./placeholder-lint.mjs";
+
+// ---------------------------------------------------------------------------
+// indexEvidence
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a lookup index from a parsed evidence bank object ({ claims: [...] }).
+ *
+ * @param {{ claims: Array<{ id: string, claim: string, evidence: string, metrics?: string[], links?: string[], role_signals?: string[], allowed_wording?: string[], forbidden_wording?: string[] }> }} evidenceBank
+ * @returns {{ byId: Map<string, object>, all: Array<object> }}
+ */
+export function indexEvidence(evidenceBank) {
+  const all = Array.isArray(evidenceBank.claims) ? evidenceBank.claims : [];
+  const byId = new Map();
+  for (const claim of all) {
+    byId.set(claim.id, claim);
+  }
+  return { byId, all };
+}
+
+// ---------------------------------------------------------------------------
+// selectEvidenceForSignals
+// ---------------------------------------------------------------------------
+
+/**
+ * Return claims whose role_signals intersect the given signals array.
+ * Comparison is case-insensitive. Result is deduped by id, order preserved.
+ * Empty signals array → returns [].
+ *
+ * @param {{ claims: Array<object> }} evidenceBank
+ * @param {string[]} signals
+ * @returns {Array<object>}
+ */
+export function selectEvidenceForSignals(evidenceBank, signals) {
+  if (!Array.isArray(signals) || signals.length === 0) return [];
+
+  const normalizedSignals = signals.map((s) => s.toLowerCase());
+  const seen = new Set();
+  const selected = [];
+
+  for (const claim of evidenceBank.claims || []) {
+    if (seen.has(claim.id)) continue;
+    const claimSignals = (claim.role_signals || []).map((s) => s.toLowerCase());
+    const matches = claimSignals.some((cs) => normalizedSignals.includes(cs));
+    if (matches) {
+      seen.add(claim.id);
+      selected.push(claim);
+    }
+  }
+
+  return selected;
+}
+
+// ---------------------------------------------------------------------------
+// mapClaimsToEvidence
+// ---------------------------------------------------------------------------
+
+/**
+ * Produce a build-note mapping of each used claim to its evidence source.
+ *
+ * @param {Array<{ id: string, claim: string, evidence?: string, links?: string[] }>} claims
+ * @returns {Array<{ id: string, claim: string, evidenceNote: string, links: string[] }>}
+ */
+export function mapClaimsToEvidence(claims) {
+  return claims.map((c) => ({
+    id: c.id,
+    claim: c.claim,
+    evidenceNote: c.evidence || "",
+    links: Array.isArray(c.links) ? c.links : [],
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// forbiddenWordingFor
+// ---------------------------------------------------------------------------
+
+/**
+ * Collect all forbidden phrases from claims' forbidden_wording and honesty.tools.do_not_claim.
+ * Returns a deduped array (case-preserved as given, checked case-insensitively at assertion time).
+ *
+ * @param {Array<{ forbidden_wording?: string[] }>} claims
+ * @param {{ tools?: { do_not_claim?: string[] } }} honesty
+ * @returns {string[]}
+ */
+export function forbiddenWordingFor(claims, honesty) {
+  const seen = new Set();
+  const result = [];
+
+  const add = (phrase) => {
+    const key = phrase.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(phrase);
+    }
+  };
+
+  for (const claim of claims) {
+    for (const phrase of claim.forbidden_wording || []) {
+      add(phrase);
+    }
+  }
+
+  for (const phrase of honesty?.tools?.do_not_claim || []) {
+    add(phrase);
+  }
+
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// assertNoForbidden
+// ---------------------------------------------------------------------------
+
+/**
+ * Throw if any forbidden phrase appears in text (case-insensitive).
+ * Returns true if clean.
+ *
+ * @param {string} text
+ * @param {string[]} forbidden
+ * @returns {true}
+ * @throws {Error}
+ */
+export function assertNoForbidden(text, forbidden) {
+  const lowerText = text.toLowerCase();
+  const hits = [];
+
+  for (const phrase of forbidden) {
+    if (lowerText.includes(phrase.toLowerCase())) {
+      hits.push(phrase);
+    }
+  }
+
+  if (hits.length > 0) {
+    throw new Error(`Artifact contains forbidden wording: ${hits.map((h) => `"${h}"`).join(", ")}`);
+  }
+
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// validateAtsSafe
+// ---------------------------------------------------------------------------
+
+/**
+ * Check a markdown string for ATS-unsafe constructs.
+ * Plain headings, bullets, and bold are allowed.
+ *
+ * @param {string} markdown
+ * @returns {{ ok: boolean, issues: string[] }}
+ */
+export function validateAtsSafe(markdown) {
+  const issues = [];
+
+  // Markdown tables (pipe-separated with separator row)
+  if (/^\|[-| :]+\|/m.test(markdown)) {
+    issues.push("markdown table detected (ATS-unsafe)");
+  }
+
+  // Images
+  if (/!\[/.test(markdown)) {
+    issues.push("markdown image detected (ATS-unsafe)");
+  }
+
+  // HTML tags
+  if (/<\/?[a-zA-Z][^>]*>/.test(markdown)) {
+    issues.push("HTML tag detected (ATS-unsafe)");
+  }
+
+  // Tab characters
+  if (/\t/.test(markdown)) {
+    issues.push("tab character detected (ATS-unsafe)");
+  }
+
+  // Box-drawing / multi-column glyphs (U+2500–U+257F and common box chars)
+  if (/[─-╿│└┌┐┘]/.test(markdown)) {
+    issues.push("box-drawing glyph detected (ATS-unsafe)");
+  }
+
+  return { ok: issues.length === 0, issues };
+}
+
+// ---------------------------------------------------------------------------
+// buildResumeMarkdown
+// ---------------------------------------------------------------------------
+
+/**
+ * Assemble a complete tailored resume in ATS-safe markdown from REAL data only.
+ * Never invents content — all bullets come verbatim from evidence bank claims.
+ *
+ * @param {{
+ *   profile: { candidate: { full_name: string, email: string, phone?: string, location?: string, linkedin?: string, github?: string, portfolio?: string } },
+ *   evidence: { claims: Array<object> },
+ *   job: { signals?: string[], frontmatter?: object },
+ *   honesty: { education?: { add_education_section?: boolean }, tools?: { do_not_claim?: string[] } },
+ *   summary?: string
+ * }} opts
+ * @returns {string}
+ */
+export function buildResumeMarkdown({ profile, evidence, job, honesty, summary }) {
+  const c = profile.candidate;
+
+  // --- Header ---
+  const headerLines = [`# ${c.full_name}`];
+
+  const contactParts = [];
+  if (c.email) contactParts.push(c.email);
+  if (c.phone) contactParts.push(c.phone);
+  if (c.location) contactParts.push(c.location);
+  if (contactParts.length > 0) {
+    headerLines.push(contactParts.join(" | "));
+  }
+
+  const linkParts = [];
+  if (c.linkedin) linkParts.push(`LinkedIn: ${c.linkedin}`);
+  if (c.github) linkParts.push(`GitHub: ${c.github}`);
+  if (c.portfolio) linkParts.push(`Portfolio: ${c.portfolio}`);
+  if (linkParts.length > 0) {
+    headerLines.push(linkParts.join(" | "));
+  }
+
+  const sections = [headerLines.join("\n")];
+
+  // --- Summary (only if explicitly provided) ---
+  if (summary && summary.trim().length > 0) {
+    sections.push(`## Summary\n\n${summary.trim()}`);
+  }
+
+  // --- Experience / Highlights ---
+  const signals = job?.signals || [];
+  let selectedClaims = selectEvidenceForSignals(evidence, signals);
+  if (selectedClaims.length === 0) {
+    // Fall back to all claims
+    selectedClaims = Array.isArray(evidence.claims) ? evidence.claims : [];
+  }
+
+  const bullets = selectedClaims.map((cl) => `- ${cl.claim}`).join("\n");
+  const experienceHeading = signals.length > 0 ? "## Highlights" : "## Experience";
+  sections.push(`${experienceHeading}\n\n${bullets}`);
+
+  // --- Education (only if honesty.education.add_education_section === true) ---
+  if (honesty?.education && honesty.education.add_education_section === true) {
+    const degree = (honesty.education.highest_degree || "").trim();
+    const educationBody = degree.length > 0 ? degree : "_See application for details._";
+    sections.push(`## Education\n\n${educationBody}`);
+  }
+
+  const output = sections.join("\n\n");
+
+  // --- Honesty validation ---
+  const forbidden = forbiddenWordingFor(selectedClaims, honesty);
+  assertNoForbidden(output, forbidden);
+
+  // --- Placeholder lint gate ---
+  const { clean, findings } = lintArtifact(output);
+  if (!clean) {
+    const detail = findings.map((f) => `line ${f.line}: ${f.text}`).join("; ");
+    throw new Error(`buildResumeMarkdown produced unresolved placeholders: ${detail}`);
+  }
+
+  // --- ATS-safety gate ---
+  // Pipe tables / HTML / box-drawing glyphs corrupt ATS text extraction, so
+  // block them at build time before the artifact can ever reach an upload.
+  const ats = validateAtsSafe(output);
+  if (!ats.ok) {
+    throw new Error(`buildResumeMarkdown produced ATS-unsafe output: ${ats.issues.join("; ")}`);
+  }
+
+  return output;
+}
+
+// ---------------------------------------------------------------------------
+// buildCoverLetterScaffold
+// ---------------------------------------------------------------------------
+
+/**
+ * Assemble a complete cover letter from caller-supplied prose blocks.
+ * The agent writes the paragraph prose; this function assembles + validates.
+ * Throws if blocks is empty — the caller must supply paragraphs.
+ *
+ * @param {{
+ *   profile: { candidate: { full_name: string } },
+ *   job: { frontmatter?: { company?: string, role?: string } },
+ *   evidence: { claims: Array<object> },
+ *   blocks: string[] | object
+ * }} opts
+ * @returns {string}
+ */
+export function buildCoverLetterScaffold({ profile, job, evidence, blocks }) {
+  // Normalise blocks to an array of non-empty strings
+  const paragraphs = (Array.isArray(blocks) ? blocks : Object.values(blocks || {}))
+    .map((b) => (b || "").trim())
+    .filter((b) => b.length > 0);
+
+  if (paragraphs.length === 0) {
+    throw new Error(
+      "buildCoverLetterScaffold requires at least one prose block. " +
+        "The agent must supply the paragraph text; the core assembles and validates."
+    );
+  }
+
+  const name = profile.candidate.full_name;
+  const company = job?.frontmatter?.company || "";
+  const role = job?.frontmatter?.role || "";
+
+  // Greeting
+  const greeting = company ? `Dear ${company} Hiring Team,` : "Dear Hiring Team,";
+
+  // Subject line (informational, not an email header)
+  const subjectParts = ["Re: Application"];
+  if (role) subjectParts.push(role);
+  if (company) subjectParts.push(`at ${company}`);
+  const subject = subjectParts.join(" — ");
+
+  // Sign-off
+  const signOff = `Sincerely,\n${name}`;
+
+  const letterParts = [subject, greeting, ...paragraphs, signOff];
+  const output = letterParts.join("\n\n");
+
+  // --- Placeholder lint gate ---
+  const { clean, findings } = lintArtifact(output);
+  if (!clean) {
+    const detail = findings.map((f) => `line ${f.line}: ${f.text}`).join("; ");
+    throw new Error(`buildCoverLetterScaffold produced unresolved placeholders: ${detail}`);
+  }
+
+  // --- Forbidden wording check ---
+  const allClaims = Array.isArray(evidence.claims) ? evidence.claims : [];
+  const forbidden = forbiddenWordingFor(allClaims, {});
+  assertNoForbidden(output, forbidden);
+
+  // --- ATS-safety gate ---
+  const ats = validateAtsSafe(output);
+  if (!ats.ok) {
+    throw new Error(
+      `buildCoverLetterScaffold produced ATS-unsafe output: ${ats.issues.join("; ")}`
+    );
+  }
+
+  return output;
+}
+
+// ---------------------------------------------------------------------------
+// buildShortAnswer
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate a caller-supplied answer (the agent writes the prose) and return it trimmed.
+ * Throws with a clear message if: empty, contains placeholders, or contains forbidden wording.
+ *
+ * @param {{
+ *   question: string,
+ *   answer: string,
+ *   honesty?: object,
+ *   forbidden?: string[]
+ * }} opts
+ * @returns {string}
+ */
+export function buildShortAnswer({ question, answer, honesty, forbidden = [] }) {
+  const trimmed = (answer || "").trim();
+
+  if (trimmed.length === 0) {
+    throw new Error(
+      `buildShortAnswer: answer is empty for question "${question}". ` +
+        "The agent must supply the answer text."
+    );
+  }
+
+  // Placeholder check
+  const { clean, findings } = lintArtifact(trimmed);
+  if (!clean) {
+    const detail = findings.map((f) => `line ${f.line}: ${f.text}`).join("; ");
+    throw new Error(
+      `buildShortAnswer: answer contains unresolved placeholders for question "${question}": ${detail}`
+    );
+  }
+
+  // Forbidden wording check
+  const allForbidden = [...(forbidden || []), ...forbiddenWordingFor([], honesty || {})];
+  assertNoForbidden(trimmed, allForbidden);
+
+  return trimmed;
+}

@@ -1,0 +1,25 @@
+education:
+  highest_degree:
+  add_education_section: false
+
+tools:
+  confirmed:
+    - "Example Tool"
+  adjacent:
+    - "Adjacent Tool"
+  do_not_claim:
+    - "Tool Never Used"
+
+claims:
+  do_not_fabricate:
+    - "degrees"
+    - "employers"
+    - "metrics"
+    - "tools"
+    - "security clearances"
+    - "work authorization"
+
+style:
+  avoid:
+    - "buzzword-heavy summaries"
+    - "unsupported superlatives"

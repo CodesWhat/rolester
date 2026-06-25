@@ -1,0 +1,684 @@
+import { existsSync, readFileSync } from "node:fs";
+import { setTimeout as delay } from "node:timers/promises";
+
+import { userPath } from "../paths/workspace.mjs";
+import { scannerLikelyKeepThreshold } from "../profile/modes.mjs";
+import { feedItemsToOffers, parseFeed } from "../providers/rss.mjs";
+import { normalizeCompanyRoleKey } from "../tracker/tracker-data.mjs";
+
+export { normalizeCompanyRoleKey };
+
+const DEFAULT_TIMEOUT_MS = 15000;
+
+export function normalizeKeywordList(value) {
+  if (value == null) return [];
+  const list = Array.isArray(value) ? value : [value];
+  return list
+    .filter((item) => typeof item === "string")
+    .map((item) => item.toLowerCase().trim())
+    .filter(Boolean);
+}
+
+export function buildTitleFilter(titleFilter = {}) {
+  const positive = normalizeKeywordList(titleFilter.positive);
+  const negative = normalizeKeywordList(titleFilter.negative);
+  return (title = "") => {
+    const lower = title.toLowerCase();
+    const hasPositive =
+      positive.length === 0 || positive.some((term) => keywordMatches(lower, term));
+    const hasNegative = negative.some((term) => keywordMatches(lower, term));
+    return hasPositive && !hasNegative;
+  };
+}
+
+function keywordMatches(text, term) {
+  if (!term) return false;
+  if (/^[a-z0-9.+#-]{1,3}$/.test(term)) {
+    return new RegExp(`(^|[^a-z0-9])${escapeRegExp(term)}($|[^a-z0-9])`).test(text);
+  }
+  return text.includes(term);
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function buildLocationFilter(locationFilter = null) {
+  if (!locationFilter) return () => true;
+  const alwaysAllow = normalizeKeywordList(locationFilter.always_allow);
+  const allow = normalizeKeywordList(locationFilter.allow);
+  const block = normalizeKeywordList(locationFilter.block);
+
+  return (location = "") => {
+    if (typeof location !== "string" || location.trim() === "") return true;
+    const lower = location.toLowerCase();
+    if (alwaysAllow.some((term) => lower.includes(term))) return true;
+    if (block.some((term) => lower.includes(term))) return false;
+    if (allow.length === 0) return true;
+    return allow.some((term) => lower.includes(term));
+  };
+}
+
+function scoreSourcedOfferFromConfig(offer = {}, { targeting, profile, modes }) {
+  const title = String(offer.title || "").toLowerCase();
+  const company = String(offer.company || "").toLowerCase();
+  const location = String(offer.location || "").toLowerCase();
+  const compText = String(offer.comp || "");
+  const body = String(offer.bodyText || offer.description || "");
+  const text = `${title}\n${body}`.toLowerCase();
+  const hasBody = body.trim().length > 300;
+
+  let score = hasBody ? 58 : 52;
+  const reasons = [];
+  const flags = [];
+
+  const setBase = (value, reason) => {
+    if (value > score) {
+      score = value;
+      reasons.unshift(reason);
+    }
+  };
+  const add = (value, reason) => {
+    score += value;
+    reasons.push(reason);
+  };
+  const flag = (value) => {
+    if (!flags.includes(value)) flags.push(value);
+  };
+
+  // --- Exclusions from targeting.excluded_companies ---
+  const excludedCompanies = normalizeKeywordList(
+    targeting?.excluded_companies ? targeting.excluded_companies : []
+  );
+  for (const ex of excludedCompanies) {
+    if (keywordMatches(company, ex)) {
+      add(-45, "excluded company unless exceptional comp");
+      flag("excluded-company");
+      break;
+    }
+  }
+
+  // --- Keep shapes from targeting.keep_signals + targeting.role_buckets titles ---
+  const keepSignals = normalizeKeywordList(targeting?.keep_signals ? targeting.keep_signals : []);
+  const bucketTitles = [];
+  if (targeting && Array.isArray(targeting.role_buckets)) {
+    for (const bucket of targeting.role_buckets) {
+      if (bucket.title) bucketTitles.push(String(bucket.title).toLowerCase().trim());
+      if (Array.isArray(bucket.titles)) {
+        for (const t of bucket.titles) bucketTitles.push(String(t).toLowerCase().trim());
+      }
+    }
+  }
+  const allKeepTerms = [...keepSignals, ...bucketTitles.filter(Boolean)];
+  for (const term of allKeepTerms) {
+    if (keywordMatches(title, term) || keywordMatches(text, term)) {
+      setBase(82, `matches keep signal: ${term}`);
+    }
+  }
+
+  // --- Cut signals from targeting.cut_signals ---
+  const cutSignals = normalizeKeywordList(targeting?.cut_signals ? targeting.cut_signals : []);
+  for (const term of cutSignals) {
+    if (keywordMatches(title, term) || keywordMatches(text, term)) {
+      const kebab = term.replace(/\s+/g, "-");
+      add(-30, `cut signal: ${term}`);
+      flag(`cut-risk-${kebab}`);
+    }
+  }
+
+  // --- Comp floor from profile.compensation.minimum_base ---
+  const minimumBase =
+    profile && profile.compensation && profile.compensation.minimum_base != null
+      ? Number(profile.compensation.minimum_base)
+      : null;
+  const comp = extractCompBand(`${compText}\n${body}`);
+  if (minimumBase !== null && Number.isFinite(minimumBase)) {
+    if (comp) {
+      if (comp.max < minimumBase) {
+        add(-24, "base below floor");
+        flag("comp-below-floor");
+      } else if (comp.min < minimumBase) {
+        add(-6, "must land top of band");
+        flag("top-of-band-only");
+      } else {
+        add(4, "comp clears floor");
+      }
+    } else {
+      flag("comp-unposted");
+    }
+  } else {
+    if (!comp) flag("comp-unposted");
+  }
+
+  // --- Location bonus from profile.location ---
+  const homeLoc = String(profile?.location?.home ? profile.location.home : "")
+    .toLowerCase()
+    .trim();
+  const reloMetros = normalizeKeywordList(
+    profile?.location && Array.isArray(profile.location.relocation)
+      ? profile.location.relocation
+      : []
+  );
+
+  if (homeLoc && location.includes(homeLoc)) {
+    add(5, "home/relo region");
+  } else if (reloMetros.some((metro) => location.includes(metro))) {
+    add(5, "home/relo region");
+  } else if (/\b(remote|united states|usa|us)\b/.test(location)) {
+    add(5, "remote/US location");
+  }
+
+  if (/\b(onsite|on-site|in office|in-office|5 days?\/week|five days? a week)\b/.test(text)) {
+    add(-5, "office burden");
+    flag("office-burden");
+  }
+  if (/\b(25\s*[-–]\s*50%|50%\+?|up to 50%|heavy travel|significant travel)\b/.test(text)) {
+    add(-8, "travel burden");
+    flag("travel");
+  }
+
+  const clamped = Math.max(35, Math.min(95, Math.round(score)));
+  return {
+    fit: fitFromScore(clamped),
+    score: clamped,
+    gate: gateFromScoreAndFlags(clamped, flags, modes),
+    ratingReason: reasons.slice(0, 5).join("; "),
+    ruleFlags: flags,
+  };
+}
+
+export function scoreSourcedOffer(offer = {}, config = {}) {
+  return scoreSourcedOfferFromConfig(offer, config);
+}
+
+export function fitFromScore(score) {
+  if (score >= 82) return "high";
+  if (score >= 65) return "med";
+  return "stretch";
+}
+
+function gateFromScoreAndFlags(score, flags, modes = {}) {
+  if (
+    flags.some(
+      (flag) =>
+        flag.startsWith("cut-risk") || flag === "excluded-company" || flag === "comp-below-floor"
+    )
+  )
+    return "likely-cut";
+  if (
+    flags.some(
+      (flag) =>
+        flag === "comp-unposted" || flag === "top-of-band-only" || flag === "ca-comp-unverified"
+    )
+  )
+    return "review";
+  if (score >= scannerLikelyKeepThreshold(modes)) return "likely-keep";
+  return "review";
+}
+
+export function extractCompBand(text = "") {
+  const source = String(text || "");
+  const candidates = [];
+  const lines = source
+    .split(/\n|\. /)
+    .filter((line) => /\$|\b(compensation|salary|base|pay range|annual|usd)\b/i.test(line));
+
+  for (const line of lines) {
+    const normalized = line.replace(/,/g, "");
+    const re =
+      /(?:usd\s*)?\$?\s*(\d{2,6}(?:\.\d+)?)(\s*k)?\s*(?:-|–|—|to)\s*(?:usd\s*)?\$?\s*(\d{2,6}(?:\.\d+)?)(\s*k)?/gi;
+    for (const match of normalized.matchAll(re)) {
+      const min = normalizeMoney(match[1], match[2]);
+      const max = normalizeMoney(match[3], match[4]);
+      if (min >= 50000 && max >= min && max <= 1200000) candidates.push({ min, max });
+    }
+  }
+
+  return candidates.sort((a, b) => b.max - b.min - (a.max - a.min) || b.max - a.max)[0] || null;
+}
+
+function normalizeMoney(value, suffix = "") {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  if (suffix.trim().toLowerCase() === "k") return numeric * 1000;
+  if (numeric < 1000) return numeric * 1000;
+  return numeric;
+}
+
+export function htmlToText(value = "") {
+  let text = decodeHtmlEntities(String(value || ""));
+  text = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|h[1-6]|section|tr)>/gi, "\n")
+    .replace(/<[^>]+>/g, " ");
+  return decodeHtmlEntities(text)
+    .replace(/\u00a0/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s+/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function decodeHtmlEntities(value = "") {
+  return String(value)
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rdquo;/g, '"')
+    .replace(/&ldquo;/g, '"')
+    .replace(/&mdash;|&#8212;|&#x2014;/gi, "—")
+    .replace(/&ndash;|&#8211;|&#x2013;/gi, "–")
+    .replace(/&nbsp;/g, " ");
+}
+
+export function inferProvider(entry = {}) {
+  if (entry.provider) return entry.provider;
+  const url = entry.careers_url || "";
+  if (/jobs\.ashbyhq\.com\//.test(url)) return "ashby";
+  if (/job-boards(?:\.eu)?\.greenhouse\.io\/|boards\.greenhouse\.io\//.test(url))
+    return "greenhouse";
+  if (/jobs\.lever\.co\//.test(url)) return "lever";
+  if (/apply\.workable\.com\//.test(url)) return "workable";
+  if (/(careers|jobs)\.smartrecruiters\.com\//.test(url)) return "smartrecruiters";
+  return null;
+}
+
+export function filterAndDedupeOffers(
+  offers,
+  { seenUrls, seenReqIds = new Set(), seenCompanyRoles, titleFilter, locationFilter, config = {} }
+) {
+  const kept = [];
+  const filteredTitle = [];
+  const filteredLocation = [];
+  const duplicates = [];
+  const possibleDuplicates = [];
+  const invalid = [];
+
+  for (const offer of offers) {
+    if (!offer.url || !offer.title || !offer.company) {
+      invalid.push({ ...offer, reason: "missing url, title, or company" });
+      continue;
+    }
+    if (!titleFilter(offer.title)) {
+      filteredTitle.push(offer);
+      continue;
+    }
+    if (!locationFilter(offer.location || "")) {
+      filteredLocation.push(offer);
+      continue;
+    }
+    const key = normalizeCompanyRoleKey(offer.company, offer.title);
+    const req = extractReqId(offer.url);
+    if (seenUrls.has(offer.url) || (req.id && seenReqIds.has(req.id))) {
+      duplicates.push({
+        ...offer,
+        duplicateReason: seenUrls.has(offer.url) ? "url" : "req_id",
+        reqId: req.id,
+      });
+      continue;
+    }
+    seenUrls.add(offer.url);
+    if (req.id) seenReqIds.add(req.id);
+    const possibleDuplicate = seenCompanyRoles.has(key);
+    if (possibleDuplicate) possibleDuplicates.push(offer);
+    seenCompanyRoles.add(key);
+    kept.push({
+      ...offer,
+      key,
+      reqId: req.id,
+      possibleDuplicate,
+      ...scoreSourcedOffer(offer, config),
+    });
+  }
+
+  return { kept, filteredTitle, filteredLocation, duplicates, possibleDuplicates, invalid };
+}
+
+export function extractReqId(rawUrl = "") {
+  try {
+    const url = new URL(rawUrl);
+    const path = url.pathname;
+    const greenhouse = path.match(/\/jobs\/(\d+)/);
+    if (greenhouse)
+      return { provider: "greenhouse", value: greenhouse[1], id: `greenhouse:${greenhouse[1]}` };
+    const ashby = path.match(/\/([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})(?:\/|$)/i);
+    if (ashby)
+      return {
+        provider: "ashby",
+        value: ashby[1].toLowerCase(),
+        id: `ashby:${ashby[1].toLowerCase()}`,
+      };
+    const lever = path.match(/\/([^/]+)$/);
+    if (url.hostname === "jobs.lever.co" && lever)
+      return { provider: "lever", value: lever[1], id: `lever:${lever[1].toLowerCase()}` };
+    const apple = path.match(/\/details\/([0-9-]+)/);
+    if (url.hostname.includes("apple.com") && apple)
+      return { provider: "apple", value: apple[1], id: `apple:${apple[1]}` };
+    const hiringCafe = path.match(/\/job\/([a-z0-9_-]+)/i);
+    if (url.hostname === "hiring.cafe" && hiringCafe)
+      return {
+        provider: "hiringcafe",
+        value: hiringCafe[1].toLowerCase(),
+        id: `hiringcafe:${hiringCafe[1].toLowerCase()}`,
+      };
+    const linkedIn = path.match(/\/jobs\/view\/(\d+)/);
+    if (url.hostname.endsWith("linkedin.com") && linkedIn)
+      return { provider: "linkedin", value: linkedIn[1], id: `linkedin:${linkedIn[1]}` };
+  } catch {
+    return { provider: null, value: null, id: null };
+  }
+  return { provider: null, value: null, id: null };
+}
+
+export async function scanCompanies(config, { fetchImpl = fetch, companyFilter = null } = {}) {
+  const companies = (config.tracked_companies || [])
+    .filter((entry) => entry && entry.enabled !== false)
+    .filter(
+      (entry) => !companyFilter || entry.name.toLowerCase().includes(companyFilter.toLowerCase())
+    );
+
+  const results = [];
+  const errors = [];
+
+  for (const company of companies) {
+    const provider = inferProvider(company);
+    if (!provider) {
+      errors.push({ company: company.name, error: "no supported provider inferred" });
+      continue;
+    }
+    try {
+      const jobs = await fetchProvider(provider, company, fetchImpl);
+      results.push(...jobs.map((job) => ({ ...job, source: `${provider}-api` })));
+    } catch (error) {
+      errors.push({ company: company.name, error: error.message });
+    }
+  }
+
+  return { offers: results, errors };
+}
+
+export async function fetchProvider(provider, entry, fetchImpl = fetch) {
+  if (provider === "ashby") return fetchAshby(entry, fetchImpl);
+  if (provider === "greenhouse") return fetchGreenhouse(entry, fetchImpl);
+  if (provider === "lever") return fetchLever(entry, fetchImpl);
+  if (provider === "workable") return fetchWorkable(entry, fetchImpl);
+  if (provider === "smartrecruiters") return fetchSmartRecruiters(entry, fetchImpl);
+  if (provider === "rss") return fetchRss(entry, fetchImpl);
+  throw new Error(`unsupported provider: ${provider}`);
+}
+
+// Fetch + parse a single RSS source (a config/search-sources.yml entry with an
+// rssUrl, or any { rssUrl | url }) into scanner offers. This is the runtime
+// consumer for the rss.mjs provider.
+export async function fetchRss(source = {}, fetchImpl = fetch) {
+  const url = source.rssUrl || source.url;
+  if (!url) return [];
+  const res = await fetchImpl(url);
+  const xml = typeof res === "string" ? res : await res.text();
+  const { items } = parseFeed(xml);
+  return feedItemsToOffers(items, { source });
+}
+
+// Scan the enabled RSS-bearing sources from a parsed config/search-sources.yml.
+// This is what wires setup-searches output into the sourced sweep: any enabled
+// source with source_type "rss" or an rssUrl is fetched and folded into the scan.
+// Non-fetchable source types (browser/auth aggregators like HiringCafe, Wellfound,
+// authenticated LinkedIn/Indeed) are driven by the agent's session browser per the
+// Browser Automation Contract and are intentionally skipped here.
+export async function scanSearchSources(searchSources, { fetchImpl = fetch } = {}) {
+  const sources = (searchSources?.sources || searchSources?.searches || [])
+    .filter((s) => s && s.enabled !== false)
+    .filter((s) => s.source_type === "rss" || s.rssUrl);
+
+  const results = [];
+  const errors = [];
+  for (const source of sources) {
+    try {
+      const offers = await fetchRss(source, fetchImpl);
+      results.push(
+        ...offers.map((offer) => ({ ...offer, source: source.label || offer.source || "rss" }))
+      );
+    } catch (error) {
+      errors.push({ company: source.label || source.provider || "rss", error: error.message });
+    }
+  }
+  return { offers: results, errors };
+}
+
+async function fetchJson(url, fetchImpl, options = {}) {
+  const response = await fetchWithTimeout(url, fetchImpl, options);
+  if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
+  return response.json();
+}
+
+async function fetchText(url, fetchImpl, options = {}) {
+  const response = await fetchWithTimeout(url, fetchImpl, options);
+  if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
+  return response.text();
+}
+
+async function fetchWithTimeout(
+  url,
+  fetchImpl,
+  { timeoutMs = DEFAULT_TIMEOUT_MS, retries = 0 } = {}
+) {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetchImpl(url, { signal: controller.signal, redirect: "follow" });
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries) await delay(500 * (attempt + 1));
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+  throw lastError;
+}
+
+async function fetchAshby(entry, fetchImpl) {
+  const slug = new URL(entry.careers_url).pathname.split("/").filter(Boolean)[0];
+  const url = `https://api.ashbyhq.com/posting-api/job-board/${slug}?includeCompensation=true`;
+  const json = await fetchJson(url, fetchImpl, { timeoutMs: 30000, retries: 2 });
+  const jobs = Array.isArray(json?.jobs) ? json.jobs : [];
+  return jobs.map((job) => ({
+    title: job.title || "",
+    url: job.jobUrl || "",
+    company: entry.name,
+    location: job.location || "",
+    comp: formatAshbyComp(job.compensation),
+    bodyText: job.descriptionPlain || htmlToText(job.descriptionHtml || ""),
+  }));
+}
+
+async function fetchGreenhouse(entry, fetchImpl) {
+  const apiUrl = entry.api || greenhouseApiFromCareersUrl(entry.careers_url);
+  if (!apiUrl) throw new Error("cannot derive Greenhouse API URL");
+  const json = await fetchJson(withQueryParam(apiUrl, "content", "true"), fetchImpl);
+  const jobs = Array.isArray(json?.jobs) ? json.jobs : [];
+  return jobs.map((job) => ({
+    title: job.title || "",
+    url: job.absolute_url || "",
+    company: entry.name,
+    location: job.location?.name || "",
+    comp: "",
+    bodyText: htmlToText(job.content || ""),
+  }));
+}
+
+function withQueryParam(rawUrl, key, value) {
+  const url = new URL(rawUrl);
+  url.searchParams.set(key, value);
+  return url.toString();
+}
+
+function greenhouseApiFromCareersUrl(rawUrl = "") {
+  const match = rawUrl.match(
+    /(?:job-boards(?:\.eu)?\.greenhouse\.io|boards\.greenhouse\.io)\/([^/?#]+)/
+  );
+  return match ? `https://boards-api.greenhouse.io/v1/boards/${match[1]}/jobs` : null;
+}
+
+async function fetchLever(entry, fetchImpl) {
+  const slug = new URL(entry.careers_url).pathname.split("/").filter(Boolean)[0];
+  const jobs = await fetchJson(`https://api.lever.co/v0/postings/${slug}`, fetchImpl);
+  return Array.isArray(jobs)
+    ? jobs.map((job) => ({
+        title: job.text || "",
+        url: job.hostedUrl || "",
+        company: entry.name,
+        location: job.categories?.location || "",
+        comp: formatLeverComp(job),
+        bodyText: [
+          job.descriptionBodyPlain || job.descriptionPlain,
+          job.additionalPlain,
+          job.salaryDescriptionPlain,
+          ...(Array.isArray(job.lists)
+            ? job.lists.map((list) => `${list.text || ""}\n${list.content || ""}`)
+            : []),
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
+      }))
+    : [];
+}
+
+async function fetchWorkable(entry, fetchImpl) {
+  const slug = new URL(entry.careers_url).pathname.split("/").filter(Boolean)[0];
+  const text = await fetchText(`https://apply.workable.com/${slug}/jobs.md`, fetchImpl);
+  return parseWorkableMarkdown(text, entry.name);
+}
+
+export function parseWorkableMarkdown(text, companyName) {
+  const jobs = [];
+  for (const line of String(text).split("\n")) {
+    if (!line.startsWith("|") || !line.includes("[View]")) continue;
+    const cols = line.split("|").map((col) => col.trim());
+    const title = cols[1];
+    const location = cols[3] || "";
+    const urlMatch = line.match(/\[View\]\(([^)]+)\)/);
+    let url = urlMatch ? urlMatch[1] : "";
+    if (url.endsWith(".md")) url = url.slice(0, -3);
+    if (!title || title === "Title" || !url) continue;
+    jobs.push({ title, url, company: companyName, location, comp: "" });
+  }
+  return jobs;
+}
+
+const SR_PAGE_LIMIT = 100;
+const SR_MAX_PAGES = 20;
+
+async function fetchSmartRecruiters(entry, fetchImpl) {
+  const slug = new URL(entry.careers_url).pathname.split("/").filter(Boolean)[0];
+  const allJobs = [];
+  let offset = 0;
+  let totalElements = null;
+
+  for (let page = 0; page < SR_MAX_PAGES; page++) {
+    const url = `https://api.smartrecruiters.com/v1/companies/${slug}/postings?limit=${SR_PAGE_LIMIT}&offset=${offset}&status=PUBLIC`;
+    const json = await fetchJson(url, fetchImpl);
+    const jobs = Array.isArray(json?.content) ? json.content : [];
+    allJobs.push(...jobs);
+
+    if (totalElements === null && json?.totalElements != null) {
+      totalElements = Number(json.totalElements);
+    }
+
+    const fetched = allJobs.length;
+    const done =
+      jobs.length < SR_PAGE_LIMIT || (totalElements !== null && fetched >= totalElements);
+    if (done) break;
+
+    offset += SR_PAGE_LIMIT;
+    if (page === SR_MAX_PAGES - 1) {
+      console.warn(
+        `[sourced-scanner] SmartRecruiters ${slug}: stopped after ${SR_MAX_PAGES} pages` +
+          (totalElements !== null ? ` (${totalElements - fetched} postings may be missing)` : "")
+      );
+    }
+  }
+
+  return allJobs.map((job) => {
+    const loc = job.location || {};
+    const location =
+      loc.fullLocation ||
+      [loc.city, loc.region, loc.country, loc.remote ? "Remote" : ""].filter(Boolean).join(", ");
+    const titleSlug = (job.name || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    return {
+      title: job.name || "",
+      url: job.ref
+        ? String(job.ref).replace(
+            "https://api.smartrecruiters.com/v1/companies/",
+            "https://jobs.smartrecruiters.com/"
+          )
+        : `https://jobs.smartrecruiters.com/${slug}/${job.id}-${titleSlug}`,
+      company: entry.name,
+      location,
+      comp: "",
+      bodyText: htmlToText(
+        [
+          job.jobAd?.sections?.jobDescription?.text,
+          job.jobAd?.sections?.qualifications?.text,
+          job.jobAd?.sections?.benefits?.text,
+        ]
+          .filter(Boolean)
+          .join("\n\n")
+      ),
+    };
+  });
+}
+
+function formatAshbyComp(compensation) {
+  if (!compensation) return "";
+  if (typeof compensation === "string") return compensation;
+  if (compensation.scrapeableCompensationSalarySummary)
+    return compensation.scrapeableCompensationSalarySummary;
+  if (compensation.compensationTierSummary) return compensation.compensationTierSummary;
+  const parts = [];
+  const items = [
+    ...(Array.isArray(compensation) ? compensation : [compensation]),
+    ...(Array.isArray(compensation.summaryComponents) ? compensation.summaryComponents : []),
+    ...(Array.isArray(compensation.compensationTiers)
+      ? compensation.compensationTiers.flatMap((tier) => tier.components || [])
+      : []),
+  ];
+  for (const item of items) {
+    const min = item?.minValue ?? item?.min;
+    const max = item?.maxValue ?? item?.max;
+    const currency = item?.currencyCode || item?.currency || "";
+    if (min || max) parts.push(`${currency} ${min || "?"}-${max || "?"}`.trim());
+  }
+  return parts.join("; ");
+}
+
+function formatLeverComp(job = {}) {
+  const parts = [];
+  if (job.salaryDescriptionPlain) parts.push(job.salaryDescriptionPlain);
+  const min = job.salaryRange?.min;
+  const max = job.salaryRange?.max;
+  const currency = job.salaryRange?.currency || "";
+  const interval = job.salaryRange?.interval || "";
+  if (min || max) parts.push(`${currency} ${min || "?"}-${max || "?"} ${interval}`.trim());
+  return parts.join("\n\n");
+}
+
+// Load the company-watchlist scanner config. When no config exists the scanner
+// stays domain-neutral: an empty, field-neutral config (no tracked companies, no
+// title/location bias) so a zero-config install scans nothing rather than inheriting
+// anyone's role/geography/company defaults. Personal scan config lives in the
+// gitignored config/sourced-scan.json (see config/sourced-scan.example.json).
+export function loadScannerConfig(path = userPath({}, "config/sourced-scan.json")) {
+  if (!existsSync(path)) {
+    return { title_filter: {}, location_filter: null, tracked_companies: [] };
+  }
+  return JSON.parse(readFileSync(path, "utf8"));
+}

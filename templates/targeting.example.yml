@@ -1,0 +1,119 @@
+# Illustrative example — "Jane Candidate" is a TECH demo persona. Every value
+# here is an example, NOT a default the code assumes. Replace all of it with
+# YOUR field's roles, signals, and exclusions: a nurse, a truck driver, and an
+# AI engineer each write their own. The code reads these; it has no built-in
+# preference for tech.
+
+role_buckets:
+  - name: "Primary"
+    priority: "primary"
+    titles:
+      - "Forward Deployed Engineer"
+      - "Applied AI Engineer"
+    notes: "Roles where the candidate's core edge is central."
+  - name: "Secondary"
+    priority: "secondary"
+    titles:
+      - "Solutions Engineer"
+      - "Solutions Architect"
+    notes: "Credible roles with caveats."
+
+keep_signals:
+  - "customer-facing deploy-and-adopt"
+  - "prototype-to-production"
+  - "RAG, agents, tool use, or workflow automation"
+
+cut_signals:
+  - "core platform SWE"
+  - "ML research or model training"
+  - "DevRel"
+
+excluded_companies:        # companies to hard-penalize at triage (Jane's examples)
+  - "Palantir"
+  - "Tesla"
+  - "SpaceX"
+  - "xAI"
+  - "Neuralink"
+
+tracked_companies:         # seeds a Lever board source per company (jobs.lever.co/<slug>); domain-neutral
+  - "Ramp"                 # only ATS-on-Lever companies resolve; others are skipped harmlessly
+  - "Brex"
+
+degree_policy: "Do not fabricate education. Apply despite degree requirements if the candidate wants that policy."
+
+# --- NEW optional fields (Foundation B) ---
+
+fit_bands:                # single source for FIT thresholds; omit to use defaults (85/65)
+  high_min: 85
+  med_min: 65
+  # fit_floor: 80         # optional: auto-drop (hard CUT) roles scoring below this,
+                          # so low-fit roles never reach manual triage. Omit to disable.
+
+role_families:            # override outcome role-family taxonomy; omit to derive from role_buckets names
+  - name: "fde"
+    patterns:
+      - "forward deployed"
+      - "fde"
+  - name: "applied-ai"
+    patterns:
+      - "applied ai"
+      - "ai engineer"
+      - "ml engineer"
+  - name: "solutions"
+    patterns:
+      - "solutions engineer"
+      - "solutions architect"
+      - "sa "
+  - name: "iam-security"
+    patterns:
+      - "identity"
+      - "iam"
+      - "security engineer"
+  - name: "product"
+    patterns:
+      - "product manager"
+      - "pm "
+  - name: "software"
+    patterns:
+      - "software engineer"
+      - "swe"
+      - "backend"
+      - "frontend"
+      - "full stack"
+
+reevaluation:             # thresholds that trigger reevaluate-strategy
+  rejection_total: 7      # default 7; trigger when total rejections reach this
+  rejection_per_family: 3 # default 3; trigger when one family/fit-band hits this
+
+legitimacy:               # OPTIONAL — posting-legitimacy gate (ghost/evergreen/stale).
+                          # All fields optional; sensible field-agnostic defaults in code.
+                          # A "suspect" verdict flags the posting for REVIEW, never an auto-cut.
+  enabled: true           # set false to skip the legitimacy check entirely
+  max_posting_age_days: 60 # older than this → "stale" (a mild signal)
+  min_body_chars: 500     # JD shorter than this → "thin JD" (a mild signal)
+  # evergreen_phrases / recruiter_farm_phrases EXTEND the built-in defaults
+  # (universal ghost-job tells like "talent community", "on behalf of our client").
+  # Add field-specific tells here; you don't need to repeat the defaults.
+  evergreen_phrases: []
+  recruiter_farm_phrases: []
+
+follow_up:                # OPTIONAL — per-kind reminder engine config.
+                          # Code defaults (all enabled, conventional timings) apply
+                          # when this block is omitted entirely.
+  app_nudge:
+    enabled: true         # set false to never chase cold applications with no response
+    after_days: 7         # nudge when an applied/submitted application gets no reply after this many days
+    max_count: 2          # stop nudging once this many follow-ups have been sent (app.followUp.sentCount); default 2
+  post_interview:
+    enabled: true         # set false to skip follow-ups after interviews go quiet
+    after_days: 5         # nudge when an interview-stage application goes silent after this many days
+  waiting_stale:
+    enabled: true         # set false to ignore stale "waiting" email threads
+    after_days: 5         # flag a waiting thread whose last outbound is older than this many days
+  interview_thank_you:
+    enabled: true         # set false to disable thank-you note reminders after interviews
+    after_hours: 24       # surface the thank-you reminder this many hours after a logged interview
+  needs_reply:
+    enabled: true         # set false to stop flagging comms where someone is waiting on your reply
+  comm_due:
+    enabled: true         # set false to ignore explicitly scheduled actions that have come due

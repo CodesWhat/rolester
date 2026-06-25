@@ -1,0 +1,310 @@
+---
+name: research-boards
+description: Web-search + legitimacy-screen NEW job boards for the candidate's domain/role families → propose adding to search-sources.yml, confirm-first.
+tier_1_inputs: [profile.candidate.domain, targeting role families, STEP 0 dedup set, modes verdict]
+tier_2_inputs: [per-board WebFetch bodies]
+---
+
+# research-boards
+
+Discovers new job boards and aggregators relevant to the candidate's domain and role
+families. Proposes additions to `config/search-sources.yml`. Never writes a source
+without explicit user confirmation. Never duplicates an already-configured board.
+
+> **Runs under AGENTS.md.** These contracts bind without being restated here: Privacy Invariant (`current_base` never outbound), Honesty Firewall, Placeholder/Bracket Ban, Gate Write-back, Domain-Neutral Rule, Browser Automation Contract, Activity Pulse logging, Tracker verify+re-render, and Sent-Clears-Draft. Inline reminders at point-of-use are intentional; standalone restatements point back to the relevant AGENTS.md section.
+
+---
+
+## Inputs
+
+| File | Fields used |
+|---|---|
+| `candidate/targeting.yml` | `role_buckets[].name`, `role_buckets[].titles`, `role_buckets[].priority` |
+| `candidate/profile.yml` | `candidate.domain`, `location.remote`, `location.home` |
+| `config/search-sources.yml` | `searches[].label`, `searches[].target`, `searches[].url`, `searches[].rssUrl` — build the already-configured URL+label set to dedupe against |
+
+---
+
+## STEP 0 — Load context
+
+Run `npm run doctor` and confirm it exits clean. If it fails, stop and report.
+
+Check usage mode:
+
+```
+npm run modes -- allows research:boards
+```
+
+If it returns `skip`, do not run board discovery by default; explain that lean usage
+mode treats board discovery as discretionary and offer to proceed only if the user
+explicitly overrides. If it returns `run`, continue.
+
+Read the three input files above. Extract:
+
+- **Domain** — `profile.candidate.domain` (e.g. "software engineering", "finance", "logistics")
+- **Role families** — the `name` of every bucket in `targeting.role_buckets` (not titles; families drive query breadth)
+- **Remote posture** — `profile.location.remote` (drives relevance of remote-focused boards)
+- **Configured URLs** — collect every `url`, `rssUrl`, and `target` value already present in `config/search-sources.yml`; also collect every `label` value. This is the dedup set — no board whose root domain or label already appears here will be proposed.
+
+Print a one-line summary of detected inputs before proceeding:
+
+```
+Domain: <domain> | Role families: <comma-list> | Remote: <yes/no/hybrid> | Existing sources: <N>
+```
+
+---
+
+## STEP 1 — Web-search for boards
+
+Run WebSearch using domain-neutral query templates. Substitute `candidate.domain` and
+`role_buckets[].name` into each template — never use hardcoded industry names.
+
+**Query templates** (run a selection; skip redundant permutations):
+
+- `"<role family> job board <year>"`
+- `"<candidate domain> job aggregator"`
+- `"niche job board <candidate domain>"`
+- `"<role family> jobs remote board site:*.io OR site:*.com -linkedin -indeed"`
+- `"best job boards <candidate domain> <year>"`
+- `"<role family> <remote if remote=true> job listings site"`
+
+Run at least 3 distinct queries covering different role families or angles. Collect
+the distinct board names and URLs mentioned in results. Ignore individual job posting
+URLs — you want board root URLs (e.g. `https://example.com`, not `https://example.com/jobs/123`).
+
+Build a raw candidate list: name, root URL, apparent source type (rss / url-query / browser).
+
+---
+
+## STEP 2 — Legitimacy screen
+
+**[DELEGATE: subagent]** Each candidate board screens independently — fan out one subagent
+per board (parallel `WebFetch`, no one-browser limit), each returning the verdict block
+(`{board, url, verdict: added|rejected|borderline, reason, sampleListing}`) using the
+REQUIRE/REJECT gate below. The orchestrator holds the STEP 0 dedup set and confirms
+write-back in STEP 4 — subagents only screen; they do not re-gate, read AGENTS.md, or add a
+source. Degrade to inline sequential screening with no subagent primitive. See the
+**Delegation Contract** in AGENTS.md.
+
+For each candidate board, WebFetch its root (or a known jobs listing path if the root
+redirects). Apply the following gate — adapted from evaluate-job STEP 3.5 to screen a
+SOURCE, not a posting:
+
+**REQUIRE (all three must pass to propose):**
+
+1. **Real, specific, dated listing** — the page must show at least one job posting with
+   a company name, role title, and a discernible post date. An index page of clearly
+   dated listings qualifies. A "join our talent community" landing page does not.
+2. **Domain relevance** — at least one visible listing must be plausibly relevant to
+   `candidate.domain` or one of the candidate's role families. A general board is
+   acceptable only if its category/filter for the domain is surfaced.
+3. **Not already configured** — the board's root domain must not match any URL already
+   in the dedup set from STEP 0.
+
+**REJECT if any of the following apply:**
+
+- The page contains no dated listings (evergreen landing page, "talent pool", "future
+  openings" language, or a "sign up to be notified" gate with no visible jobs).
+- The site is clearly a staffing-agency/recruiter-farm aggregator with no direct
+  employer postings and poor signal-to-noise.
+- The root domain matches an already-configured source.
+- The page returns a 4xx/5xx or a redirect loop.
+
+A board with mixed signals (one strong positive + one mild negative) is a
+`LEGITIMACY: borderline` — include it in the proposed table marked `(borderline)` with
+a brief reason; let the user decide.
+
+Record verdict for every board screened: `added` | `rejected: <reason>` | `borderline`.
+
+---
+
+## STEP 3 — Present proposed-boards table
+
+Present the results before writing anything:
+
+```
+## Boards reviewed: <N total screened>
+
+| # | Board | URL | Source type | Why relevant | Status |
+|---|---|---|---|---|---|
+| 1 | <name> | <url> | url-query / rss / browser | <one phrase> | NEW |
+| 2 | <name> | <url> | browser | <one phrase> | NEW (borderline: <reason>) |
+| 3 | <name> | <url> | rss | <one phrase> | REJECTED: <reason> |
+```
+
+- `url-query` — the board supports URL-based query-string filtering (suitable for `--add-url` with a search URL)
+- `rss` — the board exposes an RSS/Atom feed
+- `browser` — JS-rendered; requires browser fetch
+
+For boards that are RSS or have a filterable search URL, include the specific URL with
+embedded filters (domain / role family keyword pre-applied) in the "Why relevant" column
+when you can determine it from the fetch.
+
+Do not add anything to `config/search-sources.yml` yet.
+
+---
+
+## STEP 3.5 — Classify by confidence tier
+
+Before presenting the table, classify each passing board into one of two tiers:
+
+**HIGH-CONFIDENCE** — a board meets ALL of the following:
+- Shows real dated listings (visible post date, company name, role title on the listing page)
+- At least one listing is from an identifiable real employer (not a recruiter farm or ghost posting)
+- Canonical root URL resolves cleanly (no redirect loop, no 4xx/5xx)
+- No sign of aggregator spam (low-signal job-title soup with no employer attribution)
+- Stable host (domain has been around; not a brand-new or parked domain)
+
+**BORDERLINE / MEDIUM** — any board that passes the STEP 2 gate but fails one or more
+high-confidence criteria above. Requires confirm-first regardless of any user posture.
+
+Record each board's tier (`high` or `borderline/medium`) alongside the STEP 2 verdict.
+This tier drives the STEP 4 auto-add logic below.
+
+---
+
+## STEP 4 — Add boards (confirm-first by default; opt-in auto-add for high-confidence)
+
+**Default behavior is confirm-first for everything.** Auto-add is only active when the
+user has explicitly opted in during this session by saying something like "auto-add
+high-confidence boards" or "yes, add high-confidence ones without asking."
+
+**Without opt-in (default):** Wait for explicit user confirmation before writing any
+source, regardless of tier. Present the proposed-boards table from STEP 3 and ask which
+boards the user wants added.
+
+**With opt-in (user has stated "auto-add high-confidence boards" or equivalent):**
+- HIGH-CONFIDENCE boards: add immediately without per-board confirmation. Report each
+  addition as it happens.
+- BORDERLINE / MEDIUM boards: always confirm-first, even with auto-add opted in. Present
+  them as a separate group and wait for explicit approval.
+
+For each board being added (auto or confirmed), use the existing searches CLI:
+
+```
+npm run searches -- --add-url "<url>" --label "<label>"
+```
+
+Where `<url>` is:
+- For `url-query` boards: the pre-filtered search URL (domain/role terms embedded if
+  available), so the embedded filters are preserved exactly as parsed.
+- For `rss` boards: the feed URL.
+- For `browser` boards: the board root or listing page URL.
+
+And `<label>` is the human-readable board name from the proposed table.
+
+**Registry write-back:** After any board is added (auto or confirmed), record it in the
+`docs/SOURCES.md` Curated Board Registry table by appending a row with:
+- Board name
+- Domain tag derived from `candidate.domain` and the board's scope
+- Type (aggregator / niche-board / RSS / browser)
+- Confidence tier (`high` or `borderline`)
+- Status `vetted`
+- URL and a brief note including "NOT a field-neutral shipped default" if it is domain-specific
+
+This keeps the registry the durable curated list so future `setup-searches` runs can
+offer it as a starter menu.
+
+After adding all boards, run:
+
+```
+npm run searches -- --list
+```
+
+Then run:
+
+```
+npm run doctor
+```
+
+Confirm `config/search-sources.yml` passes schema validation before reporting done.
+
+**Optional — record a board-discovery audit note:**
+
+```
+npm run research -- record "boards" --name board-discovery-<yyyy-mm-dd> --file <draft.md> --write
+```
+
+where `<draft.md>` contains:
+
+```markdown
+---
+type: board-discovery-log
+company: "n/a"
+fetchedAt: "<today ISO>"
+---
+## Boards reviewed
+- <name> (<url>) — added | rejected: <reason>
+```
+
+The draft filename must not conflict with an existing research artifact. This step is
+optional — skip if the user did not request it and no persistent audit record is needed.
+
+When the audit note is written (or when boards are added even without an audit note), log the discovery to the Activity Pulse feed (see **Activity Pulse** in AGENTS.md):
+
+```
+npm run activity -- append --type research --actor agent \
+  --title "Discovered <N> job boards" --summary "<one-line: what kind of boards / for what track>" --write
+```
+
+---
+
+## Scope boundary
+
+`research-boards` discovers, screens, proposes, and (on confirmation) adds SOURCES to
+`config/search-sources.yml`. It does not:
+
+- scan sources for job postings (that is `search-jobs`)
+- evaluate individual postings for fit (that is `evaluate-job`)
+- tailor, fill, or submit applications
+
+The artifact this skill produces is entries in `config/search-sources.yml`. Hand off to
+`search-jobs` when the user wants to run the scan.
+
+---
+
+## Required output block
+
+Emit at the end of every run (before or after confirmation):
+
+```
+BOARDS FOUND: <N screened>
+PROPOSED (new): <N> (<N> high-confidence, <N> borderline/medium)
+REJECTED: <N> (reasons: <comma-list of distinct rejection categories>)
+AUTO-ADDED: <comma-list of labels auto-added, or "none (opt-in not active)">
+CONFIRMED-ADDED: <comma-list of labels added after explicit confirmation, or "awaiting confirmation">
+REGISTRY-UPDATED: <yes | no>
+```
+
+---
+
+## Rules
+
+- **Domain-neutral.** No hardcoded board names, industries, or aggregator brands appear
+  in this skill's prose. Every board name derives from web-search results for the
+  candidate's actual domain and role families.
+- **Confirm-first is the default.** Never touch `config/search-sources.yml` without the
+  user explicitly approving additions, unless the user has opted into auto-add for
+  high-confidence boards in the current session.
+- **Auto-add is opt-in only.** Auto-add activates only when the user explicitly says
+  "auto-add high-confidence boards" (or equivalent). Without that statement, all writes
+  require confirmation regardless of tier.
+- **Borderline/medium always confirm-first.** Even with auto-add opted in, any board
+  below the high-confidence bar requires explicit user approval before being added.
+- **Dedup.** Never propose a board whose root domain or label already appears in the
+  configured sources loaded in STEP 0.
+- **Quality gate.** A board must show at least one real, dated, domain-relevant listing
+  to be proposed. An evergreen landing page or talent-pool gate is a rejection.
+- **Use the existing CLI.** Additions go through `npm run searches -- --add-url "<url>" --label "<label>"`. Do not edit `config/search-sources.yml` directly.
+- **Registry write-back.** Every board added (auto or confirmed) must be recorded in
+  `docs/SOURCES.md` Curated Board Registry so the registry stays current.
+
+---
+
+## Intent → Command
+
+| Intent | Command |
+|---|---|
+| See currently configured sources | `npm run searches -- --list` |
+| Add a confirmed board URL | `npm run searches -- --add-url "<url>" --label "<label>"` |
+| Health check after additions | `npm run doctor` |

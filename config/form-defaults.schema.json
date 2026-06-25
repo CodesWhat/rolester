@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/form-defaults.schema.json",
+  "title": "Rolester Form Defaults",
+  "type": "object",
+  "required": ["auto_submit"],
+  "additionalProperties": true,
+  "properties": {
+    "source": { "type": "string" },
+    "work_authorization": { "type": "string" },
+    "requires_sponsorship": { "type": "string" },
+    "current_employer": { "type": ["string", "null"] },
+    "current_title": { "type": ["string", "null"] },
+    "expected_base": { "type": ["number", "string", "null"] },
+    "linkedin": { "type": ["string", "null"] },
+    "github": { "type": ["string", "null"] },
+    "portfolio": { "type": ["string", "null"] },
+    "eeo_default": { "type": "string" },
+    "screening_answers": {
+      "description": "Pre-reviewed answers for recurring custom application questions. Keys are normalized question text; values are the exact answer to fill.",
+      "type": "object",
+      "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+    },
+    "confirm_current_role": { "type": "boolean" },
+    "confirm_current_disclosure": { "type": "boolean" },
+    "auto_submit": { "type": "boolean" }
+  }
+}

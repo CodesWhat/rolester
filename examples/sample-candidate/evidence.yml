@@ -1,0 +1,96 @@
+claims:
+  - id: "ai-workflow-001"
+    claim: "Shipped a production RAG pipeline that reduced analyst research time by 60%."
+    evidence: "At Meridian Analytics (2022–2024), Riley designed and deployed a retrieval-augmented generation system on top of an internal document corpus (~4 M pages). The system surfaced cited excerpts to analysts, replacing a 3-hour manual triage process with a sub-60-second query flow. Went from prototype in week 2 to production in week 8, serving 200+ daily active internal users."
+    metrics:
+      - "60% reduction in analyst research cycle time (measured by ticket close rate before/after)"
+      - "200+ daily active internal users at steady state"
+      - "Prototype to production in 8 weeks"
+    links:
+      - "https://meridian-analytics.example/blog/ai-research-assistant"
+    role_signals:
+      - "prototype-to-production"
+      - "RAG, agents, tool use, or workflow automation"
+      - "LLM integration or AI product development"
+    allowed_wording:
+      - "production RAG pipeline"
+      - "retrieval-augmented generation"
+      - "deployed LLM workflow"
+    forbidden_wording:
+      - "model training"
+      - "fine-tuned a model"
+
+  - id: "customer-deploy-002"
+    claim: "Led customer-facing deployment of an AI scheduling agent at three enterprise accounts."
+    evidence: "As a forward-deployed engineer at Pulsar Systems (2024–present), Riley owns the full deployment lifecycle for enterprise customers adopting the AI scheduling product — discovery, config, integration with customer systems (Salesforce, Greenhouse, Workday), and hypercare. Ran three concurrent deployments in Q3 2024; all went live on schedule with no P1 incidents."
+    metrics:
+      - "3 enterprise deployments completed on schedule in a single quarter"
+      - "Zero P1 incidents across all three go-lives"
+      - "Average time-to-value reduced from 14 weeks to 9 weeks vs. prior cohort"
+    links: []
+    role_signals:
+      - "customer-facing deploy-and-adopt"
+      - "prototype-to-production"
+      - "cross-functional collaboration with non-engineering stakeholders"
+    allowed_wording:
+      - "forward-deployed engineer"
+      - "enterprise deployment"
+      - "customer-facing AI rollout"
+    forbidden_wording:
+      - "sales engineer"
+      - "account executive"
+
+  - id: "agentic-tool-003"
+    claim: "Built a multi-step tool-use agent that automated internal procurement workflows."
+    evidence: "At Meridian Analytics, Riley prototyped and shipped an agentic workflow (Claude API + custom tools) that parsed vendor quotes, looked up budget codes in the internal ERP, and drafted approval emails. Reduced procurement admin from ~4 hours/week per manager to under 30 minutes. The agent handles edge cases via a human-in-the-loop confirmation step before any write action."
+    metrics:
+      - "~87% reduction in procurement admin time per manager"
+      - "Handles 95% of routine quote-to-approval flows without human intervention"
+    links: []
+    role_signals:
+      - "RAG, agents, tool use, or workflow automation"
+      - "LLM integration or AI product development"
+      - "prototype-to-production"
+    allowed_wording:
+      - "agentic workflow"
+      - "tool-use agent"
+      - "multi-step LLM automation"
+    forbidden_wording:
+      - "RPA"
+      - "scripted automation"
+
+  - id: "staff-mentorship-004"
+    claim: "Mentored three engineers from mid-level to senior in 18 months while maintaining IC output."
+    evidence: "During a period of rapid growth at Meridian Analytics (2023), Riley took on informal tech-lead responsibilities — weekly 1:1s, code review mentorship, and pairing on system design for three engineers on the team. All three received senior promotions within 18 months. Riley continued shipping at full IC capacity throughout."
+    metrics:
+      - "3 engineers promoted to senior level within 18 months"
+      - "Maintained individual shipping cadence (18 significant PRs merged in same period)"
+    links: []
+    role_signals:
+      - "cross-functional collaboration with non-engineering stakeholders"
+    allowed_wording:
+      - "informal tech lead"
+      - "mentored engineers to senior"
+      - "player-coach"
+    forbidden_wording:
+      - "managed a team"
+      - "direct reports"
+
+  - id: "open-source-005"
+    claim: "Maintains an open-source LLM evaluation library with 1.2k GitHub stars."
+    evidence: "Riley created and maintains llm-eval-bench (github.com/rileychendev/llm-eval-bench), a lightweight Python/Node harness for running repeatable prompt regression tests. Started as an internal tool at Meridian; open-sourced in early 2024. Used by several teams at mid-size AI startups."
+    metrics:
+      - "1,200+ GitHub stars"
+      - "42 external contributors"
+      - "Downloaded ~8,000 times/month via npm and PyPI"
+    links:
+      - "https://github.com/rileychendev/llm-eval-bench"
+    role_signals:
+      - "LLM integration or AI product development"
+      - "RAG, agents, tool use, or workflow automation"
+    allowed_wording:
+      - "open-source maintainer"
+      - "LLM evaluation tooling"
+    forbidden_wording:
+      - "co-founder"
+      - "company project"

@@ -1,0 +1,67 @@
+# Application limits & cooldowns — EXAMPLE (copy to candidate/application-limits.yml).
+#
+# A "gate file": the agent consults it BEFORE applying so it knows whether to
+# apply, hold, or skip a company — and when a slot frees up again. Many employers
+# cap how many roles you can apply to in a rolling window, or enforce a cooldown
+# before re-applying to the same role. Tracking that here stops you from burning a
+# scarce slot on a weak-fit role (or getting auto-rejected for over-applying).
+#
+# This is candidate-private data (gitignored). It is consumed by:
+#   - apply-job      → step-zero gate: blocked/at-cap → hold or skip (offer the bypass)
+#   - evaluate-job   → folds cap status into the ACTION line (apply-now vs hold)
+#   - search-jobs    → deprioritizes / flags capped companies in the sourced queue
+#
+# When the user tells you a new limit ("OpenAI capped me, 5 apps per 180 days"),
+# WRITE it here (confirm first for anything consequential), then re-render so the
+# rest of the system honors it. See AGENTS.md → Gates.
+#
+# Shape per company:
+#   company        display name
+#   scope          what the cap covers: all-roles | department:<name> | same-role
+#   cap            { max: N, window_days: D }   (omit / null if there's no count cap)
+#   cooldown_days  wait this long before re-applying to the same role (when there's no count cap)
+#   status         ok | caution | blocked      (blocked = the cap is hit right now)
+#   hit_on         date the cap was hit (if blocked)
+#   hit_via        the application that tripped it
+#   reapply_rule   human-readable rule for when a slot frees
+#   reapply_after  estimated date a slot frees (recompute from real application dates)
+#   bypass         the only way around it, if any (e.g. recruiter referral)
+#   source         where the rule came from (blocker text / FAQ / posting)
+#   note           guidance for the agent
+
+companies:
+  - company: Aperture Science
+    scope: all-roles            # cap spans every Aperture posting, not per-req
+    cap: { max: 4, window_days: 180 }
+    status: caution             # not hit — known from the careers FAQ
+    reapply_rule: "Up to 4 applications in any rolling 180-day window."
+    bypass: "recruiter referral resets the counter"
+    source: "careers FAQ"
+    note: "You're in an active loop here — don't spend remaining slots on weak fits."
+
+  - company: Tyrell Corporation
+    scope: "department:Engineering"
+    cap: { max: 2, window_days: 60 }
+    status: blocked
+    hit_on: 2026-05-30
+    hit_via: "Applied AI Engineer"
+    reapply_rule: "60 days after the 2nd most recent Engineering-dept application."
+    reapply_after: 2026-07-29   # estimate from hit_on; recompute off the real 2nd-most-recent date
+    source: "blocker text on application"
+    note: "Engineering department only — other departments may still be open."
+
+  - company: Weyland-Yutani
+    scope: same-role
+    cap: null                   # no broad application-count cap
+    cooldown_days: 90           # wait 90 days before re-applying to the same role
+    status: caution
+    source: "job posting fine print"
+    note: "Per-role 90-day cooldown, not a global cap. The long-shot pilot role is gated by this."
+
+  - company: Cyberdyne Systems
+    scope: same-role
+    cooldown_days: 365          # engineering: long same-role-type cooldown
+    status: caution
+    reapply_rule: "Engineering: wait ~12 months before re-applying to the same role type."
+    source: "public FAQ"
+    note: "Already rejected once here — respect the cooldown before another attempt."

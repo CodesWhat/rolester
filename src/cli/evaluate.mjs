@@ -1,0 +1,96 @@
+#!/usr/bin/env node
+// Rolester evaluate CLI — run the body-read gate on a saved job posting.
+//
+// Usage:
+//   npm run evaluate -- <path-to-job.md>     Emit GATE/FIT/COMP/ACTION
+//   npm run evaluate -- <path> --json        Full machine-readable verdict
+//   npm run evaluate -- --help
+//
+// Reads candidate/targeting.yml, candidate/profile.yml, candidate/honesty.yml.
+import { existsSync, readFileSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { evaluateGate, parseSavedJob, renderGateBlock } from "../core/evaluate/gate.mjs";
+import { userPath } from "../core/paths/workspace.mjs";
+import { loadModes } from "../core/profile/modes.mjs";
+import { parseYaml } from "../core/profile/yaml.mjs";
+
+const root = join(fileURLToPath(new URL("../..", import.meta.url)));
+const args = process.argv.slice(2);
+const json = args.includes("--json");
+
+if (args.includes("--help") || args.includes("-h") || args.length === 0) {
+  printHelp();
+  process.exit(args.length === 0 ? 1 : 0);
+}
+
+const jobArg = args.find((a) => !a.startsWith("-"));
+if (!jobArg) {
+  console.error("Provide a saved job markdown path. See: npm run evaluate -- --help");
+  process.exit(1);
+}
+
+const jobPath = isAbsolute(jobArg) ? jobArg : join(process.cwd(), jobArg);
+if (!existsSync(jobPath)) {
+  console.error(`Job file not found: ${jobPath}`);
+  process.exit(1);
+}
+
+const targeting = loadYaml("candidate/targeting.yml");
+const profile = loadYaml("candidate/profile.yml");
+const honesty = loadYaml("candidate/honesty.yml") || {};
+const modes = loadModes({ root });
+if (!targeting || !profile) {
+  console.error("Need candidate/targeting.yml and candidate/profile.yml. Run: npm run ingest");
+  process.exit(1);
+}
+if (!modes.valid) {
+  console.error("candidate/modes.yml is invalid:");
+  for (const e of modes.errors) console.error(`- ${e.path || "(root)"}: ${e.message}`);
+  process.exit(1);
+}
+
+const job = parseSavedJob(readFileSync(jobPath, "utf8"));
+const result = evaluateGate({
+  job,
+  targeting,
+  profile,
+  honesty,
+  modes: modes.data,
+  now: new Date(),
+});
+
+if (json) {
+  console.log(JSON.stringify({ job: { frontmatter: job.frontmatter }, result }, null, 2));
+} else {
+  console.log(renderGateBlock(result));
+  if (result.reasons && result.reasons.length > 1) {
+    console.log("");
+    console.log("Notes:");
+    for (const r of result.reasons) console.log(`- ${r}`);
+  }
+}
+
+// CUT or REVIEW are non-zero so callers/CI can branch on the gate.
+process.exit(result.gate === "KEEP" ? 0 : result.gate === "REVIEW" ? 2 : 1);
+
+// ---------------------------------------------------------------------------
+
+function loadYaml(rel) {
+  const path = userPath({ repoRoot: root }, rel);
+  if (!existsSync(path)) return null;
+  return parseYaml(readFileSync(path, "utf8"));
+}
+
+function printHelp() {
+  console.log(`rolester evaluate — run the body-read gate on a saved job
+
+Usage:
+  npm run evaluate -- <path-to-job.md>     Emit GATE / FIT / COMP / ACTION
+  npm run evaluate -- <path> --json        Full machine-readable verdict
+  npm run evaluate -- --help
+
+Exit codes: 0 KEEP, 2 REVIEW, 1 CUT (or error).
+Inputs: candidate/targeting.yml, candidate/profile.yml, candidate/honesty.yml.`);
+}

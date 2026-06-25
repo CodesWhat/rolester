@@ -1,0 +1,366 @@
+// Resume parser for Rolester — ingests plain-text or markdown resumes into
+// structured data that seeds a candidate's profile and evidence bank.
+// CRITICAL: never invent facts. Only extract what is literally present in the text.
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const EXPERIENCE_KEYWORDS = new Set([
+  "experience",
+  "employment",
+  "work history",
+  "professional experience",
+]);
+const EDUCATION_KEYWORDS = new Set(["education"]);
+const SKILLS_KEYWORDS = new Set(["skills", "technologies", "technical skills"]);
+const PROJECTS_KEYWORDS = new Set(["projects", "selected projects"]);
+const SUMMARY_KEYWORDS = new Set(["summary", "profile", "about", "objective"]);
+
+const ACCOMPLISHMENT_VERBS = new Set([
+  "built",
+  "led",
+  "shipped",
+  "owned",
+  "created",
+  "designed",
+  "implemented",
+  "launched",
+  "automated",
+  "integrated",
+  "reduced",
+  "improved",
+  "increased",
+  "cut",
+  "scaled",
+  "drove",
+  "delivered",
+]);
+
+// Matches http(s) URLs.
+const URL_RE = /https?:\/\/[^\s,<>"')]+/g;
+
+// Matches a first RFC-ish email.
+const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+
+// Matches a plausible phone number in various formats.
+const PHONE_RE = /(?:\+?1[\s\-.]?)?(?:\(\d{3}\)|\d{3})[\s\-.]?\d{3}[\s\-.]?\d{4}/;
+
+// ---------------------------------------------------------------------------
+// Heading classification
+// ---------------------------------------------------------------------------
+
+function classifyHeading(line) {
+  // Strip leading markdown # characters.
+  const text = line.replace(/^#+\s*/, "").trim();
+  const lower = text.toLowerCase();
+
+  if (SUMMARY_KEYWORDS.has(lower)) return "summary";
+  if (EXPERIENCE_KEYWORDS.has(lower)) return "experience";
+  if (EDUCATION_KEYWORDS.has(lower)) return "education";
+  if (SKILLS_KEYWORDS.has(lower)) return "skills";
+  if (PROJECTS_KEYWORDS.has(lower)) return "projects";
+  return "other";
+}
+
+function isHeading(line) {
+  const trimmed = line.trim();
+
+  // Top-level markdown headings (# or ##) are always section boundaries.
+  if (/^#{1,2}\s+\S/.test(trimmed)) return true;
+
+  // H3+ headings: only treat as a section boundary if they match a known keyword.
+  if (/^#{3,}\s+\S/.test(trimmed)) {
+    const lower = trimmed.replace(/^#+\s*/, "").toLowerCase();
+    return (
+      SUMMARY_KEYWORDS.has(lower) ||
+      EXPERIENCE_KEYWORDS.has(lower) ||
+      EDUCATION_KEYWORDS.has(lower) ||
+      SKILLS_KEYWORDS.has(lower) ||
+      PROJECTS_KEYWORDS.has(lower)
+    );
+  }
+
+  // Short ALL-CAPS line (2–40 chars, only uppercase letters, spaces, punctuation).
+  if (/^[A-Z][A-Z\s/&-]{1,39}$/.test(trimmed) && trimmed.length >= 2) {
+    // Must be entirely uppercase letters (ignoring non-alpha), not just short mixed word.
+    const letters = trimmed.replace(/[^A-Za-z]/g, "");
+    if (letters.length > 0 && letters === letters.toUpperCase()) return true;
+  }
+
+  // Known keyword line (any case, no leading #).
+  const lower = trimmed.toLowerCase();
+  if (
+    SUMMARY_KEYWORDS.has(lower) ||
+    EXPERIENCE_KEYWORDS.has(lower) ||
+    EDUCATION_KEYWORDS.has(lower) ||
+    SKILLS_KEYWORDS.has(lower) ||
+    PROJECTS_KEYWORDS.has(lower)
+  )
+    return true;
+
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// Contact extraction helpers
+// ---------------------------------------------------------------------------
+
+function extractEmail(text) {
+  const m = text.match(EMAIL_RE);
+  return m ? m[0] : null;
+}
+
+function extractPhone(text) {
+  const m = text.match(PHONE_RE);
+  return m ? m[0] : null;
+}
+
+function extractUrls(text) {
+  const matches = text.match(URL_RE) || [];
+  // Dedupe while preserving first-seen order.
+  return [...new Set(matches)];
+}
+
+function extractLinkedin(urls) {
+  return urls.find((u) => u.includes("linkedin.com")) || null;
+}
+
+function extractGithub(urls) {
+  return urls.find((u) => u.includes("github.com")) || null;
+}
+
+function extractPortfolio(urls) {
+  return urls.find((u) => !u.includes("linkedin.com") && !u.includes("github.com")) || null;
+}
+
+// Heuristic: the first non-empty line that is not a heading, has no @, no URL,
+// and is not digits-heavy (i.e. not a phone/contact line).
+function extractFullName(lines) {
+  for (const line of lines) {
+    const trimmed = line.trim().replace(/^#+\s*/, "");
+    if (!trimmed) continue;
+    // Skip only known-section headings (Experience, Skills, ...). A title-style
+    // heading like "# Alex Rivera" is usually the candidate's name, so keep it.
+    if (isHeading(line) && classifyHeading(line) !== "other") continue;
+    if (trimmed.includes("@")) continue;
+    if (URL_RE.test(trimmed)) {
+      URL_RE.lastIndex = 0;
+      continue;
+    }
+    URL_RE.lastIndex = 0;
+    // Count digit clusters — a phone/contact line will have many.
+    const digitMatches = trimmed.match(/\d+/g) || [];
+    const totalDigits = digitMatches.reduce((s, m) => s + m.length, 0);
+    if (totalDigits > 4) continue;
+    // Must look like a name: at least two words of only letters, hyphens, apostrophes.
+    if (!/^[A-Za-z][A-Za-z'-]+(?: [A-Za-z][A-Za-z'-]+)+$/.test(trimmed)) continue;
+    return trimmed;
+  }
+  return null;
+}
+
+// Heuristic: find a "City, ST" or "City, Country" fragment near the top.
+// We check only the first 15 lines.
+function extractLocation(lines) {
+  const top = lines.slice(0, 15);
+  for (const line of top) {
+    const trimmed = line.trim();
+    // Look for patterns like "City, ST" or "City, Country" optionally surrounded by other text.
+    const m = trimmed.match(/\b([A-Z][a-zA-Z\s]+),\s*([A-Z]{2}|[A-Z][a-zA-Z]+)\b/);
+    if (m) {
+      // Reject if it looks like an org name embedded in a URL.
+      if (trimmed.includes("://")) continue;
+      return `${m[1].trim()}, ${m[2].trim()}`;
+    }
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Section parsing
+// ---------------------------------------------------------------------------
+
+// Split text blocks on blank lines; trim and drop empties.
+function splitBlocks(lines) {
+  const blocks = [];
+  let current = [];
+  for (const line of lines) {
+    if (line.trim() === "") {
+      if (current.length > 0) {
+        blocks.push(current.join("\n").trim());
+        current = [];
+      }
+    } else {
+      current.push(line);
+    }
+  }
+  if (current.length > 0) {
+    const b = current.join("\n").trim();
+    if (b) blocks.push(b);
+  }
+  return blocks.filter(Boolean);
+}
+
+// Tokenize skills: split on commas, bullets, pipes, newlines; trim; dedupe.
+function tokenizeSkills(lines) {
+  const raw = lines.join("\n");
+  const tokens = raw
+    .split(/[,|•\n]|\s*[-*]\s+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+  return [...new Set(tokens)];
+}
+
+// ---------------------------------------------------------------------------
+// parseResume
+// ---------------------------------------------------------------------------
+
+export function parseResume(text) {
+  const lines = text.split("\n");
+  const allText = text;
+
+  // Collect all URLs from the entire document.
+  const links = extractUrls(allText);
+
+  // Extract contact fields.
+  const email = extractEmail(allText);
+  const phone = extractPhone(allText);
+  const linkedin = extractLinkedin(links);
+  const github = extractGithub(links);
+  const portfolio = extractPortfolio(links);
+  const full_name = extractFullName(lines);
+  const location = extractLocation(lines);
+
+  // Parse sections by walking lines and detecting headings.
+  const buckets = {
+    summary: [],
+    experience: [],
+    education: [],
+    skills: [],
+    projects: [],
+    other: [],
+  };
+
+  let currentBucket = null;
+  let currentLines = [];
+
+  function flushCurrent() {
+    if (currentBucket === null || currentLines.length === 0) {
+      currentLines = [];
+      return;
+    }
+    buckets[currentBucket].push(...currentLines);
+    currentLines = [];
+  }
+
+  for (const line of lines) {
+    if (isHeading(line)) {
+      flushCurrent();
+      currentBucket = classifyHeading(line);
+    } else {
+      if (currentBucket !== null) {
+        currentLines.push(line);
+      }
+    }
+  }
+  flushCurrent();
+
+  // Build sections output.
+  const sections = {
+    experience: splitBlocks(buckets.experience),
+    education: splitBlocks(buckets.education),
+    skills: tokenizeSkills(buckets.skills),
+    projects: splitBlocks(buckets.projects),
+    other: splitBlocks(buckets.other),
+  };
+
+  const summary =
+    buckets.summary.length > 0
+      ? buckets.summary.join(" ").replace(/\s+/g, " ").trim() || null
+      : null;
+
+  return {
+    contact: { full_name, email, phone, location, linkedin, github, portfolio },
+    summary,
+    sections,
+    links,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// deriveProfileSeed
+// ---------------------------------------------------------------------------
+
+export function deriveProfileSeed(parsed) {
+  const src = parsed.contact;
+  const candidate = {};
+  for (const key of [
+    "full_name",
+    "email",
+    "phone",
+    "location",
+    "linkedin",
+    "github",
+    "portfolio",
+  ]) {
+    if (src[key] !== null && src[key] !== undefined) {
+      candidate[key] = src[key];
+    }
+  }
+  return { candidate };
+}
+
+// ---------------------------------------------------------------------------
+// deriveEvidenceSeed
+// ---------------------------------------------------------------------------
+
+// Strip leading bullet markers from a line.
+function stripBullet(line) {
+  return line.replace(/^[\s\-*•]+/, "").trim();
+}
+
+// Determine if a line qualifies as an accomplishment.
+function isAccomplishment(line) {
+  const stripped = stripBullet(line);
+  if (!stripped) return false;
+
+  // Check for a strong past-tense accomplishment verb early in the line.
+  // We look at the first few words (up to 4) to find the verb.
+  const firstWords = stripped.toLowerCase().split(/\s+/).slice(0, 4);
+  for (const word of firstWords) {
+    // Strip any trailing punctuation for matching.
+    const clean = word.replace(/[^a-z]/g, "");
+    if (ACCOMPLISHMENT_VERBS.has(clean)) return true;
+  }
+
+  // Also qualifies if the line contains a number or percentage.
+  if (/\d/.test(stripped)) return true;
+
+  return false;
+}
+
+export function deriveEvidenceSeed(parsed) {
+  const sources = [...parsed.sections.experience, ...parsed.sections.projects];
+
+  const claims = [];
+  let counter = 1;
+
+  for (const block of sources) {
+    const lines = block.split("\n");
+    for (const line of lines) {
+      if (!isAccomplishment(line)) continue;
+      const claim = stripBullet(line);
+      if (!claim) continue;
+      const id = `resume-${String(counter).padStart(3, "0")}`;
+      claims.push({
+        id,
+        claim,
+        evidence: "Source: resume. Verify scope and outcome before use.",
+      });
+      counter++;
+    }
+  }
+
+  return { claims };
+}

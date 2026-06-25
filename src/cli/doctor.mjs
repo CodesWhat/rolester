@@ -1,0 +1,328 @@
+#!/usr/bin/env node
+// Node version guard — same minimum as bin/rolester.mjs.
+{
+  const major = parseInt(process.versions.node.split(".")[0], 10);
+  if (major < 18) {
+    process.stderr.write(
+      `rolester requires Node.js >= 18 (you have ${process.versions.node}) — please upgrade.\n`
+    );
+    process.exit(1);
+  }
+}
+
+import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { automationStatus, loadAutomation } from "../core/automation/consent.mjs";
+import { detectSession } from "../core/automation/session.mjs";
+import { loadStories } from "../core/interview/story-bank.mjs";
+import { displayPath, resolveUserPaths, userPath } from "../core/paths/workspace.mjs";
+import { loadEvidence } from "../core/profile/evidence-writer.mjs";
+import { listLearnings } from "../core/profile/learnings.mjs";
+import { loadModes } from "../core/profile/modes.mjs";
+
+const root = join(fileURLToPath(new URL("../..", import.meta.url)));
+const pathCtx = { repoRoot: root };
+const userPaths = resolveUserPaths(pathCtx);
+const args = process.argv.slice(2);
+const json = args.includes("--json");
+
+const userPrereqs = [
+  {
+    path: "candidate/profile.yml",
+    fix: "Create candidate/profile.yml from templates/profile.example.yml.",
+  },
+  {
+    path: "candidate/targeting.yml",
+    fix: "Create candidate/targeting.yml from templates/targeting.example.yml.",
+  },
+  {
+    path: "candidate/evidence.yml",
+    fix: "Create candidate/evidence.yml from templates/evidence.example.yml.",
+  },
+  {
+    path: "candidate/honesty.yml",
+    fix: "Create candidate/honesty.yml from templates/honesty.example.yml.",
+  },
+  {
+    path: "candidate/form-defaults.yml",
+    fix: "Create candidate/form-defaults.yml from templates/form-defaults.example.yml.",
+  },
+];
+
+const systemPrereqs = [
+  "AGENTS.md",
+  "CLAUDE.md",
+  "DATA_CONTRACT.md",
+  "docs/ROADMAP.md",
+  ".agents/skills/ingest-profile/SKILL.md",
+  ".agents/skills/evaluate-job/SKILL.md",
+  ".agents/skills/email-comms/SKILL.md",
+  "config/profile.schema.json",
+  "config/targeting.schema.json",
+  "config/evidence.schema.json",
+  "config/stories.schema.json",
+  "config/search-sources.schema.json",
+  "config/tracker.schema.json",
+  "config/automation.schema.json",
+  "config/search-sources.example.yml",
+  "templates/AGENTS.md",
+  "templates/CLAUDE.md",
+  "templates/email-thread.md",
+];
+
+const workspaceDirs = [
+  "workspace/jobs",
+  "workspace/tailored",
+  "workspace/intake",
+  "workspace/scan-results",
+  "workspace/comms",
+  "workspace/interview-prep",
+  "workspace/writing-samples",
+  "workspace/research",
+  "workspace/network-leads",
+];
+
+function checkPath(path) {
+  return existsSync(join(root, path));
+}
+
+function checkUserPath(path) {
+  return existsSync(userPath(pathCtx, path));
+}
+
+function ensureUserDir(path) {
+  const fullPath = userPath(pathCtx, path);
+  if (!existsSync(fullPath)) mkdirSync(fullPath, { recursive: true });
+}
+
+// Skills are discoverable by Claude Code only when each source skill in
+// .agents/skills/ also resolves under .claude/skills/ (a symlink or copied
+// tree). `npm run install-skills` creates/repairs that shim.
+function skillNames() {
+  const dir = join(root, ".agents", "skills");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(join(dir, e.name, "SKILL.md")))
+    .map((e) => e.name)
+    .sort();
+}
+const sourceSkills = skillNames();
+const skillsNotDiscoverable = sourceSkills.filter(
+  (name) => !checkPath(join(".claude", "skills", name, "SKILL.md"))
+);
+
+const missingUser = userPrereqs.filter((item) => !checkUserPath(item.path));
+const missingSystem = systemPrereqs.filter((path) => !checkPath(path));
+for (const dir of workspaceDirs) ensureUserDir(dir);
+
+// Per-role-family learning store (candidate/learnings/<family>.md). Informational
+// only — an empty store is normal before any outcomes accrue, so it never fails.
+const learnings = listLearnings({ root });
+
+// STAR+R story bank (candidate/stories.yml). Informational only — an empty/absent
+// bank is normal before any interview prep, so it never fails. `npm run stories --
+// check` is the dedicated validator.
+const storyBank = loadStories({ root });
+
+// Evidence truth bank (candidate/evidence.yml) claim count. Informational — presence
+// is already a hard prereq above; `npm run evidence -- check` is the validator.
+const evidenceBank = loadEvidence({ root });
+
+// Browser automation (candidate/automation.yml). Informational + opt-in — an
+// absent file means everything is OFF, which is the normal, safe default, so it
+// never fails doctor. Reports how many capability×platform pairs are actually live.
+const automation = automationStatus({ root });
+const modes = loadModes({ root });
+
+// Session browser (config/automation.yml#session.provider). Informational — which
+// provider drives the live "session browser" (Layer 3, docs/BROWSER.md) plus a
+// best-effort, never-throwing presence probe. `mayRun()` is unaffected: provider is
+// HOW a session runs, not WHETHER a capability is allowed. Never fails doctor.
+const automationData = loadAutomation({ root }).data;
+const sessionBrowser = detectSession({ data: automationData });
+
+// Setup resume state (workspace/setup-state.json). Written by the ingest-profile
+// skill; read-only here. Absent or malformed = no setup-state (never fails doctor).
+let setupState = null;
+try {
+  const { readFileSync } = await import("node:fs");
+  const raw = readFileSync(userPath(pathCtx, "workspace/setup-state.json"), "utf8");
+  const parsed = JSON.parse(raw);
+  if (parsed && typeof parsed === "object") setupState = parsed;
+} catch {
+  // absent or unparseable — treat as no state present
+}
+const setup = setupState
+  ? {
+      present: true,
+      mode: setupState.mode ?? null,
+      depth: setupState.depth ?? null,
+      complete: typeof setupState.complete === "boolean" ? setupState.complete : null,
+      stepsRecorded: Array.isArray(setupState.completed) ? setupState.completed.length : 0,
+      deferredCount: Array.isArray(setupState.deferred) ? setupState.deferred.length : 0,
+    }
+  : { present: false, mode: null, depth: null, complete: null, stepsRecorded: 0, deferredCount: 0 };
+
+const result = {
+  ok:
+    missingUser.length === 0 &&
+    missingSystem.length === 0 &&
+    skillsNotDiscoverable.length === 0 &&
+    modes.valid,
+  missingUser,
+  missingSystem,
+  skillsNotDiscoverable,
+  workspaceDirs,
+  learnings: { count: learnings.length, families: learnings.map((l) => l.family) },
+  storyBank: { exists: storyBank.exists, count: storyBank.stories.length },
+  evidenceBank: { exists: evidenceBank.exists, count: evidenceBank.claims.length },
+  automation: {
+    configured: automation.exists,
+    valid: automation.valid,
+    liveCount: automation.liveCount,
+    enabledCapabilities: automation.capabilities.filter((c) => c.enabled).map((c) => c.capability),
+  },
+  modes: {
+    configured: modes.exists,
+    valid: modes.valid,
+    usageMode: modes.data.usage_mode,
+    applicationMode: modes.data.application_mode,
+    errors: modes.errors,
+  },
+  sessionBrowser: {
+    provider: sessionBrowser.provider,
+    preferred: sessionBrowser.descriptor?.preferred ?? false,
+    configured: automation.exists,
+    presence: sessionBrowser.presence.status,
+    detail: sessionBrowser.presence.detail,
+  },
+  setup,
+  dataRoot: userPaths.dataRoot,
+};
+
+if (json) {
+  console.log(JSON.stringify(result, null, 2));
+  process.exit(result.ok ? 0 : 1);
+}
+
+console.log("rolester doctor");
+console.log("================");
+console.log("");
+console.log(`User data root: ${userPaths.dataRoot}`);
+console.log("");
+
+if (missingSystem.length > 0) {
+  console.log("System files missing:");
+  for (const path of missingSystem) console.log(`- ${path}`);
+  console.log("");
+}
+
+if (skillsNotDiscoverable.length > 0) {
+  console.log("Skills not discoverable by Claude Code:");
+  for (const name of skillsNotDiscoverable) console.log(`- ${name}`);
+  console.log("  fix: run `npm run install-skills` (shims .claude/skills -> .agents/skills).");
+  console.log("");
+}
+
+if (missingUser.length > 0) {
+  console.log("User setup missing:");
+  for (const item of missingUser) {
+    console.log(`- ${displayPath(pathCtx, item.path)}`);
+    console.log(`  fix: ${item.fix}`);
+  }
+  console.log("");
+}
+
+if (learnings.length > 0) {
+  console.log(
+    `Learning memory: ${learnings.length} role-family file(s) — ${learnings.map((l) => l.family).join(", ")}.`
+  );
+  console.log("");
+}
+
+if (evidenceBank.exists) {
+  console.log(
+    `Evidence bank: ${evidenceBank.claims.length} claim${evidenceBank.claims.length === 1 ? "" : "s"} — validate with \`npm run evidence -- check\`.`
+  );
+  console.log("");
+}
+
+if (storyBank.exists) {
+  console.log(
+    `Story bank: ${storyBank.stories.length} STAR+R stor${storyBank.stories.length === 1 ? "y" : "ies"} — validate with \`npm run stories -- check\`.`
+  );
+  console.log("");
+}
+
+if (!modes.valid) {
+  console.log("Modes: candidate/modes.yml is INVALID — run `npm run modes -- status`.");
+  console.log("");
+} else {
+  const source = modes.exists ? "configured" : "defaults";
+  console.log(
+    `Modes: usage ${modes.data.usage_mode}, application ${modes.data.application_mode} (${source}) — change with \`npm run modes -- set <usage|application> <value> --write\`.`
+  );
+  console.log("");
+}
+
+if (!automation.exists) {
+  console.log(
+    "Browser automation: not configured — all capabilities OFF (opt-in; `npm run automation -- status`)."
+  );
+  console.log("");
+} else if (!automation.valid) {
+  console.log(
+    "Browser automation: candidate/automation.yml is INVALID against its schema — run `npm run automation -- status`."
+  );
+  console.log("");
+} else {
+  const enabled = automation.capabilities.filter((c) => c.enabled).map((c) => c.capability);
+  console.log(
+    `Browser automation: ${automation.liveCount} live capability×platform pair(s)${enabled.length ? ` — enabled: ${enabled.join(", ")}` : " — no capability enabled yet"}.`
+  );
+  console.log("");
+}
+
+{
+  const pref = sessionBrowser.descriptor?.preferred ? " (preferred)" : "";
+  const setNote = automation.exists ? "" : " — default (unset)";
+  console.log(
+    `Session browser: ${sessionBrowser.provider}${pref}${setNote} — ${sessionBrowser.presence.detail}.`
+  );
+  console.log(
+    "  change with `npm run automation -- session <extension|playwright> --write` (see docs/BROWSER.md)."
+  );
+  console.log("");
+}
+
+if (setup.present) {
+  const modeDepth =
+    setup.mode || setup.depth
+      ? `(${[setup.mode ?? "unknown", setup.depth ?? "unknown"].join("/")})`
+      : "";
+  if (setup.complete) {
+    console.log(`Setup: complete${modeDepth ? ` ${modeDepth}` : ""}.`);
+  } else {
+    const deferred = setup.deferredCount ? `, ${setup.deferredCount} deferred` : "";
+    console.log(
+      `Setup: in progress${modeDepth ? ` ${modeDepth}` : ""} — ${setup.stepsRecorded} step(s) recorded${deferred}; resume with \`ingest-profile\` (\`npm run ingest\`).`
+    );
+  }
+  console.log("");
+}
+
+if (result.ok) {
+  console.log("All required files are present and skills are discoverable.");
+} else if (!modes.valid) {
+  console.log("Rolester scaffold is present, but candidate/modes.yml is invalid.");
+  console.log("Run `npm run modes -- status` for details.");
+} else if (missingUser.length === 0 && missingSystem.length === 0) {
+  console.log("Scaffold and setup look good, but skills aren't discoverable yet.");
+  console.log("Run `npm run install-skills` so Claude Code can invoke /apply-job etc.");
+} else {
+  console.log("Rolester scaffold is present, but local candidate setup is incomplete.");
+  console.log("Run the ingest-profile skill or copy templates into candidate/.");
+}
+
+process.exit(result.ok ? 0 : 1);

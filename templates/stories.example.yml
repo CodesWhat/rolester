@@ -1,0 +1,44 @@
+# STAR+R story bank — candidate/stories.yml
+#
+# Behavioural-interview stories layered over evidence.yml. Each story is a STAR+R
+# narrative (Situation, Task, Action, Result, Reflection) that interview-prep
+# assembles into packets and reuses across interview loops.
+#
+# THE FIREWALL: every story must cite one or more `evidence_ids` that resolve to a
+# real claim in candidate/evidence.yml. A story is DRAFTED from evidence and
+# confirmed by you — never invented. `npm run stories -- check` refuses a story
+# that cites no evidence, an unknown claim id, a missing STAR+R field, placeholder
+# residue, or a private comp input.
+#
+# Add/replace stories with the guarded CLI (dry-run by default):
+#   npm run stories -- add --file path/to/story.yml          # preview
+#   npm run stories -- add --file path/to/story.yml --write   # commit
+# See coverage with `npm run stories -- gaps` and matches with `... match <jd>`.
+
+stories:
+  - id: "prototype-to-production"
+    title: "Took a prototype to production"
+    # Domain-neutral behavioural themes — match these to the question being asked,
+    # not to a tech stack. `npm run stories -- gaps` reports which are uncovered.
+    competencies:
+      - "ownership"
+      - "measurable-impact"
+      - "ambiguity"
+    # Same free-form signal vocabulary as evidence.yml claims (lets the story match
+    # a JD's signals). Edit to your own domain.
+    role_signals:
+      - "prototype-to-production"
+      - "agentic workflow"
+    situation: "Describe the real situation: what was happening, why it mattered, and what was at stake."
+    task: "State the specific goal you owned — your responsibility, not the team's."
+    action: "Walk through what YOU did, the key decisions, and the trade-offs you weighed."
+    result: "Give the outcome, quantified where the cited evidence supports it."
+    reflection: "What you learned or would do differently — the part that turns an anecdote into a reflective answer."
+    # Must resolve to claim ids in candidate/evidence.yml. This is the trace firewall.
+    evidence_ids:
+      - "project-001"
+    metrics:
+      - "Only metrics the cited evidence backs — never invented for the story."
+    prompts:
+      - "Tell me about a project you owned end to end."
+      - "Describe a time you shipped under ambiguity."

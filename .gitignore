@@ -1,0 +1,110 @@
+node_modules/
+.env
+.env.local
+
+# Turborepo / website build artifacts
+.turbo/
+website/.next/
+website/out/
+website/next-env.d.ts
+*.tsbuildinfo
+.vercel/
+
+# macOS
+.DS_Store
+
+# Python (build-docx.py)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editor / temp
+*.swp
+*~
+
+# Playwright MCP scratch (browser artifacts, snapshots)
+.playwright-mcp/
+
+# Agent worktrees / local agent state (the .claude/skills symlink stays tracked)
+.claude/worktrees/
+
+# Browser-automation / Playwright / verification screenshots are SCRATCH by
+# default. They belong under workspace/captures/ (ignored below) and must never
+# be committed to the repo root or workspace root. Backstop-ignore stray PNGs in
+# those two spots so apply/automation captures never clutter the tree — real
+# image assets live in assets/, website/public/, and mockups/. The tracked
+# mascot is the one root-PNG exception. Surface a capture in the app only by
+# writing it to a deliberately tracked path.
+/*.png
+!/rolester-rat.png
+workspace/*.png
+tracker-*.png
+
+# Private working roadmap + internal planning docs (names the private origin,
+# competitor analysis, and personal context). The PUBLIC roadmap is docs/ROADMAP.md.
+# Anchor to root with a leading slash — a bare "ROADMAP.md" also ignores the public
+# docs/ROADMAP.md (matches in every directory), which must stay tracked.
+/ROADMAP.md
+/ROADMAP-ARCHIVE.md
+docs/COMPARISON.md
+# Internal build-spec artifacts — name the private origin / competitor.
+# Moved from docs/ to .internal/ so they never sit in a committed directory.
+.internal/
+
+# Consolidated local user data root (candidate/workspace/generated config/internal).
+.rolester/
+
+# Local candidate data
+/candidate/
+
+# Personal one-off migration/ingest scripts — they hardcode the candidate's own
+# pipeline (specific JD paths, role vocabulary), identity, or the private origin,
+# so they must never ship. Kept local for re-runs/record; the generic, neutral
+# migration helpers in scripts/ stay tracked.
+scripts/migration-enrichment.workflow.mjs
+scripts/repo-ingest.workflow.mjs
+scripts/draft-*-stories.mjs
+
+# Generated/personal search + scan config (schema + *.example.* stay committed).
+# These hold the candidate's role keywords, geography, and company watchlist — they
+# must never ship as defaults (no-config = domain-neutral). See *.example counterparts.
+config/search-sources.yml
+config/search-sources.json
+config/sourced-scan.json
+
+# Generated/private workspace data
+workspace/jobs/*
+workspace/tailored/*
+workspace/intake/*
+workspace/scan-results/*
+workspace/comms/*
+workspace/interview-prep/*
+workspace/writing-samples/*
+workspace/research/*
+workspace/network-leads/*
+workspace/captures/*
+workspace/logos/*
+workspace/legacy/*
+workspace/tracker.*
+workspace/.snapshots/
+workspace/activity.jsonl
+workspace/activity.jsonl.bak
+workspace/dashboard-data.js
+workspace/modes.json
+workspace/settings.json
+workspace/library.json
+workspace/setup-state.json
+
+!workspace/jobs/.gitkeep
+!workspace/tailored/.gitkeep
+!workspace/intake/.gitkeep
+!workspace/scan-results/.gitkeep
+!workspace/comms/.gitkeep
+!workspace/interview-prep/.gitkeep
+!workspace/writing-samples/.gitkeep
+!workspace/research/.gitkeep
+!workspace/network-leads/.gitkeep
+!workspace/captures/.gitkeep
+!workspace/logos/.gitkeep
+!workspace/legacy/.gitkeep

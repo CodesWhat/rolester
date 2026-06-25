@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/stories.schema.json",
+  "title": "Rolester STAR+R Story Bank",
+  "description": "Candidate-owned behavioural story bank layered over evidence.yml. Each story is a STAR+R narrative (Situation, Task, Action, Result, Reflection) that traces back to one or more evidence.yml claim ids. Stories are drafted from evidence and confirmed by the candidate — never invented. interview-prep assembles them into packets and reuses them across interview loops.",
+  "type": "object",
+  "required": ["stories"],
+  "additionalProperties": false,
+  "properties": {
+    "stories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "situation",
+          "task",
+          "action",
+          "result",
+          "reflection",
+          "evidence_ids"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stable slug, unique within the bank."
+          },
+          "title": {
+            "type": "string",
+            "description": "Short human label, e.g. \"Cut dispatch latency 40%\"."
+          },
+          "competencies": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Domain-neutral behavioural themes this story demonstrates (leadership, conflict, ambiguity, measurable-impact, …). Used to match the story to behavioural questions and to compute coverage gaps."
+          },
+          "role_signals": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Same free-form signal vocabulary as evidence.yml claims; lets the story match a JD's signals."
+          },
+          "situation": { "type": "string" },
+          "task": { "type": "string" },
+          "action": { "type": "string" },
+          "result": { "type": "string" },
+          "reflection": {
+            "type": "string",
+            "description": "The +R: what the candidate learned or would do differently — the part that separates a recited anecdote from a reflective answer."
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "evidence.yml claim ids this story draws from. The honesty firewall: every id must resolve to a real claim, and a story with none is rejected — a story may not assert anything the evidence bank does not back."
+          },
+          "metrics": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Quantified results — must trace to the cited evidence claims, never invented for the narrative."
+          },
+          "prompts": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Example behavioural questions this story answers (\"Tell me about a time you handled conflict\")."
+          },
+          "allowed_wording": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "forbidden_wording": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "landed": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Debrief feedback: rounds/companies where this story landed well, appended by interview-prep STEP 5 so the bank compounds across loops."
+          },
+          "open_questions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "What context the story still needs to be its strongest — set at ingest time when a detail is missing or conflicts with the source (a metric to confirm, a concrete example, a version question). Non-empty open_questions raise a 'give me more context' action on the dashboard (mirrored into tracker.storyEnrichment) and self-clear when emptied."
+          }
+        }
+      }
+    }
+  }
+}

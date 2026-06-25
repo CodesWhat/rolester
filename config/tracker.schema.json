@@ -1,0 +1,398 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/tracker.schema.json",
+  "title": "Rolester Tracker",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "meta": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "description": "Tracker-level metadata. Optional, but every skill that mutates tracker.json MUST set meta.lastUpdatedAt in the same write (see AGENTS.md Tracker Write Contract) so the dashboard freshness pill reflects the true last data-change time.",
+      "properties": {
+        "lastUpdatedAt": { "type": ["string", "null"], "description": "ISO 8601 timestamp of the last data-changing write. The 'last updated' pill reads this first (durableUpdatedAt). Bumped by every writing skill and by CLI writes via writeTrackerJson()." },
+        "version":       { "type": ["integer", "null"], "description": "Monotonic write counter. Incremented on every data-changing write alongside lastUpdatedAt. Lets a concurrent/background writer detect that the file changed under it (optimistic concurrency / last-writer-wins) — see the M15 warm-session bridge." },
+        "updatedAt":     { "type": ["string", "null"], "description": "Legacy alias for lastUpdatedAt (read-only fallback)." },
+        "lastSweepAt":   { "type": ["string", "null"], "description": "When ingest-mail/ingest-messages last swept inbound sources. A sweep-level clock, NOT the user-visible last-data-change time — deliberately excluded from the pill's primary resolution." }
+      }
+    },
+    "applications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id":            { "type": "string" },
+          "company":       { "type": "string" },
+          "role":          { "type": "string" },
+          "status":        { "type": "string" },
+          "appliedAt":     { "type": "string" },
+          "fitScore":      { "type": ["number", "null"] },
+          "fitBucket":     { "type": ["string", "null"], "enum": ["high", "med", "stretch", null] },
+          "submittedDate": { "type": ["string", "null"] },
+          "demo":          { "type": ["boolean", "null"] },
+          "loc":    { "type": ["string", "null"] },
+          "mode":   { "type": ["string", "null"], "enum": ["remote", "hybrid", "onsite", "relo", null] },
+          "base":   { "type": ["string", "null"] },
+          "tc":     { "type": ["string", "null"] },
+          "ask":    { "type": ["number", "null"] },
+          "compEstimate": { "$ref": "#/$defs/compEstimate" },
+          "benefits": { "type": ["array", "null"], "items": { "type": "string" }, "description": "Canonical benefit keys (see src/core/tracker/benefits.mjs) extracted from the JD/comp text; rendered as emoji chips in the drawer." },
+          "sub":    { "type": ["boolean", "null"] },
+          "warn":   { "type": ["string", "null"] },
+          "note":   { "type": ["string", "null"], "maxLength": 60, "description": "INTERNAL ONLY — never rendered on a card or row (search text + submission one-liner). One topic, ≤60 chars, e.g. 'Greenhouse — submitted, confirmation received.' Topic-routed display content goes to the typed fields below (see AGENTS.md Tracker Content Register)." },
+          "interviewNote": { "type": ["string", "null"], "maxLength": 60, "description": "Single-clause interview logistics for the Focus card + drawer Interview section. Format: '<Round> — <Weekday> <Date> <Time> TZ with <First Name>', e.g. 'Onsite loop — Tue 03-10 14:00 PT with Alex Rivera'. Nothing about comp/fit." },
+          "interviewAt": { "type": ["string", "null"], "description": "ISO datetime of the FIRST scheduled interview round. Owner: schedule-meeting (writes it on booking confirm, in the same atomic write as the conversations[] entry + interviewNote). A real FUTURE value here is the ONLY thing that makes an interview the dashboard Focus (scheduledInterviewAt → buildInterviewFocus) — it is never inferred from notes/role text. Cleared (set null) by track-outcomes when the round completes." },
+          "nextInterviewAt": { "type": ["string", "null"], "description": "ISO datetime of the NEXT scheduled interview round; supersedes interviewAt once a follow-on is booked, and is read first by the Focus card. Owner: schedule-meeting. Cleared by track-outcomes after the round." },
+          "interviewDate": { "type": ["string", "null"], "description": "LEGACY read-only alias for interviewAt (older data / the deprecated nextInterviewDate). New writes MUST use interviewAt/nextInterviewAt; kept only as a render fallback." },
+          "followUp": {
+            "type": ["object", "null"],
+            "additionalProperties": true,
+            "description": "A single pending follow-up commitment on this application (drives the Focus 'action' kind, Next Steps, and the cadence watch/stale band). Owner: email-comms / interview-prep — interview-prep writes dueAt on debrief = interview date + 1 business day, which is how the Focus auto-advances from interview to follow-up once a round passes. Distinct from per-thread comm CTAs.",
+            "properties": {
+              "dueAt":         { "type": ["string", "null"], "description": "ISO date/datetime the follow-up is due; surfaces in Next Steps once dueAt <= now." },
+              "kind":          { "type": ["string", "null"], "description": "Follow-up type, e.g. 'post-round-follow-up' or 'nudge'. Do NOT use the word 'interview' — this is a follow-up, not a scheduled round." },
+              "title":         { "type": ["string", "null"] },
+              "note":          { "type": ["string", "null"], "maxLength": 160 },
+              "draft":         { "type": ["string", "null"], "description": "Optional drafted follow-up message body." },
+              "generatedAt":   { "type": ["string", "null"], "description": "ISO timestamp the follow-up/draft was generated." },
+              "nextActionDue": { "type": ["string", "null"], "description": "ISO date the next action is due (cadence)." },
+              "sentCount":     { "type": ["number", "null"], "description": "How many follow-ups already sent on this thread." }
+            }
+          },
+          "statusNote": { "type": ["string", "null"], "maxLength": 120, "description": "One-sentence present-tense live state for the jobs card. e.g. 'Awaiting HM debrief — recruiter screen cleared 06-12.' No ATS mechanics, no comp intel." },
+          "compNote": { "type": ["string", "null"], "maxLength": 140, "description": "DRAWER ONLY — one sentence of comp/band/negotiation intel. Uses target_base / minimum_base, never current_base. e.g. 'Job code budgeted ~$175K, max $205K; team discourages top-of-band placements.'" },
+          "roleFit": {
+            "type": ["object", "null"],
+            "additionalProperties": true,
+            "description": "DRAWER ONLY — structured fit signals (not prose). Renders as two bullet lists.",
+            "properties": {
+              "why":   { "type": ["array", "null"], "items": { "type": "string", "maxLength": 80 }, "description": "Up to 3 reasons it fits, ≤80 chars each." },
+              "risks": { "type": ["array", "null"], "items": { "type": "string", "maxLength": 80 }, "description": "Up to 3 gaps/caveats/flags, ≤80 chars each." }
+            }
+          },
+          "link":   { "type": ["string", "null"] },
+          "domain": { "type": ["string", "null"] },
+          "channel": { "type": ["string", "null"], "enum": ["board", "linkedin", "portal", "referral", "recruiter", null] },
+          "artifacts": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "jd":         { "type": ["string", "null"] },
+              "coverLetter": { "type": ["string", "null"] },
+              "resume":     { "type": ["string", "null"] },
+              "resumeNote": { "type": ["string", "null"] },
+              "interviewDossier": {
+                "type": ["object", "null"],
+                "additionalProperties": true,
+                "description": "Rendered interview-prep dossier surfaced by the Focus card's 'Open dossier' full-page preview. interview-prep writes this whenever an upcoming interview becomes the featured/adaptive Focus item. `markdown` is the candidate-private packet body — workspace only (tracker.json is gitignored), never committed or sent outbound.",
+                "properties": {
+                  "title":       { "type": ["string", "null"], "description": "Doc title, e.g. 'Hooli — Applied AI Engineer'." },
+                  "round":       { "type": ["string", "null"], "description": "Round/audience label, e.g. 'Team interview'." },
+                  "path":        { "type": ["string", "null"], "description": "Source file, workspace/interview-prep/<slug>.md." },
+                  "generatedAt": { "type": ["string", "null"], "description": "ISO timestamp the dossier was last generated." },
+                  "markdown":    { "type": ["string", "null"], "description": "Packet body in Markdown, rendered read-only in the preview modal." }
+                }
+              }
+            }
+          },
+          "conversations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "date":      { "type": ["string", "null"] },
+                "kind":      { "type": ["string", "null"] },
+                "who":       { "type": ["string", "null"] },
+                "notes":     { "type": ["string", "null"], "maxLength": 200, "description": "2 sentences max: what happened + immediate next step. Comp/process/coaching go in the typed sibling fields, not here." },
+                "compNote":  { "type": ["string", "null"], "maxLength": 140, "description": "One-sentence comp signal heard on this call (else omit)." },
+                "processNote": { "type": ["string", "null"], "maxLength": 160, "description": "One sentence: next round + who + approximate timing (else omit)." },
+                "learnings": {
+                  "type": ["array", "null"],
+                  "description": "DRAWER ONLY — labeled coaching/signal items from this call. Up to 5, no prose.",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "label": { "type": ["string", "null"], "maxLength": 50 },
+                      "note":  { "type": ["string", "null"], "maxLength": 100 }
+                    }
+                  }
+                },
+                "recording": { "type": ["string", "null"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "stages": {
+      "description": "Optional custom pipeline stages. A custom stage with a canonical id (sourced/applied/screen/interview/final/offer/accepted/rejected/withdrawn) overrides that rung; a new id mints one. classifyStage() consults these before the canonical keyword rules.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "label"],
+        "properties": {
+          "id":       { "type": "string" },
+          "label":    { "type": "string" },
+          "order":    { "type": ["number", "null"] },
+          "color":    { "type": ["string", "null"], "description": "CSS custom property (e.g. \"--cyan\") or value the stage renders in." },
+          "patterns": { "type": ["array", "null"], "items": { "type": "string" }, "description": "Lowercase status substrings that map to this stage." }
+        }
+      }
+    },
+    "sourced": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "loc":    { "type": ["string", "null"] },
+          "mode":   { "type": ["string", "null"], "enum": ["remote", "hybrid", "onsite", "relo", null] },
+          "base":   { "type": ["string", "null"] },
+          "tc":     { "type": ["string", "null"] },
+          "ask":    { "type": ["number", "null"] },
+          "compEstimate": { "$ref": "#/$defs/compEstimate" },
+          "benefits": { "type": ["array", "null"], "items": { "type": "string" }, "description": "Canonical benefit keys (see src/core/tracker/benefits.mjs) extracted from the JD/comp text; rendered as emoji chips in the drawer." },
+          "sub":    { "type": ["boolean", "null"] },
+          "warn":   { "type": ["string", "null"] },
+          "note":   { "type": ["string", "null"] },
+          "link":   { "type": ["string", "null"] },
+          "domain": { "type": ["string", "null"] },
+          "channel": { "type": ["string", "null"], "enum": ["board", "linkedin", "portal", "referral", "recruiter", null] }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id":         { "type": ["string", "null"] },
+          "kind":       { "type": ["string", "null"] },
+          "name":       { "type": ["string", "null"] },
+          "lastRunAt":  { "type": ["string", "null"] }
+        }
+      }
+    },
+    "relationshipLeads": {
+      "description": "Candidate-reviewed relationship sourcing leads. Pending/review leads render in Network review; approved leads can become warm-path contacts. Writers must keep outreach confirm-first.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "applicationId": { "type": ["string", "null"] },
+          "company": { "type": "string" },
+          "role": { "type": ["string", "null"] },
+          "name": { "type": "string" },
+          "type": { "type": ["string", "null"] },
+          "title": { "type": ["string", "null"] },
+          "platform": { "type": ["string", "null"] },
+          "status": { "type": ["string", "null"] },
+          "url": { "type": ["string", "null"] },
+          "basis": { "type": ["string", "null"] },
+          "note": { "type": ["string", "null"] },
+          "foundAt": { "type": ["string", "null"] },
+          "updatedAt": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "calendarWrites": {
+      "description": "Confirm-first real-calendar write history. The dashboard renders this audit trail; calendar provider writers append compact records after user-approved writes.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "eventId": { "type": ["string", "null"] },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "apple_calendar",
+              "google_calendar",
+              "outlook_calendar",
+              "automation_tools"
+            ]
+          },
+          "title": { "type": "string" },
+          "status": { "type": ["string", "null"] },
+          "wroteAt": { "type": ["string", "null"] },
+          "eventIso": { "type": ["string", "null"] },
+          "summary": { "type": ["string", "null"] },
+          "artifactPath": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "calendarBusy": {
+      "description": "Opaque free/busy blocks ingested read-only from the candidate's real calendar (capability calendar_read). PRIVACY: store start/end only — never meeting titles, attendees, locations, or notes. The Calendar renders these as muted 'Busy' blocks so scheduling avoids conflicts.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["startIso", "endIso"],
+        "properties": {
+          "id": { "type": "string" },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "work_calendar",
+              "apple_calendar",
+              "google_calendar",
+              "outlook_calendar"
+            ]
+          },
+          "startIso": { "type": "string" },
+          "endIso": { "type": "string" },
+          "allDay": { "type": "boolean" },
+          "label": {
+            "description": "Display label. Defaults to \"Busy\". Never store the real meeting subject.",
+            "type": ["string", "null"]
+          },
+          "source": { "type": ["string", "null"] },
+          "ingestedAt": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "storyEnrichment": {
+      "description": "Derived mirror of STAR+R stories (candidate/stories.yml) that still need context — one entry per story with non-empty open_questions. Regenerated by `stories sync-enrichment` so the read-only dashboard can render a 'give me more context' action and have it self-clear when the story's open_questions empty. Not a source of truth — open_questions on the story is.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["storyId", "title", "missing"],
+        "properties": {
+          "storyId": { "type": "string" },
+          "title": { "type": "string" },
+          "missing": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "syncedAt": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "strategyReview": {
+      "description": "Marker of the last completed reevaluate-strategy run, written by that skill on STEP 7. Silences the dashboard 'review ready' nudge until new resolved outcomes accrue past the threshold (or a slow drip ages past the cooldown). snapshot.outcomes (advances + rejections, all-time) is the count the render gate compares the live total against.",
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["lastReviewedAt"],
+      "properties": {
+        "lastReviewedAt": { "type": "string" },
+        "snapshot": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "applied": { "type": "number" },
+            "advanced": { "type": "number" },
+            "rejected": { "type": "number" },
+            "outcomes": { "type": "number" },
+            "rejectedByFamily": {
+              "type": ["object", "null"],
+              "additionalProperties": { "type": "integer" },
+              "description": "Per-family rejected counts at the time of the last strategy review. Written by buildStrategyReviewStamp when targeting is provided. Used by buildReevaluationAnalytics to compute per-family 'since last review' deltas."
+            }
+          }
+        }
+      }
+    },
+    "analytics": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "description": "DERIVED rollup refreshed by `npm run analytics -- --write`. Never hand-edited. Does NOT move the freshness stamp (written with { stamp: false }). Contains byStatus counts, per-family rejection/advancement breakdowns, and the reevaluation-due signal. Safe to regenerate at any time from the live tracker data."
+    },
+    "communications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "status", "summary"],
+        "properties": {
+          "id": { "type": "string" },
+          "applicationId": { "type": "string" },
+          "sourcedId": { "type": "string" },
+          "company": { "type": "string" },
+          "role": { "type": "string" },
+          "channel": {
+            "type": "string",
+            "enum": ["email", "linkedin", "portal", "phone", "sms", "other"]
+          },
+          "threadId": { "type": "string" },
+          "subject": { "type": "string" },
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "name": { "type": "string" },
+                "email": { "type": "string" },
+                "role": { "type": "string" }
+              }
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["needs-reply", "drafted", "waiting", "scheduled", "closed", "blocked"]
+          },
+          "summary": { "type": "string" },
+          "lastInboundAt": { "type": "string" },
+          "lastOutboundAt": { "type": "string" },
+          "nextAction": { "type": "string" },
+          "nextActionDue": { "type": "string" },
+          "artifactPath": { "type": "string" },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "required": ["direction", "summary"],
+              "properties": {
+                "id": { "type": "string" },
+                "direction": {
+                  "type": "string",
+                  "enum": ["inbound", "outbound-draft", "outbound-sent", "note"]
+                },
+                "at": { "type": "string" },
+                "from": { "type": "string" },
+                "to": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "subject": { "type": "string" },
+                "summary": { "type": "string" },
+                "artifactPath": { "type": "string" },
+                "nextAction": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["applications", "sourced", "sources", "communications"],
+  "$defs": {
+    "compEstimate": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "description": "Persisted comp model for the dashboard's provenance-aware Compensation Range card. Written by the evaluate gate / backfill, rendered (never recomputed) by the browser. source records where the market figures come from.",
+      "properties": {
+        "source":     { "type": "string", "enum": ["comparables", "posted", "none"] },
+        "lowK":       { "type": ["number", "null"] },
+        "midpointK":  { "type": ["number", "null"] },
+        "highK":      { "type": ["number", "null"] },
+        "floorK":     { "type": ["number", "null"] },
+        "askK":       { "type": ["number", "null"] },
+        "sampleSize": { "type": ["number", "null"] },
+        "tier":       { "type": ["string", "null"], "enum": ["metro", "mode", "family", null] },
+        "confidence": { "type": ["string", "null"], "enum": ["low", "medium", "high", null] },
+        "basis":      { "type": ["string", "null"] }
+      }
+    }
+  }
+}

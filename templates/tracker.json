@@ -1,0 +1,203 @@
+{
+  "applications": [
+    {
+      "id": "demo-app-1",
+      "company": "Aperture Science",
+      "role": "Forward Deployed Engineer",
+      "status": "offer",
+      "channel": "recruiter",
+      "appliedAt": "2026-05-20",
+      "fitScore": 92,
+      "loc": "Remote (US)",
+      "mode": "remote",
+      "base": "$215–255K",
+      "tc": "~$320–380K",
+      "note": "Inbound from an exec recruiter. FDE seat deploying agent workflows for the Enrichment Center launch — customer-facing, prototype-to-production, fully remote. Bang on the primary bucket. The cake situation is under review.",
+      "domain": "aperturescience.com",
+      "link": "https://aperturescience.com/careers/forward-deployed-engineer",
+      "artifacts": {
+        "jd": "Forward Deployed Engineer — Aperture Science (Remote, US)\n\nWe're hiring a Forward Deployed Engineer to embed with launch customers for the Enrichment Center rollout. You'll take agent workflows from prototype to production in the field, sit in front of customers daily, and own the deploy-and-adopt loop end to end.\n\nWhat you'll do:\n- Stand up RAG + tool-use agents against customer data\n- Pair directly with customer engineering teams through go-live\n- Turn one-off prototypes into supported production deployments\n\nWhat we want: customer-facing instinct, range across the stack, comfort owning ambiguity. Posted band: $215–255K base + equity.\n\n(For science. You monster.)",
+        "coverLetter": "Dear Aperture hiring team,\n\nForward-deployed work is exactly where I do my best work: sitting with a customer, taking an agent prototype to production, and owning adoption rather than tossing it over a wall. Your Enrichment Center rollout reads like the deploy-and-adopt loop I've run before — RAG and tool-use agents against messy real-world data, shipped in the field.\n\nI'd love to bring that to the launch. (And yes, I read the part about the cake.)\n\n— Jane",
+        "resume": "Resume — Jane Candidate · FDE-tailored.pdf",
+        "resumeNote": "Tailored: led with forward-deployed + agent-to-production wins; cut the platform-SWE bullets."
+      },
+      "conversations": [
+        {
+          "date": "2026-05-28",
+          "kind": "Recruiter screen",
+          "who": "Cave Johnson — VP Talent",
+          "notes": "30 min. Confirmed remote, band tops at $255K, team of 8. He talks fast and loves a tangent; role is real and funded. Next: technical loop, 3 slots offered.",
+          "recording": "Granola (consent given)"
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "demo-app-2",
+      "company": "Tyrell Corporation",
+      "role": "Applied AI Engineer",
+      "status": "2nd phone interview",
+      "channel": "referral",
+      "appliedAt": "2026-05-24",
+      "fitScore": 84,
+      "loc": "Los Angeles / Hybrid",
+      "mode": "hybrid",
+      "base": "$200–240K",
+      "tc": "~$280–330K",
+      "note": "Referral into the Nexus-series team — RAG and agents over replicant telemetry, customer-facing. Strong fit on the work; LA hybrid is a stretch from NY, so pushing for remote. 'More human than human.'",
+      "domain": "tyrell.com",
+      "link": "https://tyrell.com/jobs/applied-ai-engineer-nexus",
+      "artifacts": {
+        "jd": "Applied AI Engineer — Tyrell Corporation (Los Angeles / Hybrid)\n\nJoin the Nexus-series team building applied AI over replicant telemetry. You'll design RAG pipelines and agentic workflows that go in front of customers, partnering closely with the field. Hybrid in LA; some remote flexibility for the right person.\n\nStack: Python, vector stores, tool-use agents. 'More human than human' is our motto.\n\nPosted band: $200–240K base + equity.",
+        "resume": "Resume — Jane Candidate · Applied-AI-tailored.pdf",
+        "resumeNote": "Tailored: foregrounded RAG/agents shipping to customers; kept it honest on LA location."
+      },
+      "conversations": [
+        {
+          "date": "2026-05-30",
+          "kind": "Hiring-manager call",
+          "who": "Eldon Tyrell — Director, Nexus AI",
+          "notes": "Intense. Wants someone who can own RAG quality end to end. Open to mostly-remote if I'm in LA ~1 week/month. Pushing for a written take-home next.",
+          "recording": ""
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "demo-app-3",
+      "company": "Hooli",
+      "role": "Solutions Engineer",
+      "status": "recruiter screen",
+      "channel": "board",
+      "appliedAt": "2026-05-26",
+      "fitScore": 63,
+      "loc": "Palo Alto, CA / Hybrid",
+      "mode": "hybrid",
+      "base": "$185–215K",
+      "tc": "~$230–270K",
+      "note": "Board apply. Credible secondary-bucket role, but Nucleus is pre-sales heavy and it's PA hybrid. Warm intro possible through the network. Avoid the box-only roles.",
+      "domain": "hooli.xyz",
+      "demo": true
+    },
+    {
+      "id": "demo-app-4",
+      "company": "Weyland-Yutani",
+      "role": "Deep Space Cargo Pilot",
+      "status": "applied",
+      "channel": "referral",
+      "appliedAt": "2026-06-08",
+      "fitScore": 24,
+      "loc": "Remote (Deep Space)",
+      "mode": "remote",
+      "base": "$180–220K",
+      "tc": "~$260–310K",
+      "note": "The dream, not the fit. A former Nostromo crewmate floated the cargo-pilot seat — zero flight hours and it's nowhere near the AI lane, but worth a flyer. Long odds.",
+      "domain": "weyland-yutani.com",
+      "artifacts": {
+        "jd": "Deep Space Cargo Pilot — Weyland-Yutani (Remote — Deep Space)\n\nFlight-certified pilots only. Crew the terraforming supply runs. Cryo-rotation, hazard pay, and a strict 'building better worlds' culture. Not an engineering role.\n\nRequirements: 2000+ flight hours, deep-space cert. (Jane has neither — hence the long odds.)"
+      },
+      "demo": true
+    },
+    {
+      "id": "demo-app-5",
+      "company": "Cyberdyne Systems",
+      "role": "Skynet Platform Engineer",
+      "status": "rejected",
+      "channel": "board",
+      "appliedAt": "2026-05-15",
+      "fitScore": 41,
+      "loc": "Sunnyvale, CA",
+      "mode": "onsite",
+      "base": "$160–190K",
+      "tc": "~$220–260K",
+      "warn": "Posted band top below target",
+      "note": "Core-platform SWE seat — outside the FDE / Applied-AI lane, on-site only, and the band tops out below floor. Didn't advance past the recruiter screen. Neural-net team moves fast.",
+      "domain": "cyberdyne.com",
+      "demo": true
+    }
+  ],
+  "sourced": [
+    {
+      "id": "demo-sourced-1",
+      "company": "Black Mesa",
+      "role": "Applied AI Engineer",
+      "fitScore": 81,
+      "fitBucket": "high",
+      "fitBasis": "triage",
+      "loc": "Remote (US/Canada)",
+      "mode": "remote",
+      "base": "$200–235K",
+      "tc": "~$270–310K",
+      "note": "Found via network; no open req yet — reach out to the lab director about an Applied AI seat before the next resonance cascade. Remote and on-target comp.",
+      "domain": "blackmesasource.com",
+      "demo": true
+    },
+    {
+      "id": "demo-sourced-2",
+      "company": "Massive Dynamic",
+      "role": "Forward Deployed Engineer",
+      "fitScore": 76,
+      "fitBucket": "high",
+      "fitBasis": "triage",
+      "loc": "New York, NY / Hybrid",
+      "mode": "hybrid",
+      "base": "$205–240K",
+      "tc": "~$290–340K",
+      "note": "Primary-bucket role right in town — NY hybrid, no relo. Warm intro possible through the network. 'What do we know? We don't know.'",
+      "domain": "massivedynamic.com",
+      "demo": true
+    }
+  ],
+  "sources": [
+    {
+      "id": "demo-source-1",
+      "name": "HiringCafe (demo)",
+      "demo": true
+    }
+  ],
+  "communications": [
+    {
+      "id": "demo-comm-1",
+      "applicationId": "demo-app-1",
+      "company": "Aperture Science",
+      "role": "Forward Deployed Engineer",
+      "channel": "email",
+      "subject": "Forward Deployed Engineer — next steps",
+      "status": "needs-reply",
+      "summary": "Recruiter proposed three interview slots; pick one.",
+      "nextAction": "Reply with availability",
+      "nextActionDue": "2026-06-10",
+      "lastInboundAt": "2026-06-09",
+      "messages": [
+        {
+          "id": "demo-msg-1",
+          "direction": "outbound-sent",
+          "at": "2026-05-20",
+          "from": "jane@example.com",
+          "to": ["recruiting@aperturescience.com"],
+          "subject": "Application — Forward Deployed Engineer",
+          "summary": "Submitted application; flagged strong interest in the deploy-and-adopt scope."
+        },
+        {
+          "id": "demo-msg-2",
+          "direction": "inbound",
+          "at": "2026-05-27",
+          "from": "cave@aperturescience.com",
+          "to": ["jane@example.com"],
+          "subject": "Re: Forward Deployed Engineer",
+          "summary": "Cave Johnson: loved the background, wants to move fast. Proposed a recruiter screen — done 5/28."
+        },
+        {
+          "id": "demo-msg-3",
+          "direction": "inbound",
+          "at": "2026-06-09",
+          "from": "cave@aperturescience.com",
+          "to": ["jane@example.com"],
+          "subject": "Re: Forward Deployed Engineer — next steps",
+          "summary": "Technical loop offered: three slots (Jun 16 / 17 / 19). Pick one. ← needs reply."
+        }
+      ],
+      "demo": true
+    }
+  ]
+}

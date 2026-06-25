@@ -1,0 +1,25 @@
+# Optional mode switches. If this file is absent, Rolester behaves as:
+# usage_mode: standard
+# application_mode: balanced
+# agent_voice: standard
+#
+# usage_mode controls compute/cost/scope for discretionary work:
+#   lean     - core loop stays full quality; expensive optional work skips/downshifts
+#   standard - normal behavior
+#   full     - deepest discretionary work when asked
+#
+# application_mode controls what Rolester does AFTER discovery:
+#   selective   - broad discovery, stricter promotion/apply posture
+#   balanced    - normal gate behavior
+#   high-volume - broad discovery, more medium fits queued for review/application
+#
+# agent_voice controls how the agent talks TO YOU (not outbound artifact tone):
+#   exec-summary - 1-3 lines; lead with the decision or number
+#   standard     - scannable bullets/short lines, takeaway first (DEFAULT)
+#   technical    - more depth and domain jargon; still structured, not a wall
+#   verbose      - full detail with headers/bullets when you want everything
+#
+# Neither mode changes honesty, comp, consent, application-limit, or privacy gates.
+usage_mode: "standard"
+application_mode: "balanced"
+agent_voice: "standard"

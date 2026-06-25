@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/modes.schema.json",
+  "title": "Rolester Modes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "usage_mode": {
+      "type": "string",
+      "enum": ["lean", "standard", "full"],
+      "default": "standard",
+      "description": "Controls compute/cost/scope for discretionary work. Core gate/tailor/track/comms quality is unchanged."
+    },
+    "application_mode": {
+      "type": "string",
+      "enum": ["selective", "balanced", "high-volume"],
+      "default": "balanced",
+      "description": "Controls pursuit posture after discovery. Discovery stays recall-oriented; this changes promotion/review/apply behavior."
+    },
+    "agent_voice": {
+      "type": "string",
+      "enum": ["exec-summary", "standard", "technical", "verbose"],
+      "default": "standard",
+      "description": "Controls how the agent talks to the user (not outbound artifact tone). exec-summary=1-3 lines lead with decision; standard=scannable bullets/short lines takeaway-first (DEFAULT); technical=more depth/jargon, still structured; verbose=full detail with headers/bullets. Semantics defined in AGENTS.md#mode-switches."
+    }
+  }
+}

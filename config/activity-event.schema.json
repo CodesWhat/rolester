@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/activity-event.schema.json",
+  "title": "Rolester Activity Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "at", "type", "title"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable, content-derived id. Dedupes re-runs (backfill is idempotent)."
+    },
+    "at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp. Stored absolute; the dashboard renders it relative (\"Today, 9:12 AM\" / \"Jun 10\")."
+    },
+    "type": {
+      "type": "string",
+      "description": "Drives the per-event icon + default tone.",
+      "enum": [
+        "sourced",
+        "evaluated",
+        "tailored",
+        "drafted",
+        "applied",
+        "status_change",
+        "message",
+        "interview",
+        "offer",
+        "research",
+        "negotiation",
+        "failure",
+        "system"
+      ]
+    },
+    "actor": {
+      "type": "string",
+      "description": "agent = a Rolester skill did it (gets the ✦ Rolester marker); world = something happened to the candidate (inbound mail, status change).",
+      "enum": ["agent", "world"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Bold one-liner headline. Human-facing prose — placeholder-linted, never carries a private comp input."
+    },
+    "summary": {
+      "type": ["string", "null"],
+      "description": "Optional one-line supporting detail under the title."
+    },
+    "refs": {
+      "type": ["object", "null"],
+      "description": "Click-through targets so the feed entry opens the right drawer / link.",
+      "additionalProperties": true,
+      "properties": {
+        "applicationId": { "type": ["string", "null"] },
+        "company": { "type": ["string", "null"] },
+        "role": { "type": ["string", "null"] },
+        "url": { "type": ["string", "null"] }
+      }
+    },
+    "tone": {
+      "type": "string",
+      "description": "Visual tone. offer → success, rejection/failure → warning, everything else → info.",
+      "enum": ["info", "success", "warning"]
+    },
+    "needsUser": {
+      "type": "boolean",
+      "description": "true → render a quiet CTA and tie into Next Steps (the agent halted or needs a human action)."
+    },
+    "tags": {
+      "type": ["array", "null"],
+      "description": "Optional chips (e.g. [\"GATE pass\", \"92 fit\"]).",
+      "items": { "type": "string" }
+    },
+    "cta": {
+      "type": ["object", "null"],
+      "description": "Optional explicit call-to-action when needsUser is set (custom label + target).",
+      "additionalProperties": true,
+      "properties": {
+        "label": { "type": ["string", "null"] },
+        "url": { "type": ["string", "null"] }
+      }
+    },
+    "detail": {
+      "type": ["string", "object", "null"],
+      "description": "Optional richer payload surfaced in the drawer (free-form)."
+    },
+    "skill": {
+      "type": ["string", "null"],
+      "description": "The emitting skill id (e.g. \"track-outcomes\"). Optional, agent-actor events only. Turns the feed into a mutation audit trail; the dashboard ignores it for rendering."
+    },
+    "operation": {
+      "type": ["string", "null"],
+      "description": "Structured resource:verb describing the change (e.g. \"application:status-advance\", \"comm:reply-sent\"). Optional. Pairs with skill so you can answer 'what did skill X change at time T' without re-reading prose."
+    }
+  }
+}

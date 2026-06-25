@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/job.schema.json",
+  "title": "Rolester Saved Job",
+  "type": "object",
+  "required": ["frontmatter", "body"],
+  "additionalProperties": true,
+  "properties": {
+    "frontmatter": {
+      "type": "object",
+      "required": ["company", "role"],
+      "additionalProperties": true,
+      "properties": {
+        "company": { "type": "string" },
+        "role": { "type": "string" },
+        "reqId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "location": { "type": ["string", "null"] },
+        "mode": { "type": ["string", "null"] },
+        "comp": { "type": ["string", "null"] },
+        "status": { "type": ["string", "null"] },
+        "fitScore": { "type": ["number", "null"] },
+        "gate": { "type": ["string", "null"] },
+        "dateOpened": { "type": ["string", "null"] },
+        "postedAt": { "type": ["string", "null"] },
+        "fetchedAt": { "type": ["string", "null"] }
+      }
+    },
+    "body": { "type": "string" }
+  }
+}

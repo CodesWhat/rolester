@@ -1,0 +1,59 @@
+# Keep generated, private, and candidate data out of the image.
+
+# Node modules
+node_modules
+
+# Git history
+.git
+
+# Consolidated local user data root
+.rolester
+
+# Internal local runtime/planning artifacts
+.internal
+
+# Candidate profile data (user-owned, never in image)
+candidate
+
+# Generated workspace outputs
+workspace/jobs
+workspace/tailored
+workspace/intake
+workspace/scan-results
+workspace/comms
+workspace/interview-prep
+workspace/writing-samples
+workspace/research
+workspace/network-leads
+workspace/captures
+workspace/logos
+workspace/legacy
+workspace/tracker.*
+workspace/activity.jsonl
+workspace/dashboard-data.js
+workspace/modes.json
+workspace/settings.json
+workspace/library.json
+workspace/setup-state.json
+
+# User-specific search source config
+config/search-sources.yml
+config/search-sources.json
+config/sourced-scan.json
+
+# Private local planning docs
+ROADMAP.md
+ROADMAP-ARCHIVE.md
+docs/COMPARISON.md
+
+# Screenshots / render checks
+tracker-*.png
+
+# macOS metadata
+.DS_Store
+
+# Playwright browser binaries / MCP socket
+.playwright-mcp
+
+# Secrets / environment overrides
+.env*

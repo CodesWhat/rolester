@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/automation.schema.json",
+  "title": "Rolester Browser-Automation Config",
+  "description": "Opt-in authenticated browser automation. Defaults OFF — absence of this file means nothing is automated. A capability runs on a platform only if capabilities.<cap>.enabled AND capabilities.<cap>.platforms.<platform> AND consent.<platform> are all true.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "version": { "type": "integer" },
+    "consent": {
+      "description": "One-time per-platform ToS acknowledgment. true = the user has read that platform's automation terms and accepts the risk. Never set programmatically without the user's explicit yes.",
+      "type": "object",
+      "additionalProperties": { "type": "boolean" }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "status_polling": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        },
+        "authenticated_search": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        },
+        "messaging": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        },
+        "one_click_apply": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        },
+        "profile_optimize": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        },
+        "profile_apply": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        },
+        "mail_access": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        },
+        "relationship_sourcing": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        },
+        "calendar_sync": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        },
+        "calendar_read": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "platforms": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        }
+      }
+    },
+    "session": {
+      "description": "Tool-agnostic session-browser provider preference. See docs/BROWSER.md.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "provider": { "enum": ["extension", "playwright"], "default": "extension" },
+        "profile_root": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

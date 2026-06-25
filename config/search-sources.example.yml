@@ -1,0 +1,96 @@
+# Rolester search-source configuration — EXAMPLE / TEMPLATE.
+#
+# Rolester ships NO role, geography, or company defaults. Copy this file to
+# config/search-sources.yml (gitignored) and replace every placeholder below with
+# YOUR OWN targets. The values here are illustrative placeholders, not recommendations.
+
+title_filter:
+  positive:
+    - "Your Target Title"
+    - "A Secondary Target Title"
+  negative:
+    - "Intern"
+    - "Junior"
+    - "A Role Type To Exclude"
+
+location_filter:
+  always_allow:
+    - "Your Country"
+  allow:
+    - "Remote"
+    - "Your Country"
+  block:
+    - "A Region To Exclude"
+
+searches:
+  - provider: "HiringCafe"
+    source_type: "url-query"
+    label: "Your Target Role"
+    query: "your target role keywords"
+    enabled: true
+    recency:
+      mode: "since-last-run"
+      safetyMinutes: 30
+    searchState:
+      sortBy: "date"
+  - provider: "HiringCafe"
+    source_type: "url-query"
+    label: "A Secondary Search"
+    query: "another set of keywords"
+    enabled: true
+    recency:
+      mode: "since-last-run"
+      safetyMinutes: 30
+    searchState:
+      sortBy: "date"
+  - provider: "RemoteVibeCodingJobs"
+    source_type: "url-query"
+    label: "Remote board (RSS example)"
+    query: "your keywords"
+    rssUrl: "https://remotevibecodingjobs.com/feed.xml"
+    enabled: true
+    notes: "Next.js job board with RSS, query search, tech/culture paths, and source labels from boards like Jobicy, LinkedIn, Greenhouse, Ashby, RemoteOK, and Google Jobs."
+
+  # Wellfound (formerly AngelList Talent) — startup/tech job marketplace.
+  # Auto-seeded for tech domains only (isTechDomain gate). Any domain can add manually.
+  # URL format is path-based (not query-param): /role/r/{slug} (remote), /role/l/{slug}/{loc}, /role/{slug}.
+  # Requires browser/Playwright — plain HTTP fetch returns 403.
+  - provider: "Wellfound"
+    source_type: "browser"
+    label: "Wellfound"
+    url: "https://wellfound.com/role/r/your-role-slug"
+    enabled: true
+
+  # Lever ATS — per-company job board. Auto-seeded from targeting.tracked_companies.
+  # Board URL  : https://jobs.lever.co/{company-slug}      (human-facing, SPA)
+  # JSON API   : https://api.lever.co/v0/postings/{company-slug}?mode=json  (set json: true)
+  # Slug may differ from company display name — verify by visiting the board URL.
+  - provider: "Lever"
+    source_type: "ats"
+    label: "Lever – acme"
+    url: "https://jobs.lever.co/acme"
+    enabled: true
+
+tracked_companies: []
+
+source_catalog:
+  aggregators:
+    - "HiringCafe"
+    - "RemoteVibeCodingJobs"
+    - "Wellfound"
+    - "LinkedIn"
+    - "Google Jobs"
+  ats:
+    - "Ashby"
+    - "Greenhouse"
+    - "Lever"
+    - "Workable"
+    - "SmartRecruiters"
+    - "Recruitee"
+    - "Workday"
+  remote_boards:
+    - "RemoteOK"
+    - "Jobicy"
+    - "Working Nomads"
+    - "We Work Remotely"
+    - "Remotive"

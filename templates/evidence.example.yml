@@ -1,0 +1,15 @@
+claims:
+  - id: "project-001"
+    claim: "Built production AI workflows from prototype to deployment."
+    evidence: "Describe the real project, scope, stakeholders, and shipped result."
+    metrics:
+      - "Add measurable impact if true."
+    links:
+      - "https://example.com/project"
+    role_signals:
+      - "prototype-to-production"
+      - "agentic workflow"
+    allowed_wording:
+      - "production AI workflow"
+    forbidden_wording:
+      - "model training"

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rolester.local/schemas/profile.schema.json",
+  "title": "Rolester Candidate Profile",
+  "type": "object",
+  "required": ["candidate", "compensation", "location", "authorization"],
+  "additionalProperties": false,
+  "properties": {
+    "candidate": {
+      "type": "object",
+      "required": ["full_name", "email"],
+      "additionalProperties": true,
+      "properties": {
+        "full_name": { "type": "string" },
+        "preferred_name": { "type": "string" },
+        "headline": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "linkedin": { "type": "string" },
+        "github": { "type": "string" },
+        "portfolio": { "type": "string" },
+        "domain": { "type": "string" },
+        "toolchain": { "type": "string", "enum": ["pandoc", "libreoffice", "word", "markdown-only"] }
+      }
+    },
+    "compensation": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "currency": { "type": "string", "default": "USD" },
+        "current_comp_shareable": { "type": "boolean", "default": false },
+        "current_base": { "type": ["number", "null"] },
+        "target_base": { "type": ["number", "null"] },
+        "minimum_base": { "type": ["number", "null"] },
+        "target_total_comp": { "type": ["number", "null"] },
+        "cash_over_equity": { "type": "boolean", "default": true },
+        "expected_base": { "type": ["number", "null"] },
+        "oe_min_base": { "type": ["number", "null"] },
+        "oe_max_base": { "type": ["number", "null"] },
+        "relo_package_needs": { "type": "string" },
+        "benefits_priorities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered list of benefits/perks priorities captured during ingest-profile optional-areas interview (e.g. ['401k match', 'equity', 'unlimited PTO', 'health/dental/vision']). Captured only when user opts into the benefits optional area."
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "home": { "type": "string" },
+        "remote": { "type": "boolean" },
+        "hybrid": { "type": "boolean" },
+        "onsite": { "type": "boolean" },
+        "relocation": { "type": "array", "items": { "type": "string" } },
+        "travel_tolerance": { "type": "string" }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "work_authorized": { "type": "boolean" },
+        "requires_sponsorship": { "type": "boolean" },
+        "notice_period": { "type": "string" }
+      }
+    },
+    "availability": {
+      "description": "Optional scheduling preferences read by schedule-meeting. Absent = neutral: the skill derives the timezone from location and asks for preferences once, then offers to persist them here. No field is required.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "timezone": { "type": ["string", "null"], "description": "IANA timezone, e.g. \"America/New_York\". If absent, derived from location.home." },
+        "working_hours": { "type": ["string", "null"], "description": "Preferred meetable hours in local time, e.g. \"09:00-18:00\"." },
+        "preferred_days": { "type": ["array", "null"], "items": { "type": "string" }, "description": "Preferred meeting days, e.g. [\"Mon\",\"Tue\",\"Wed\",\"Thu\"]." },
+        "preferred_times": { "type": ["string", "null"], "description": "Free-text window preference, e.g. \"afternoons\"." },
+        "buffer_minutes": { "type": ["number", "null"], "description": "Minimum gap to keep between meetings." },
+        "default_meeting_minutes": { "type": ["number", "null"], "description": "Default meeting length when none is stated." },
+        "blackout": { "type": ["array", "null"], "items": { "type": "string" }, "description": "Windows to never book, e.g. \"daily 12:00-13:00\" or \"Fri 15:00-17:00\"." },
+        "scheduling_link": { "type": ["string", "null"], "description": "Optional self-serve scheduling URL the candidate may share instead of proposing slots." }
+      }
+    }
+  }
+}
