@@ -1,0 +1,63 @@
+---
+title: Discovering Companies
+description: Grow your target-company set when the sweep returns only roles at familiar names.
+---
+
+The `search-jobs` sweep runs against a configured set of boards and companies.
+When that set is exhausted, the same names keep appearing. `discover-companies`
+and `research-boards` are the two skills that grow the inputs.
+
+## discover-companies
+
+When you want to find new employers to track:
+
+> find companies that are hiring [role] / add companies to my search
+> what companies should I be targeting?
+> the sweep keeps showing the same names
+
+`discover-companies` web-searches for employers likely to be hiring your target
+roles, resolves each result to a scannable ATS careers board, legitimacy-screens
+them (filters staffing farms and no-board results), and proposes adding them to
+`config/sourced-scan.json` `tracked_companies[]`.
+
+It is **confirm-first**: you review the proposed additions and approve before
+anything is written.
+
+This is the company analog of `research-boards` — `research-boards` finds boards
+and aggregators, `discover-companies` finds employers and wires their specific
+board into the sweep.
+
+## research-boards
+
+When you want new job boards or aggregators:
+
+> find more job boards / what sources should I add? / the queue has gone dry
+
+`research-boards` web-searches for boards relevant to your domain and role
+families, legitimacy-screens each result, and proposes adding them to
+`config/search-sources.yml`.
+
+Again, confirm-first — nothing is written until you approve.
+
+## setup-searches
+
+After adding new companies or boards, the sweep picks them up automatically on
+the next run. To rebuild or tune your search configuration from scratch:
+
+> set up my searches / rebuild my search config
+
+`setup-searches` generates a baseline search config from your role buckets, lets
+you curate the enabled sources, and imports individual searches (including pasted
+board URLs with embedded filters preserved).
+
+## How the sweep works
+
+Once your search config is in place:
+
+> run a search / source new roles / refresh the queue
+
+`search-jobs` scans your configured sources, dedupes against the existing
+`sourced[]` queue and `applications[]` history, checks link liveness, applies a
+coarse triage fit score to each new entry (fitScore / fitBucket / fitBasis), and
+saves the JD bodies locally. Top-scoring sourced roles can optionally be handed
+to `evaluate-job` for an immediate body-read gate.
