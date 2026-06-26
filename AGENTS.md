@@ -1,5 +1,7 @@
 # Rolester Agent Router
 
+This is the agent operating contract. Humans setting up: see README.md first.
+
 Read this before doing job-search work in this repo.
 
 If `candidate/AGENTS.md` exists, read it too — `ingest-profile` generates it to
@@ -60,6 +62,13 @@ let's get started" (or anything that isn't a specific task):
    exports, notes — in any order. Route each piece via **Paste Intake** below.
 6. Once there's enough to be useful, render the tracker and show them where they
    stand. Setup can continue incrementally; don't block on completeness.
+
+## Keeping Current
+
+Run `rolester update` (or `node bin/rolester.mjs update` from the clone) to pull
+the latest code from npm. Rolester is published at `rolester@latest`; the update
+command does a privacy-guarded tarball extract so your `candidate/` and
+`workspace/` data are never touched.
 
 ## Dashboard Dev Server Contract
 

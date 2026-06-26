@@ -4,12 +4,25 @@ Rolester is a local, skill-driven job-search workspace. An agent (Claude Code,
 Codex, or any AGENTS.md-aware tool) drives the workflow; the CLI scaffolds,
 renders, and serves the dashboard.
 
-## First Run
+## Prerequisites
+
+- Node.js >= 18
+- A coding-agent CLI on your PATH — Claude Code or Codex:
+  - Claude Code:  `npm install -g @anthropic-ai/claude-code`  (<https://claude.com/claude-code>)
+  - Codex:        `npm install -g @openai/codex`               (<https://github.com/openai/codex>)
+
+## Get It Running
 
 ```bash
-node bin/rolester.mjs start            # once published: npx rolester start
-node bin/rolester.mjs start claude     # …or name the agent to launch
+git clone https://github.com/CodesWhat/rolester
+cd rolester
+npm install
+node bin/rolester.mjs start claude        # or: node bin/rolester.mjs start codex
 ```
+
+That scaffolds your workspace, installs the skills, opens the dashboard at
+http://localhost:7777, and hands off to your agent. Then paste a job posting and say
+"evaluate this" — or try the bundled sample under `examples/sample-jobs/`.
 
 `start` does the whole arc in one shot:
 
@@ -25,6 +38,15 @@ codex`, or any CLI on your PATH). Omit it to use the first one found.
 
 Flags: `--no-agent` (scaffold + dashboard only), `--no-dashboard`,
 `--agent <name>` (alias for the positional), `--port <n>`.
+
+## Update Later
+
+```bash
+node bin/rolester.mjs update     # fetches the latest published code; your data is untouched
+```
+
+The update command pulls the latest release from npm and overwrites only the
+code. Your `workspace/` and `candidate/` data are not touched.
 
 ## Manual Wiring
 
@@ -122,6 +144,18 @@ stays available while the launched agent works.
 the open page over Server-Sent Events.
 
 ## Workspace Directories
+
+By default `workspace/` and `candidate/` are created inside the cloned repo.
+Set `ROLESTER_HOME` to put them somewhere else:
+
+```bash
+export ROLESTER_HOME=~/rolester-data
+node bin/rolester.mjs start claude
+```
+
+Everything under `ROLESTER_HOME` is gitignored and never touches the repo tree.
+Useful if you want to share one data directory across multiple checkouts or keep
+your personal files off a work machine's repo path.
 
 Generated and private artifacts live under `workspace/` (gitignored):
 

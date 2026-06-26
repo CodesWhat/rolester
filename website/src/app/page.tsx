@@ -724,6 +724,208 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── GET IT ────────────────────────────────── */}
+      <section id="get" aria-labelledby="get-h2">
+        <div className="wrap">
+          <div className="ai-section reveal">
+            <div className="ai-section-inner">
+              <div>
+                <div className="section-label">Get Rolester</div>
+                <h2 className="section-h2" id="get-h2">
+                  Clone it. Run it. Own it.
+                </h2>
+                <p className="section-sub">
+                  Free to self-host, source-available (BUSL-1.1). No install
+                  wizard, no account, no cloud. Clone the repo and one command
+                  does the rest.
+                </p>
+                <div style={{ marginTop: "28px" }}>
+                  <div
+                    style={{
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "var(--ink-soft)",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    Prerequisites
+                  </div>
+                  <ul
+                    style={{
+                      listStyle: "none",
+                      padding: 0,
+                      margin: 0,
+                      fontSize: "0.875rem",
+                      color: "var(--ink-soft)",
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    <li>Node.js &gt;= 18</li>
+                    <li style={{ marginTop: "8px" }}>
+                      A coding-agent CLI on your PATH:
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          padding: "6px 0 0 14px",
+                          margin: 0,
+                        }}
+                      >
+                        <li>
+                          <strong style={{ color: "var(--ink)" }}>
+                            Claude Code
+                          </strong>{" "}
+                          <code
+                            style={{
+                              fontSize: "0.8rem",
+                              background: "rgba(44,35,29,0.06)",
+                              padding: "2px 5px",
+                              borderRadius: "3px",
+                            }}
+                          >
+                            npm install -g @anthropic-ai/claude-code
+                          </code>{" "}
+                          <a
+                            href="https://claude.com/claude-code"
+                            style={{
+                              color: "var(--coral)",
+                              fontSize: "0.8rem",
+                            }}
+                          >
+                            claude.com/claude-code
+                          </a>
+                        </li>
+                        <li style={{ marginTop: "4px" }}>
+                          <strong style={{ color: "var(--ink)" }}>Codex</strong>{" "}
+                          <code
+                            style={{
+                              fontSize: "0.8rem",
+                              background: "rgba(44,35,29,0.06)",
+                              padding: "2px 5px",
+                              borderRadius: "3px",
+                            }}
+                          >
+                            npm install -g @openai/codex
+                          </code>{" "}
+                          <a
+                            href="https://github.com/openai/codex"
+                            style={{
+                              color: "var(--coral)",
+                              fontSize: "0.8rem",
+                            }}
+                          >
+                            github.com/openai/codex
+                          </a>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "var(--ink-soft)",
+                    marginBottom: "10px",
+                  }}
+                >
+                  Get it running
+                </div>
+                <div
+                  className="terminal-sticker"
+                  role="region"
+                  aria-label="Getting started commands"
+                >
+                  <div className="terminal-dots" aria-hidden="true">
+                    <div className="terminal-dot terminal-dot-red" />
+                    <div className="terminal-dot terminal-dot-yellow" />
+                    <div className="terminal-dot terminal-dot-green" />
+                  </div>
+                  <div className="terminal-prompt">~ $</div>
+                  <div className="terminal-command">
+                    git clone https://github.com/CodesWhat/rolester
+                    <br />
+                    cd rolester
+                    <br />
+                    npm install
+                    <br />
+                    node bin/rolester.mjs start claude
+                    <span className="terminal-cursor" aria-hidden="true" />
+                  </div>
+                  <div className="terminal-comment">
+                    # or: node bin/rolester.mjs start codex
+                    <br /># scaffolds workspace, installs skills, opens dashboard
+                    at localhost:7777
+                    <br /># then hands off to the agent
+                  </div>
+                </div>
+                <p
+                  style={{
+                    marginTop: "12px",
+                    fontSize: "0.85rem",
+                    color: "var(--ink-soft)",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Paste a job posting and say &ldquo;evaluate this&rdquo; to
+                  kick off the loop. Or try the bundled sample under{" "}
+                  <code
+                    style={{
+                      fontSize: "0.82rem",
+                      background: "rgba(44,35,29,0.06)",
+                      padding: "2px 5px",
+                      borderRadius: "3px",
+                    }}
+                  >
+                    examples/sample-jobs/
+                  </code>
+                  .
+                </p>
+                <div style={{ marginTop: "28px" }}>
+                  <div
+                    style={{
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "var(--ink-soft)",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    Update later
+                  </div>
+                  <div
+                    className="terminal-sticker"
+                    role="region"
+                    aria-label="Update command"
+                  >
+                    <div className="terminal-dots" aria-hidden="true">
+                      <div className="terminal-dot terminal-dot-red" />
+                      <div className="terminal-dot terminal-dot-yellow" />
+                      <div className="terminal-dot terminal-dot-green" />
+                    </div>
+                    <div className="terminal-prompt">~ rolester $</div>
+                    <div className="terminal-command">
+                      node bin/rolester.mjs update
+                      <span className="terminal-cursor" aria-hidden="true" />
+                    </div>
+                    <div className="terminal-comment">
+                      # fetches the latest published code, your data stays
+                      untouched
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── FINAL CTA ─────────────────────────────── */}
       <section className="final-cta" aria-labelledby="final-h2">
         <div className="wrap">
