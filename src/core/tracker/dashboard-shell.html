@@ -8834,6 +8834,8 @@ function syncLogoTheme(isDark) {
   document.querySelectorAll('img.avatar-logo-img[data-logo-base]').forEach((img) => {
     const base = img.getAttribute('data-logo-base');
     if (!base) return;
+    // Validate that the base URL is a safe https:// URL before using it as src.
+    try { if (new URL(base).protocol !== 'https:') return; } catch (e) { return; }
     const next = isDark ? base + '&theme=dark' : base;
     if (img.getAttribute('src') !== next) img.setAttribute('src', next);
   });

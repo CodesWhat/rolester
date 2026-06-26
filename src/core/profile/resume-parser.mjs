@@ -122,16 +122,28 @@ function extractUrls(text) {
   return [...new Set(matches)];
 }
 
+function hostnameMatches(url, domain) {
+  try {
+    const h = new URL(url).hostname.toLowerCase();
+    return h === domain || h.endsWith(`.${domain}`);
+  } catch {
+    return false;
+  }
+}
+
 function extractLinkedin(urls) {
-  return urls.find((u) => u.includes("linkedin.com")) || null;
+  return urls.find((u) => hostnameMatches(u, "linkedin.com")) || null;
 }
 
 function extractGithub(urls) {
-  return urls.find((u) => u.includes("github.com")) || null;
+  return urls.find((u) => hostnameMatches(u, "github.com")) || null;
 }
 
 function extractPortfolio(urls) {
-  return urls.find((u) => !u.includes("linkedin.com") && !u.includes("github.com")) || null;
+  return (
+    urls.find((u) => !hostnameMatches(u, "linkedin.com") && !hostnameMatches(u, "github.com")) ||
+    null
+  );
 }
 
 // Heuristic: the first non-empty line that is not a heading, has no @, no URL,
