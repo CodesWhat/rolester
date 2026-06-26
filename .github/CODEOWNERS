@@ -1,0 +1,10 @@
+# Code owners for CodesWhat/rolester.
+#
+# The "Main branch protection" ruleset (scripts/protect-main.sh) turns on
+# require_code_owner_review, which resolves against this file. Without an entry
+# here that rule is vacuous; with one, a PR touching owned paths needs an
+# approval from an owner (who must have write access to count).
+#
+# @biggest-littlest is the repo-admin account. ALARGECOMPANY is read-only, so it
+# can add a second approval but is not a valid code owner.
+* @biggest-littlest

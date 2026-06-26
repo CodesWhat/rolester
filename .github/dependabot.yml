@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # GitHub Actions — keeps publish.yml's actions current (e.g. the checkout /
+  # setup-node@v4 deprecation warning surfaced on the v0.2.0 publish run).
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "📦 deps(actions)"
+    open-pull-requests-limit: 5
+
+  # npm — root devDependencies (biome, lefthook, playwright, turbo) and the
+  # website workspace. Grouped so related bumps land in one PR.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "📦 deps"
+    open-pull-requests-limit: 5
+    groups:
+      dev-tooling:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
