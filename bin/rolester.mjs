@@ -34,6 +34,7 @@ import {
   existsSync,
   mkdirSync,
   openSync,
+  readFileSync,
   writeFileSync,
 } from "node:fs";
 import { delimiter, join } from "node:path";
@@ -79,6 +80,11 @@ const AGENT_CANDIDATES = [
   { name: "Claude Code", bin: "claude" },
   { name: "Codex", bin: "codex" },
 ];
+
+if (command === "version" || command === "--version" || command === "-v") {
+  console.log(readVersion());
+  process.exit(0);
+}
 
 if (!command || command === "help" || command === "--help" || command === "-h") {
   printHelp();
@@ -351,6 +357,14 @@ function run(scriptPath, extra) {
   return res.status == null ? 1 : res.status;
 }
 
+function readVersion() {
+  try {
+    return JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version || "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
 function printHelp() {
   console.log(`rolester — agentic job-search workspace
 
@@ -367,6 +381,7 @@ Commands:
   restore     Recover workspace/tracker.json from a rolling snapshot (list / restore by index or name)
   automation  Show/toggle opt-in browser-automation config (defaults OFF)
   export      Render a tailored artifact / packet to PDF or DOCX
+  version     Print the installed Rolester version (also --version, -v)
   help        Show this list
 
 start [ai]:
