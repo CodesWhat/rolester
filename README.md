@@ -16,35 +16,41 @@ Tagline:
 
 > Find, vet, and advance the right roles.
 
-## Test drive (start here)
+## Quickstart
 
-Everything runs locally from your clone. Nothing you enter leaves your machine,
-and there's no account, server, or build step.
+**Prerequisites:**
 
-**You need two things:**
+- Node.js ≥ 18 — check with `node -v`
+- A coding-agent CLI on your PATH — Claude Code or Codex:
+  - Claude Code: `npm install -g @anthropic-ai/claude-code` ([claude.com/claude-code](https://claude.com/claude-code))
+  - Codex: `npm install -g @openai/codex` ([github.com/openai/codex](https://github.com/openai/codex))
 
-- **Node.js ≥ 18** — check with `node -v`.
-- **An agent CLI on your PATH** — `claude` (Claude Code) *or* `codex`. Rolester is
-  an *agent runtime*: this CLI sets up the workspace and the dashboard, but the
-  actual job-search work happens inside your agent reading the skills. Either works.
-
-No `npm install` needed — Rolester has zero runtime dependencies.
-
-**One command does everything:**
+**Get it running:**
 
 ```bash
-node bin/rolester.mjs start claude     # …or: node bin/rolester.mjs start codex
+git clone https://github.com/CodesWhat/rolester
+cd rolester
+npm install
+node bin/rolester.mjs start claude        # or: node bin/rolester.mjs start codex
 ```
 
-That command:
+That scaffolds your workspace, installs the skills, opens the dashboard at
+`http://localhost:7777`, and hands off to your agent. Then paste a job posting and
+say "evaluate this" — or try the bundled sample under `examples/sample-jobs/`.
 
-1. scaffolds your `workspace/`,
-2. installs the skills so your agent can see `/apply-job`, `/evaluate-job`, … ,
-3. seeds demo data and boots the live dashboard at **http://localhost:7777**, then
-4. launches your agent right here with a starter message — and from there **the
-   agent drives everything, conversationally.** You don't run a setup checklist;
-   you talk to it. It reads `AGENTS.md`, confirms the skills are wired, and walks
-   you through onboarding.
+**Update later:**
+
+```bash
+node bin/rolester.mjs update     # fetches the latest published code; your data is untouched
+```
+
+Nothing you enter leaves your machine. No account, no server, no build step.
+
+Rolester is an *agent runtime*: the CLI sets up the workspace and dashboard, but the
+actual job-search work happens inside your agent reading the skills.
+
+**Useful flags:** `--no-agent` (scaffold + dashboard only), `--no-dashboard`,
+`--agent <name>` (any CLI on your PATH, e.g. `cursor`), `--port <n>` (default 7777).
 
 ### A 5-minute path to confirm the whole loop works
 
@@ -53,9 +59,10 @@ Once your agent is up, use it the way a real candidate would:
 1. **Let it onboard you.** It builds a profile by asking a few questions. To kick
    the tires without using real details, just say: *"set me up with a quick sample
    profile so I can test the flow."*
-2. **Paste a real job posting** (a JD copied from anywhere, or a posting URL) and
-   say *"evaluate this."* You should get a `GATE / FIT / COMP / ACTION` verdict from
-   an actual read of the posting — not a keyword match.
+2. **Paste a job posting** (a JD copied from anywhere, a posting URL, or the bundled
+   sample in `examples/sample-jobs/`) and say *"evaluate this."* You should get a
+   `GATE / FIT / COMP / ACTION` verdict from an actual read of the posting — not a
+   keyword match.
 3. **Ask it to tailor:** *"write a resume and cover letter for this."* It builds
    honest artifacts from the profile's evidence bank and refuses to invent facts.
 4. **Paste a recruiter email** and say *"draft a reply"* — it routes to the comms
@@ -73,14 +80,10 @@ folder and say:
 > read the README and AGENTS.md, set yourself up, and walk me through testing
 > Rolester end to end
 
-**Useful flags:** `--no-agent` (scaffold + dashboard only), `--no-dashboard`,
-`--agent <name>` (any CLI on your PATH, e.g. `cursor`), `--port <n>` (default 7777).
-
 **What's normal, not a bug:** until you onboard, `node bin/rolester.mjs doctor`
 reports that local candidate setup is incomplete and lists `candidate/*.yml` to
 create — that's the expected pre-setup state, and your agent fills it in during
-onboarding. This is a pre-release build (`0.0.0`, unpublished), so run it via
-`node bin/rolester.mjs …` from the clone rather than `npx rolester`.
+onboarding.
 
 ## What It Is
 

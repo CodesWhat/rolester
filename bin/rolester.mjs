@@ -229,6 +229,14 @@ async function runStart(extra) {
         console.log(`Couldn't find "${forcedAgent}" on your PATH.`);
       } else {
         console.log("No agent CLI found on PATH (looked for: claude, codex).");
+        console.log("");
+        console.log("Install one:");
+        console.log(
+          "  Claude Code:  npm install -g @anthropic-ai/claude-code   (https://claude.com/claude-code)"
+        );
+        console.log(
+          "  Codex:        npm install -g @openai/codex               (https://github.com/openai/codex)"
+        );
       }
       console.log("Open your agent in this folder and say:\n");
       console.log(`    ${STARTER_PROMPT}\n`);

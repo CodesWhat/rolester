@@ -1,38 +1,41 @@
 # Rolester — AGENTS.md
 
-> For AI coding agents (Claude Code, Codex, Cursor, Gemini CLI — anything that reads
-> AGENTS.md). If someone pointed you at this file or its URL: read it, then set them up by
-> following the steps below. This is the front door; the full operating contract ships
-> inside the repo.
+> **For humans:** this file is the AI agent's operating manual, not a setup guide for people.
+> If you're trying to install Rolester, see the README at
+> https://github.com/CodesWhat/rolester or the site at rolester.codeswhat.com instead.
+
+> **For AI agents:** you landed in the right place. Read this file, then follow the steps
+> below to set the user up. The full operating contract ships inside the repo.
 
 ## What Rolester is
 
 An agentic, local-first job-search workspace. It helps one person find, vet, tailor,
 track, and prep for roles — from their own data, on their own machine, driven by their own
 AI agent (you). It isn't a site you log into; it's a set of skills you run locally. No
-cloud, no account, no telemetry. Free, MIT-licensed, zero runtime dependencies.
+cloud, no account, no telemetry. Free to self-host, source-available (BUSL-1.1), zero runtime dependencies.
 
 ## Requirements
 
 - Node.js >= 18
-- An agent CLI on PATH — `claude` or `codex` (Rolester runs *through* you)
-- Nothing else. There is no `npm install` step.
+- A coding-agent CLI on PATH — Claude Code or Codex (Rolester runs *through* you):
+  - Claude Code: `npm install -g @anthropic-ai/claude-code` (https://claude.com/claude-code)
+  - Codex: `npm install -g @openai/codex` (https://github.com/openai/codex)
 
 ## Install & start
 
-Pre-release (not on npm yet), so install from the repo:
+Clone the repo and run it in-tree. The agent runs from source, so a local clone is the canonical path:
 
 ```
 git clone https://github.com/CodesWhat/rolester
 cd rolester
-node bin/rolester.mjs start claude     # or: node bin/rolester.mjs start codex
+npm install
+node bin/rolester.mjs start claude        # or: node bin/rolester.mjs start codex
 ```
-
-Once it's published this becomes `npx rolester start`.
 
 `start` scaffolds a local `workspace/`, installs the skills (so `/evaluate-job`,
 `/apply-job`, etc. become available), seeds demo data and boots a live dashboard at
-http://localhost:7777, then hands control to you with a starter message.
+http://localhost:7777, then hands control to you with a starter message. Paste a job
+posting and say "evaluate this", or try the bundled sample under `examples/sample-jobs/`.
 
 ## After it starts — what to do
 
@@ -79,9 +82,9 @@ This file only gets you to the front door — don't improvise procedures it cove
 
 ## Keeping current
 
-- **Update an install:** `git pull` in the `rolester` folder, then re-run
-  `node bin/rolester.mjs start <agent>`. The user's `workspace/` and `candidate/` data are
-  preserved across updates.
+- **Update an install:** run `node bin/rolester.mjs update` in the `rolester` folder.
+  It fetches the latest published code via npm; your `workspace/` and `candidate/` data are
+  untouched.
 - **This file** is maintained by hand and versioned with Rolester releases — a short
   onboarding pointer, not a living memory. For anything deeper, defer to the repo `AGENTS.md`
   and `docs/`, which are the canonical, always-current sources. Don't auto-generate it.
