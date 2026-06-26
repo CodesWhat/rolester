@@ -624,8 +624,14 @@ function networkRecord(records, company) {
 
 function cleanContactName(value, company) {
   const companyName = normalizeName(company);
-  let text = String(value || "")
-    .replace(/<[^>]+>/g, "")
+  // Strip HTML tags in a loop so nested-tag patterns don't leave fragments.
+  let text = String(value || "");
+  let _prev;
+  do {
+    _prev = text;
+    text = _prev.replace(/<[^>]*>/g, "");
+  } while (text !== _prev);
+  text = text
     .replace(/\([^)]*\)/g, "")
     .replace(/^["']|["']$/g, "")
     .trim();

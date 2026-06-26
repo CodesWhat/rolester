@@ -307,11 +307,17 @@ function normalizeSearchSource(source = {}) {
 }
 
 function inferProviderFromUrl(url = "") {
-  const raw = String(url || "").toLowerCase();
-  if (raw.includes("hiring.cafe")) return "hiringcafe";
-  if (raw.includes("linkedin.com")) return "linkedin";
-  if (raw.includes("wellfound.com")) return "wellfound";
-  if (raw.includes("jobs.lever.co") || raw.includes("lever.co")) return "lever";
+  let hostname;
+  try {
+    hostname = new URL(String(url || "")).hostname.toLowerCase();
+  } catch {
+    return "generic";
+  }
+  if (hostname === "hiring.cafe" || hostname.endsWith(".hiring.cafe")) return "hiringcafe";
+  if (hostname === "linkedin.com" || hostname.endsWith(".linkedin.com")) return "linkedin";
+  if (hostname === "wellfound.com" || hostname.endsWith(".wellfound.com")) return "wellfound";
+  if (hostname === "jobs.lever.co" || hostname === "lever.co" || hostname.endsWith(".lever.co"))
+    return "lever";
   return "generic";
 }
 

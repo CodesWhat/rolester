@@ -331,19 +331,29 @@ export function htmlToText(value = "") {
 }
 
 function decodeHtmlEntities(value = "") {
-  return String(value)
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&rsquo;/g, "'")
-    .replace(/&lsquo;/g, "'")
-    .replace(/&rdquo;/g, '"')
-    .replace(/&ldquo;/g, '"')
-    .replace(/&mdash;|&#8212;|&#x2014;/gi, "—")
-    .replace(/&ndash;|&#8211;|&#x2013;/gi, "–")
-    .replace(/&nbsp;/g, " ");
+  const ENTITY_MAP = {
+    "&lt;": "<",
+    "&gt;": ">",
+    "&amp;": "&",
+    "&quot;": '"',
+    "&#39;": "'",
+    "&rsquo;": "'",
+    "&lsquo;": "'",
+    "&rdquo;": '"',
+    "&ldquo;": '"',
+    "&mdash;": "—",
+    "&#8212;": "—",
+    "&#x2014;": "—",
+    "&ndash;": "–",
+    "&#8211;": "–",
+    "&#x2013;": "–",
+    "&nbsp;": " ",
+  };
+  // Single-pass replacement avoids order-dependent double-decoding.
+  return String(value).replace(
+    /&(?:lt|gt|amp|quot|#39|rsquo|lsquo|rdquo|ldquo|mdash|#8212|#x2014|ndash|#8211|#x2013|nbsp);/gi,
+    (m) => ENTITY_MAP[m.toLowerCase()] ?? m
+  );
 }
 
 export function inferProvider(entry = {}) {
@@ -427,7 +437,7 @@ export function extractReqId(rawUrl = "") {
     if (url.hostname === "jobs.lever.co" && lever)
       return { provider: "lever", value: lever[1], id: `lever:${lever[1].toLowerCase()}` };
     const apple = path.match(/\/details\/([0-9-]+)/);
-    if (url.hostname.includes("apple.com") && apple)
+    if ((url.hostname === "apple.com" || url.hostname.endsWith(".apple.com")) && apple)
       return { provider: "apple", value: apple[1], id: `apple:${apple[1]}` };
     const hiringCafe = path.match(/\/job\/([a-z0-9_-]+)/i);
     if (url.hostname === "hiring.cafe" && hiringCafe)
@@ -437,7 +447,7 @@ export function extractReqId(rawUrl = "") {
         id: `hiringcafe:${hiringCafe[1].toLowerCase()}`,
       };
     const linkedIn = path.match(/\/jobs\/view\/(\d+)/);
-    if (url.hostname.endsWith("linkedin.com") && linkedIn)
+    if ((url.hostname === "linkedin.com" || url.hostname.endsWith(".linkedin.com")) && linkedIn)
       return { provider: "linkedin", value: linkedIn[1], id: `linkedin:${linkedIn[1]}` };
   } catch {
     return { provider: null, value: null, id: null };

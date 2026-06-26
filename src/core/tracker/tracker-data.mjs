@@ -309,7 +309,8 @@ function extractLikelyReqId(rawUrl) {
     const lever = path.match(/\/([^/]+)$/);
     if (url.hostname === "jobs.lever.co" && lever) return `lever:${lever[1].toLowerCase()}`;
     const apple = path.match(/\/details\/([0-9-]+)/);
-    if (url.hostname.includes("apple.com") && apple) return `apple:${apple[1]}`;
+    if ((url.hostname === "apple.com" || url.hostname.endsWith(".apple.com")) && apple)
+      return `apple:${apple[1]}`;
   } catch {
     return null;
   }

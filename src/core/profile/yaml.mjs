@@ -315,7 +315,7 @@ function parseScalar(s) {
   // Double-quoted string.
   if (t.startsWith('"') && t.endsWith('"') && t.length >= 2) {
     const inner = t.slice(1, -1);
-    return inner.replace(/\\"/g, '"').replace(/\\\\/g, "\\").replace(/\\n/g, "\n");
+    return inner.replace(/\\(["\\n])/g, (_, c) => (c === "n" ? "\n" : c));
   }
 
   // Single-quoted string.
