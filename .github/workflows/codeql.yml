@@ -1,0 +1,43 @@
+name: codeql
+
+# CodeQL code scanning (free on public repos). Results land in the repo's Security →
+# Code scanning tab. This is the "advanced setup" (a custom workflow), so do NOT also
+# enable CodeQL default setup in the UI — they conflict.
+#
+# This runs scanning but does NOT gate merges: the ruleset deliberately does not (yet)
+# carry a `code_scanning` rule, so first-run alerts won't block PRs. Once the baseline
+# is clean, a `code_scanning` rule can be added to the Main branch protection ruleset.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "30 4 * * 1" # weekly, Monday 04:30 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: analyze
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
