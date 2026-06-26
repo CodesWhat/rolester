@@ -1,0 +1,169 @@
+// Shared update plumbing for `rolester update` (self-update) and
+// scripts/update-live.mjs (operator updates an external live tree).
+//
+// Both refresh CODE ONLY from the published npm package — the package.json `files`
+// whitelist excludes candidate/ and workspace/, so a user's real data is preserved
+// by construction. A privacy guard refuses any tarball that carries user-data paths
+// (which would mean the release itself leaked), so this also dogfoods every publish.
+
+import { spawn, spawnSync } from "node:child_process";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { resolveUserPaths } from "../paths/workspace.mjs";
+
+const UPDATE_CACHE_FILE = "update-check.json";
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // re-check the registry at most once a day
+
+export function readPkgVersion(dir) {
+  try {
+    return JSON.parse(readFileSync(join(dir, "package.json"), "utf8")).version || null;
+  } catch {
+    return null;
+  }
+}
+
+// Minimal semver compare for x.y.z and x.y.z-pre. Returns -1 / 0 / 1 (a vs b).
+export function compareVersions(a, b) {
+  const parse = (v) => {
+    const [core, pre] = String(v || "0.0.0").split("-");
+    return { nums: core.split(".").map((n) => Number.parseInt(n, 10) || 0), pre: pre || null };
+  };
+  const pa = parse(a);
+  const pb = parse(b);
+  for (let i = 0; i < 3; i++) {
+    const d = (pa.nums[i] || 0) - (pb.nums[i] || 0);
+    if (d !== 0) return d < 0 ? -1 : 1;
+  }
+  // Same core: a release (no prerelease) outranks a prerelease.
+  if (pa.pre && !pb.pre) return -1;
+  if (!pa.pre && pb.pre) return 1;
+  if (pa.pre && pb.pre) return pa.pre < pb.pre ? -1 : pa.pre > pb.pre ? 1 : 0;
+  return 0;
+}
+
+export function isNewer(current, candidate) {
+  if (!current || !candidate) return false;
+  return compareVersions(candidate, current) > 0;
+}
+
+// Resolve the published version for a dist-tag (or echo an explicit version). Returns
+// null on any failure (offline, unknown tag) — callers treat null as "couldn't check".
+export function latestVersion(tag = "latest") {
+  const res = spawnSync("npm", ["view", `rolester@${tag}`, "version"], { encoding: "utf8" });
+  if (res.status !== 0) return null;
+  const v = (res.stdout || "").trim();
+  return v || null;
+}
+
+// Download + unpack the published tarball for a spec (e.g. "rolester@latest").
+// Returns { tgz, entries, publishedVersion, cleanup }. Caller MUST call cleanup().
+export function fetchTarball(spec) {
+  const tmp = mkdtempSync(join(tmpdir(), "rolester-update-"));
+  const cleanup = () => {
+    try {
+      rmSync(tmp, { recursive: true, force: true });
+    } catch {
+      /* ignore temp cleanup failure */
+    }
+  };
+  try {
+    const pack = spawnSync("npm", ["pack", spec, "--pack-destination", tmp], { encoding: "utf8" });
+    if (pack.status !== 0) throw new Error(`npm pack failed:\n${pack.stderr || pack.stdout}`);
+    const tgzName = readdirSync(tmp).find((f) => f.endsWith(".tgz"));
+    if (!tgzName) throw new Error("npm pack produced no tarball");
+    const tgz = join(tmp, tgzName);
+
+    const list = spawnSync("tar", ["tzf", tgz], { encoding: "utf8" });
+    if (list.status !== 0) throw new Error(`could not read tarball: ${list.stderr}`);
+    const entries = list.stdout
+      .split("\n")
+      .filter(Boolean)
+      .map((p) => p.replace(/^package\//, ""));
+
+    let publishedVersion = null;
+    if (entries.includes("package.json")) {
+      const show = spawnSync("tar", ["xzfO", tgz, "package/package.json"], { encoding: "utf8" });
+      try {
+        publishedVersion = JSON.parse(show.stdout).version || null;
+      } catch {
+        /* leave null */
+      }
+    }
+    return { tgz, entries, publishedVersion, cleanup };
+  } catch (err) {
+    cleanup();
+    throw err;
+  }
+}
+
+// Privacy guard: tarball entries that carry user data (candidate/ or non-scaffold
+// workspace/). A non-empty result means the published package leaked — refuse to install.
+export function findUserDataLeaks(entries) {
+  return entries.filter(
+    (p) => /^candidate\//.test(p) || (/^workspace\//.test(p) && !/\.gitkeep$/.test(p))
+  );
+}
+
+// Extract a tarball's code over targetDir. tar only writes archived (code) paths and
+// never deletes unlisted files, so candidate/ and workspace/ in targetDir are untouched.
+export function extractOver(tgz, targetDir) {
+  const x = spawnSync("tar", ["xzf", tgz, "--strip-components=1", "-C", targetDir], {
+    encoding: "utf8",
+  });
+  if (x.status !== 0) throw new Error(`extract failed: ${x.stderr}`);
+}
+
+// ---------------------------------------------------------------------------
+// update-notifier: a cached, never-blocking "newer version available" check.
+
+function cacheFile(pathCtx) {
+  return join(resolveUserPaths(pathCtx).internalDir, UPDATE_CACHE_FILE);
+}
+
+export function writeUpdateCache(pathCtx, data) {
+  const dir = resolveUserPaths(pathCtx).internalDir;
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(cacheFile(pathCtx), `${JSON.stringify({ ...data })}\n`);
+}
+
+function readUpdateCache(pathCtx) {
+  try {
+    return JSON.parse(readFileSync(cacheFile(pathCtx), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+// Pure + synchronous: returns a one-line notice (or null) from the LAST cached check.
+// Never hits the network, so it never slows a command down.
+export function readUpdateNotice(pathCtx, currentVersion) {
+  const cache = readUpdateCache(pathCtx);
+  if (!cache?.latest || !currentVersion) return null;
+  if (!isNewer(currentVersion, cache.latest)) return null;
+  return `⬆ rolester ${currentVersion} → ${cache.latest} available — run \`rolester update\``;
+}
+
+// Refresh the cache in a detached child if it's missing or stale. Returns immediately;
+// the result lands for the NEXT invocation (the standard update-notifier pattern).
+export function refreshUpdateCacheInBackground(pathCtx, root) {
+  const cache = readUpdateCache(pathCtx);
+  const fresh = cache?.checkedAtMs && Date.now() - cache.checkedAtMs < CACHE_TTL_MS;
+  if (fresh) return;
+  const script = join(root, "scripts/update-check.mjs");
+  if (!existsSync(script)) return;
+  try {
+    const c = spawn(process.execPath, [script], { detached: true, stdio: "ignore" });
+    c.unref();
+  } catch {
+    /* best-effort; a failed refresh just means no notice next run */
+  }
+}

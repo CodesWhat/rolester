@@ -1,27 +1,29 @@
 #!/usr/bin/env node
-// update-live — refresh a live Rolester install from the PUBLISHED npm package.
+// update-live — operator tool: refresh an EXTERNAL live Rolester tree from the
+// published npm package, without cd-ing into it. (To self-update the current tree,
+// use `rolester update` instead — both share src/core/update/update-core.mjs.)
 //
-// Rolester's agent path runs in-tree (the agent's native edits are CWD-relative),
-// so a live install is a full repo tree with the user's real candidate/ + workspace/
-// data co-located. This script updates only the CODE in that tree by fetching the
-// published npm tarball and extracting it over the target — the tarball ships code
-// only (the package.json `files` whitelist excludes candidate/ and workspace/), so
-// the user's live search data is preserved by construction.
-//
-// It also doubles as a publish-pipeline check: before extracting, it refuses any
-// tarball that contains candidate/ or workspace data (a privacy leak in what npm
-// shipped), so running it against your own live install dogfoods the release.
+// Rolester's agent path runs in-tree, so a live install is a full repo tree with the
+// user's real candidate/ + workspace/ data co-located. This updates only the CODE by
+// extracting the published tarball over the target; the tarball ships code only (the
+// package.json `files` whitelist excludes candidate/ and workspace/), so live search
+// data is preserved by construction. A privacy guard refuses any tarball that carries
+// user-data paths, so running it against your own live install also dogfoods the release.
 //
 //   node scripts/update-live.mjs --target <dir> [--tag latest|rc|<version>] [--write]
 //
-// Dry run by default (prints what it would do + the one-liner to apply). Add
-// --write to actually extract over the target. Set ROLESTER_LIVE_DIR instead of
-// --target if you prefer.
+// Dry run by default. Add --write to extract over the target. Set ROLESTER_LIVE_DIR
+// instead of --target if you prefer.
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
+import {
+  extractOver,
+  fetchTarball,
+  findUserDataLeaks,
+  readPkgVersion,
+} from "../src/core/update/update-core.mjs";
 
 function parseArgs(argv) {
   const out = { target: process.env.ROLESTER_LIVE_DIR || null, tag: "latest", write: false };
@@ -43,16 +45,7 @@ function die(msg) {
   process.exit(1);
 }
 
-function readPkgVersion(dir) {
-  try {
-    return JSON.parse(readFileSync(join(dir, "package.json"), "utf8")).version || "?";
-  } catch {
-    return null;
-  }
-}
-
 function looksLikeRolesterTree(dir) {
-  // A real install tree has the code entrypoints; we update those, never the data.
   return existsSync(join(dir, "bin", "rolester.mjs")) && existsSync(join(dir, "src"));
 }
 
@@ -61,9 +54,9 @@ const opts = parseArgs(process.argv.slice(2));
 if (opts.help) {
   console.log(
     "Usage: node scripts/update-live.mjs --target <dir> [--tag latest|rc|<version>] [--write]\n" +
-      "  Refreshes CODE in a live Rolester tree from the published npm package.\n" +
+      "  Refreshes CODE in an external live Rolester tree from the published npm package.\n" +
       "  candidate/ and workspace/ are never touched (they aren't in the package).\n" +
-      "  Dry run unless --write is passed."
+      "  Dry run unless --write is passed. To self-update the current tree: rolester update."
   );
   process.exit(0);
 }
@@ -78,28 +71,15 @@ if (!looksLikeRolesterTree(opts.target))
 const spec = `rolester@${opts.tag}`;
 console.log(`• Fetching ${spec} from npm…`);
 
-const tmp = mkdtempSync(join(tmpdir(), "rolester-update-"));
-let tgz;
+let pkg;
 try {
-  const pack = spawnSync("npm", ["pack", spec, "--pack-destination", tmp], {
-    encoding: "utf8",
-  });
-  if (pack.status !== 0) die(`npm pack failed:\n${pack.stderr || pack.stdout}`);
-  const tgzName = readdirSync(tmp).find((f) => f.endsWith(".tgz"));
-  if (!tgzName) die("npm pack produced no tarball");
-  tgz = join(tmp, tgzName);
+  pkg = fetchTarball(spec);
+} catch (err) {
+  die(err?.message || String(err));
+}
 
-  // List the archive and run the privacy guard.
-  const list = spawnSync("tar", ["tzf", tgz], { encoding: "utf8" });
-  if (list.status !== 0) die(`could not read tarball: ${list.stderr}`);
-  const entries = list.stdout
-    .split("\n")
-    .filter(Boolean)
-    .map((p) => p.replace(/^package\//, ""));
-
-  const leaks = entries.filter(
-    (p) => /^candidate\//.test(p) || (/^workspace\//.test(p) && !/\.gitkeep$/.test(p))
-  );
+try {
+  const leaks = findUserDataLeaks(pkg.entries);
   if (leaks.length) {
     die(
       `REFUSING — the published package contains user-data paths (a privacy leak):\n` +
@@ -107,28 +87,15 @@ try {
           .slice(0, 20)
           .map((p) => `    ${p}`)
           .join("\n") +
-        `\nThis means the npm release shipped candidate/ or workspace/ content. Fix the ` +
-        `package.json "files" whitelist before installing this version anywhere.`
+        `\nThe npm release shipped candidate/ or workspace/ content. Fix the package.json ` +
+        `"files" whitelist before installing this version anywhere.`
     );
   }
 
-  const publishedVersion =
-    entries.includes("package.json") &&
-    (() => {
-      const show = spawnSync("tar", ["xzfO", tgz, "package/package.json"], { encoding: "utf8" });
-      try {
-        return JSON.parse(show.stdout).version;
-      } catch {
-        return null;
-      }
-    })();
   const currentVersion = readPkgVersion(opts.target);
-
-  console.log(`• Privacy guard passed — tarball is code-only (${entries.length} files).`);
+  console.log(`• Privacy guard passed — tarball is code-only (${pkg.entries.length} files).`);
   console.log(`• Target:  ${opts.target}  (currently v${currentVersion ?? "?"})`);
-  console.log(
-    `• Install: rolester@${opts.tag}${publishedVersion ? ` → v${publishedVersion}` : ""}`
-  );
+  console.log(`• Install: ${spec}${pkg.publishedVersion ? ` → v${pkg.publishedVersion}` : ""}`);
 
   if (!opts.write) {
     console.log(
@@ -139,10 +106,7 @@ try {
   }
 
   console.log(`• Extracting code over target…`);
-  const x = spawnSync("tar", ["xzf", tgz, "--strip-components=1", "-C", opts.target], {
-    encoding: "utf8",
-  });
-  if (x.status !== 0) die(`extract failed: ${x.stderr}`);
+  extractOver(pkg.tgz, opts.target);
 
   console.log(`• Done. Now at v${readPkgVersion(opts.target) ?? "?"}.`);
   console.log(`• Running doctor in the live tree…`);
@@ -154,9 +118,5 @@ try {
     );
   }
 } finally {
-  try {
-    rmSync(tmp, { recursive: true, force: true });
-  } catch {
-    /* ignore temp cleanup failure */
-  }
+  pkg.cleanup();
 }

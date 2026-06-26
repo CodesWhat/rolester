@@ -40,6 +40,15 @@ import {
 import { delimiter, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { displayPath, resolveUserPaths, userPath } from "../src/core/paths/workspace.mjs";
+import {
+  extractOver,
+  fetchTarball,
+  findUserDataLeaks,
+  isNewer,
+  latestVersion,
+  readUpdateNotice,
+  refreshUpdateCacheInBackground,
+} from "../src/core/update/update-core.mjs";
 
 const root = join(fileURLToPath(new URL("..", import.meta.url)));
 const pathCtx = { repoRoot: root };
@@ -90,6 +99,13 @@ if (!command || command === "help" || command === "--help" || command === "-h") 
   printHelp();
   process.exit(command ? 0 : 1);
 }
+
+if (command === "update") {
+  process.exit(runUpdate(rest));
+}
+
+// Background-cached "update available" notice for normal commands (never blocks).
+notifyUpdateAvailable();
 
 if (command === "init") {
   process.exit(runInit(rest));
@@ -365,6 +381,101 @@ function readVersion() {
   }
 }
 
+function parseUpdateArgs(extra) {
+  const out = { tag: "latest", check: false, force: false };
+  for (let i = 0; i < extra.length; i++) {
+    const a = extra[i];
+    if (a === "--check") out.check = true;
+    else if (a === "--force") out.force = true;
+    else if (a === "--rc") out.tag = "rc";
+    else if (a === "--tag") out.tag = extra[++i] || out.tag;
+    else if (a.startsWith("-")) {
+      /* ignore unknown flag */
+    }
+  }
+  return out;
+}
+
+// `rolester update` — refresh THIS install's code from the published npm package.
+// Code only: candidate/ and workspace/ are never in the package, so a user's real
+// data is preserved; a privacy guard refuses any tarball that carries user data.
+function runUpdate(extra) {
+  const opts = parseUpdateArgs(extra);
+  const current = readVersion();
+
+  console.log(`• Checking npm for rolester@${opts.tag}…`);
+  const latest = latestVersion(opts.tag);
+  if (!latest) {
+    console.error(
+      `Couldn't resolve rolester@${opts.tag} — offline, no such dist-tag (e.g. no rc published yet), or npm not on PATH.`
+    );
+    return 1;
+  }
+  const newer = isNewer(current, latest);
+
+  if (opts.check) {
+    console.log(
+      newer
+        ? `Update available: ${current} → ${latest} — run \`rolester update\` to install.`
+        : `Up to date (v${current}; latest@${opts.tag} = v${latest}).`
+    );
+    return 0;
+  }
+  if (!newer && !opts.force) {
+    console.log(
+      `Already up to date (v${current}; latest@${opts.tag} = v${latest}). Use --force to reinstall.`
+    );
+    return 0;
+  }
+
+  console.log(`• Fetching rolester@${latest}…`);
+  let pkg;
+  try {
+    pkg = fetchTarball(`rolester@${latest}`);
+  } catch (err) {
+    console.error(err?.message || String(err));
+    return 1;
+  }
+  try {
+    const leaks = findUserDataLeaks(pkg.entries);
+    if (leaks.length) {
+      console.error(
+        "REFUSING — the published package contains user-data paths (a privacy leak):\n" +
+          leaks
+            .slice(0, 20)
+            .map((p) => `    ${p}`)
+            .join("\n")
+      );
+      return 1;
+    }
+    console.log(`• Privacy guard passed — code-only (${pkg.entries.length} files). Updating…`);
+    extractOver(pkg.tgz, root);
+  } catch (err) {
+    console.error(err?.message || String(err));
+    return 1;
+  } finally {
+    pkg.cleanup();
+  }
+
+  // Re-shim skills + health-check using the freshly extracted code.
+  run(join(root, "scripts/install-skills.mjs"), ["--soft"]);
+  console.log(`• Updated ${current} → ${readVersion()}. Running doctor…`);
+  run(join(root, CLIS.doctor), []);
+  return 0;
+}
+
+// Print a cached "newer version available" notice (no network) and kick a detached,
+// once-a-day background refresh of that cache. Never throws into the command path.
+function notifyUpdateAvailable() {
+  try {
+    const notice = readUpdateNotice(pathCtx, readVersion());
+    if (notice) console.error(notice);
+    refreshUpdateCacheInBackground(pathCtx, root);
+  } catch {
+    /* a notifier must never break a command */
+  }
+}
+
 function printHelp() {
   console.log(`rolester — agentic job-search workspace
 
@@ -381,6 +492,7 @@ Commands:
   restore     Recover workspace/tracker.json from a rolling snapshot (list / restore by index or name)
   automation  Show/toggle opt-in browser-automation config (defaults OFF)
   export      Render a tailored artifact / packet to PDF or DOCX
+  update      Update this install to the latest published version (--check, --rc, --force)
   version     Print the installed Rolester version (also --version, -v)
   help        Show this list
 
