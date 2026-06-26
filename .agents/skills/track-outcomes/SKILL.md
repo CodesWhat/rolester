@@ -38,7 +38,7 @@ If `candidate/targeting.yml#reevaluation` is absent, use defaults: `rejection_to
 | `interview` | `applications[]` | active | Interview stage |
 | `offer` | `applications[]` | active | Offer received |
 | `rejected` | `applications[]` | active/archive | Closed with rejection |
-| `withdrawn` | `applications[]` | **archived** | Candidate withdrew, or role cut/hold/skipped |
+| `withdrawn` | `applications[]` | **archived** | Candidate chose to withdraw mid-process (comp gap, competing offer, culture read, role-scope mismatch, or proactive exit). Distinct from a market rejection — the candidate acted, the market did not close. (Pre-application pruning — role cut/hold/skipped — also lands here via the STAGE_RULES keyword map, but that is scanner-only behavior; this status in `applications[]` always means a voluntary mid-process candidate exit.) |
 
 **Archived statuses** (`cut`, `closed`, `withdrawn`) are off the active board but stay in the data. The dashboard triage banner counts `reviewed-hold` + `manual-apply` and prompts the user to review them with the agent.
 
@@ -160,6 +160,11 @@ npm run activity -- append --type status_change --actor world \
   --title "Closed — <Company>" --summary "<reason>" \
   --company "<Company>" --app-id <application id> --write
 
+# candidate withdrawal (neutral tone — candidate exited, market did not close):
+npm run activity -- append --type status_change --actor agent \
+  --title "Withdrew — <Company>" --summary "<reason: comp gap / competing offer / culture read / role-scope mismatch / proactive exit>" \
+  --company "<Company>" --app-id <application id> --write
+
 # blocker needing the user:
 npm run activity -- append --type failure --actor world --needs-user \
   --title "Blocked — <Company>" --summary "<what's blocking>" \
@@ -173,6 +178,7 @@ The `learnings` helper resolves the family slug automatically from `candidate/ta
 Compose the entry body as markdown, capturing only durable signal:
 
 - **On rejection:** stage where filtered, objection or gap heard, comp signal if disclosed, keywords or framing that did not land, channel.
+- **On candidate withdrawal:** reason the candidate chose to exit (comp gap, competing offer, culture read, role-scope mismatch, timeline mismatch, or proactive de-prioritization). This is strategy signal — record it to track which conditions drive voluntary exits so patterns can inform future targeting.
 - **On advance/offer:** winning positioning or phrasings, keywords that landed, comp signal, channel that converted.
 - **On ghosted/stale:** funnel stage last known, channel, elapsed time.
 

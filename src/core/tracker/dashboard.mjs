@@ -285,6 +285,7 @@ function identityLineHtml(identity) {
 // is a hoisted declaration; TERMINAL_STAGES is read at call time.
 function classifyApp(app) {
   const stage = classifyStage(app.status);
+  if (stage.id === "withdrawn") return "withdrawn";
   if (TERMINAL_STAGES.has(stage.id)) return "rejected";
   if (stage.order >= 2) return "advanced";
   return "awaiting";
@@ -468,17 +469,23 @@ export function buildStats(trackerData) {
   let awaiting = 0;
   let advanced = 0;
   let rejected = 0;
+  let withdrawn = 0;
 
   for (const app of applications) {
     const cls = classifyApp(app);
     if (cls === "awaiting") awaiting++;
     else if (cls === "advanced") advanced++;
     else if (cls === "rejected") rejected++;
+    else if (cls === "withdrawn") withdrawn++;
   }
 
   const applied = applications.length;
   const inPlay = awaiting + advanced;
-  const responseRate = applied ? Math.round(((advanced + rejected) / applied) * 100) : 0;
+  // Candidate withdrawals remove the app from the market-response sample — a withdrawal
+  // is not a market signal. Exclude withdrawn from both numerator and denominator so
+  // responseRate measures only the market's reply rate on apps that stayed in play.
+  const rateBase = applied - withdrawn;
+  const responseRate = rateBase > 0 ? Math.round(((advanced + rejected) / rateBase) * 100) : 0;
 
   return {
     inPlay,
@@ -489,6 +496,7 @@ export function buildStats(trackerData) {
     awaiting,
     advanced,
     rejected,
+    withdrawn,
   };
 }
 
@@ -514,7 +522,7 @@ export function buildFunnel(trackerData) {
   const customStages = trackerData?.stages || [];
   const { byId } = resolveLadder(customStages);
 
-  const counts = { applied: applications.length, awaiting: 0, rejected: 0 };
+  const counts = { applied: applications.length, awaiting: 0, rejected: 0, withdrawn: 0 };
   // Heard-back furthest stages keyed by stage id → count. Every rung at order ≥ 2
   // that's actually reached becomes its own "Furthest stage" node, so a custom
   // ladder ("Code review", "Onsite 2", "Offer", …) lights up here automatically
@@ -544,8 +552,13 @@ export function buildFunnel(trackerData) {
     const stage = classifyStage(app.status, customStages);
     let cls;
     if (TERMINAL_STAGES.has(stage.id)) {
-      cls = "rejected";
-      counts.rejected++;
+      if (stage.id === "withdrawn") {
+        cls = "withdrawn";
+        counts.withdrawn++;
+      } else {
+        cls = "rejected";
+        counts.rejected++;
+      }
     } else if (stage.order >= 2) {
       cls = stage.id; // a heard-back rung becomes its own furthest-stage bucket
       stageCounts[stage.id] = (stageCounts[stage.id] || 0) + 1;
@@ -562,7 +575,7 @@ export function buildFunnel(trackerData) {
   }
 
   const advancedTotal = Object.values(stageCounts).reduce((a, b) => a + b, 0);
-  const heardbackValue = advancedTotal + counts.rejected;
+  const heardbackValue = advancedTotal + counts.rejected + counts.withdrawn;
 
   // Cumulative progression: an app whose furthest rung is "interview" also passed
   // "screen", so each rung's value = everyone who reached it OR BEYOND. That turns
@@ -642,6 +655,16 @@ export function buildFunnel(trackerData) {
       colorVar: "--red",
     });
   }
+  // Withdrawn sink — candidate-initiated exit, muted not red.
+  if (counts.withdrawn > 0) {
+    nodes.push({
+      id: "withdrawn",
+      label: "Withdrawn",
+      col: 2,
+      value: counts.withdrawn,
+      colorVar: "--text-muted",
+    });
+  }
 
   // Build links
   const links = [];
@@ -687,6 +710,14 @@ export function buildFunnel(trackerData) {
       t: "rejected",
       value: counts.rejected,
       pct: Math.round((counts.rejected / heardbackValue) * 100),
+    });
+  }
+  if (counts.withdrawn > 0 && heardbackValue > 0) {
+    links.push({
+      s: "heardback",
+      t: "withdrawn",
+      value: counts.withdrawn,
+      pct: Math.round((counts.withdrawn / heardbackValue) * 100),
     });
   }
 
@@ -1616,7 +1647,7 @@ export function renderTrackerDashboard(
     ${
       terminalCount > 0
         ? `<button class="rej-toggle" id="rej-toggle" type="button" aria-pressed="false" title="Show rejected &amp; withdrawn roles">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ic"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Rejected<span class="rej-n">${esc(String(terminalCount))}</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ic"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Rejected / Withdrawn<span class="rej-n">${esc(String(terminalCount))}</span>
     </button>`
         : ""
     }

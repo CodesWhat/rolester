@@ -413,7 +413,8 @@ export const DASHBOARD_CSS = `
   .badge-applied, .badge-submitted, .badge-awaiting, .badge-waiting, .badge-drafted, .badge-scheduled { color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
   .badge-interview, .badge-reviewing, .badge-screening, .badge-passed { color: var(--green); background: color-mix(in srgb, var(--green) 16%, var(--surface)); }
   .badge-offer { color: var(--green); background: color-mix(in srgb, var(--green) 22%, var(--surface)); font-weight: 700; }
-  .badge-rejected, .badge-closed, .badge-withdrawn, .badge-blocked { color: var(--red); background: color-mix(in srgb, var(--red) 16%, var(--surface)); }
+  .badge-rejected, .badge-closed, .badge-blocked { color: var(--red); background: color-mix(in srgb, var(--red) 16%, var(--surface)); }
+  .badge-withdrawn { color: var(--text-muted); background: color-mix(in srgb, var(--text-muted) 16%, var(--surface)); }
   .badge-needs-reply { color: var(--orange); background: color-mix(in srgb, var(--orange) 18%, var(--surface)); }
   .muted { color: var(--text-muted); font-size: 0.9rem; }
   .no-data { background: var(--surface); border-radius: 8px; padding: 2rem; text-align: center; color: var(--text-muted); margin-top: 1rem; }
