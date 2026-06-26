@@ -59,6 +59,14 @@ function statusEventShape(status, company) {
   if (/offer|accepted|signed|hired/.test(s)) {
     return { type: "offer", title: `Offer — ${company}`, summary: "Reached the offer stage." };
   }
+  if (/withdraw/.test(s)) {
+    return {
+      type: "status_change",
+      tone: "neutral",
+      title: `Withdrew — ${company}`,
+      summary: "Candidate withdrew from consideration.",
+    };
+  }
   if (/reject|declined|denied|closed|no longer/.test(s)) {
     return {
       type: "status_change",

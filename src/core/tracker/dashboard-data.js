@@ -461,20 +461,22 @@ function buildStats(trackerData) {
   const applications = trackerData?.applications || [];
   const sourced = trackerData?.sourced || trackerData?.prospects || [];
   const advanced = applications.filter(isAdvanced).length;
-  const rejected = applications.filter((app) =>
-    TERMINAL_STAGES.has(classifyStage(app.status))
-  ).length;
+  const rejected = applications.filter((app) => classifyStage(app.status) === "rejected").length;
+  const withdrawn = applications.filter((app) => classifyStage(app.status) === "withdrawn").length;
   const active = applications.filter(isActive).length;
+  // Candidate withdrawals remove the app from the market-response sample — a withdrawal
+  // is not a market signal. Exclude withdrawn from both numerator and denominator so
+  // responseRate measures only the market's reply rate on apps that stayed in play.
+  const rateBase = applications.length - withdrawn;
 
   return {
     inPlay: active,
-    responseRate: applications.length
-      ? Math.round(((advanced + rejected) / applications.length) * 100)
-      : 0,
+    responseRate: rateBase > 0 ? Math.round(((advanced + rejected) / rateBase) * 100) : 0,
     interviews: advanced,
     sourced: sourced.length,
     applied: applications.length,
     rejected,
+    withdrawn,
   };
 }
 
@@ -4168,11 +4170,16 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
   // after its 1st round drops round-1 → Rejected. These drop forward into the single
   // bottom-right Rejected sink, alongside the bulk of pre-response form-rejections.
   const advancedRejectGroups = new Map();
+  // Withdrawals that happened AFTER >= 1 real round — same structure as advancedRejectGroups
+  // but route to the Withdrawn sink (muted, not red).
+  const advancedWithdrawGroups = new Map();
   let awaiting = 0;
   let stale = 0;
   let ghosted = 0;
   let terminal = 0;
   let terminalPreScreen = 0;
+  let withdrawnTerminal = 0;
+  let withdrawnTerminalPreScreen = 0;
 
   function ensureNode(meta) {
     if (!nodeMap.has(meta.id)) nodeMap.set(meta.id, { ...meta, count: meta.count ?? 0 });
@@ -4212,19 +4219,35 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
     sourceRows.get(bucket)?.push(row);
     const rounds = row.roundsReached || 0;
     if (row.terminal) {
-      terminal += 1;
-      // A rejection that landed after >= 1 real round is counted at that round AND drops
-      // into Rejected from there (round-N → rejected). A pre-response rejection did 0
-      // rounds and flows into Rejected straight from Heard back.
-      if (rounds >= 1) {
-        furthestOrders.push(rounds);
-        const key = `round-${rounds}`;
-        if (!advancedRejectGroups.has(key)) {
-          advancedRejectGroups.set(key, { round: rounds, rows: [] });
+      const isWithdrawn = row.stage === "withdrawn";
+      if (isWithdrawn) {
+        // Candidate-initiated exit — tracked separately from market rejections.
+        withdrawnTerminal += 1;
+        if (rounds >= 1) {
+          furthestOrders.push(rounds);
+          const key = `round-${rounds}`;
+          if (!advancedWithdrawGroups.has(key)) {
+            advancedWithdrawGroups.set(key, { round: rounds, rows: [] });
+          }
+          advancedWithdrawGroups.get(key).rows.push(row);
+        } else {
+          withdrawnTerminalPreScreen += 1;
         }
-        advancedRejectGroups.get(key).rows.push(row);
       } else {
-        terminalPreScreen += 1;
+        terminal += 1;
+        // A rejection that landed after >= 1 real round is counted at that round AND drops
+        // into Rejected from there (round-N → rejected). A pre-response rejection did 0
+        // rounds and flows into Rejected straight from Heard back.
+        if (rounds >= 1) {
+          furthestOrders.push(rounds);
+          const key = `round-${rounds}`;
+          if (!advancedRejectGroups.has(key)) {
+            advancedRejectGroups.set(key, { round: rounds, rows: [] });
+          }
+          advancedRejectGroups.get(key).rows.push(row);
+        } else {
+          terminalPreScreen += 1;
+        }
       }
       continue;
     }
@@ -4255,9 +4278,9 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
 
   const advanced = furthestOrders.length;
   // Advanced now includes rejected-after-advancing apps (pushed above), so Heard back
-  // = everyone who advanced + the rejections that never advanced. Same total as the old
-  // `advanced + terminal`, just without double-counting the late rejections.
-  const heardBack = advanced + terminalPreScreen;
+  // = everyone who advanced + the pre-screen rejections + pre-screen withdrawals. Same
+  // total as the old `advanced + terminal`, just without double-counting.
+  const heardBack = advanced + terminalPreScreen + withdrawnTerminalPreScreen;
   if (awaiting > 0) ensureNode({ ...SANKEY_RESPONSE_META.awaiting, count: awaiting });
   if (heardBack > 0) ensureNode({ ...SANKEY_RESPONSE_META.heard, count: heardBack });
 
@@ -4287,6 +4310,24 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
       count: terminal,
       col: furthestRejectCol + 0.5,
       order: 99,
+      filter: "terminal",
+    });
+  }
+  // Withdrawn — candidate-initiated exit. Muted grey (not red) to distinguish from
+  // a market rejection. Sits at the same depth as the rejection sink for its furthest
+  // round, but rendered with a neutral color.
+  if (withdrawnTerminal > 0) {
+    let furthestWithdrawCol = withdrawnTerminalPreScreen > 0 ? 1 : 0;
+    for (const group of advancedWithdrawGroups.values()) {
+      furthestWithdrawCol = Math.max(furthestWithdrawCol, 2 + (group.round - 1));
+    }
+    ensureNode({
+      id: "withdrawn",
+      label: "Withdrawn",
+      color: "#6f7479",
+      count: withdrawnTerminal,
+      col: furthestWithdrawCol + 0.5,
+      order: 100,
       filter: "terminal",
     });
   }
@@ -4345,6 +4386,7 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
     addLink("heardback", "round-1", reachedFor(1), roundColor(1), "round-1");
   }
   addLink("heardback", "rejected", terminalPreScreen, "#CB5340", "terminal");
+  addLink("heardback", "withdrawn", withdrawnTerminalPreScreen, "#6f7479", "terminal");
 
   for (let n = 1; n < maxRound; n += 1) {
     addLink(`round-${n}`, `round-${n + 1}`, reachedFor(n + 1), roundColor(n + 1), `round-${n + 1}`);
@@ -4358,6 +4400,17 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
       "rejected",
       group.rows.length,
       "#CB5340",
+      "terminal",
+      examplesOf(group.rows)
+    );
+  }
+  // Per-round withdrawal threads — mirrors rejection threads but routes to Withdrawn.
+  for (const group of advancedWithdrawGroups.values()) {
+    addLink(
+      `round-${group.round}`,
+      "withdrawn",
+      group.rows.length,
+      "#6f7479",
       "terminal",
       examplesOf(group.rows)
     );

@@ -311,6 +311,7 @@ chat.
 | An interview invite | `interview-prep` | application status + `conversations[]` |
 | Interview notes / a transcript | `interview-prep` | `conversations[]` |
 | A rejection / offer / status change | `track-outcomes` | application status + outcome |
+| "I withdrew from X" / "I pulled out" / "withdraw my application" / candidate-initiated exit | `track-outcomes` | sets `status: withdrawn`, logs withdrawal activity event, records exit reason in learnings |
 | Résumé / profile facts / LinkedIn | `ingest-profile` | `candidate/` profile + evidence |
 | A code/projects folder path or repo URL ("scan my projects", "see what I've built") | `ingest-profile` (projects-scan, STEP 2b) | `candidate/evidence.yml` claims |
 | A mailbox sync request (Apple Mail / Gmail / Outlook) | `ingest-mail` | `communications[]` |
