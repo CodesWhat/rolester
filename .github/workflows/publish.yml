@@ -2,16 +2,25 @@ name: publish
 
 # Publishes rolester to npm when a GitHub Release is published (or run manually).
 #
-# Setup (one-time): add a repo secret NPM_TOKEN = an npm Granular Access Token with
-# read-write on the rolester package. For a de-identified maintainer, generate that
-# token from a codeswhat-org machine account (not a personal one) — the publish is
-# attributed to whoever owns the token.
+# Auth: npm Trusted Publishing (OIDC) — NO token is stored. npm trusts this exact
+# workflow via the trusted-publisher connection configured on the package
+# (Settings → Trusted Publisher: GitHub Actions → CodesWhat/rolester → publish.yml,
+# permission "npm publish"). The job mints a short-lived credential from GitHub's
+# OIDC token at run time, so there is nothing to rotate or leak. If you ever rename
+# this file or move the repo, update the trusted-publisher connection to match.
 #
 # Each release: bump package.json "version" first. npm rejects republishing an
 # existing version, so the release tag must be a new version (0.1.0 is already live).
 #
-# Provenance: this publishes with --provenance, so the npm package page shows a
-# verified "Built and signed on GitHub Actions" attestation linking back to this repo.
+# Dist-tags: a prerelease version (any version containing "-", e.g. 0.2.0-rc.1) is
+# published to the "rc" dist-tag, so `npm i rolester` / `npm pack rolester@latest`
+# stay on the last stable release while testers opt in with `rolester@rc`. A plain
+# version (0.2.0) publishes to "latest" as usual. Mark the GitHub Release as a
+# pre-release when cutting an -rc build for clarity (the trigger fires either way).
+#
+# Provenance: Trusted Publishing generates a signed provenance attestation
+# automatically, so the npm package page shows "Built and signed on GitHub Actions"
+# linking back to this repo.
 
 on:
   release:
@@ -20,7 +29,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # required for npm provenance
+  id-token: write # required for OIDC trusted publishing + provenance
 
 jobs:
   npm-publish:
@@ -31,7 +40,12 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org
-      - name: Publish to npm (unscoped, public, with provenance)
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Trusted Publishing (OIDC) requires npm >= 11.5.1; Node 20 ships npm 10.x.
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
+      - name: Publish to npm (unscoped, public, trusted publishing)
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if [[ "$VERSION" == *-* ]]; then TAG=rc; else TAG=latest; fi
+          echo "Publishing v$VERSION to dist-tag: $TAG"
+          npm publish --provenance --access public --tag "$TAG"
