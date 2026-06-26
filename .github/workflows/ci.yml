@@ -24,9 +24,9 @@ jobs:
     name: structure-guards
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
       - name: Structure guards (client JS parses, CSS valid, YAML valid)
         run: node --test tests/client-script.test.mjs tests/styles.test.mjs tests/yaml.test.mjs
