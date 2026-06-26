@@ -87,7 +87,7 @@ Check if `workspace/writing-samples/` contains files newer than `candidate/writi
 
 Read: `candidate/writing-style.md`, `candidate/honesty.yml`, `candidate/evidence.yml`. Then run `npm run learnings -- read "<role>"` (the helper resolves the family from `targeting.yml` and exits 0 silently if no file exists yet — a missing file is normal).
 
-Invoke `tailor-application` to produce `workspace/tailored/<Company>_<Role>.md` and a cover letter if required.
+Invoke `tailor-application` to produce `workspace/tailored/<Company>_<Role>.md` and a cover letter whenever the application accepts one (a cover-letter field — required or optional — or an email/attachment channel). Default to including a cover letter; it is a second ATS keyword-matching surface. Only skip it when the application has no way to accept one.
 
 Run placeholder lint on every produced artifact:
 

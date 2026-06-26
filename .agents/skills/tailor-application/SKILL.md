@@ -119,14 +119,19 @@ Rules (all non-negotiable):
 - **Names:** all names must be real — actual candidate name, actual company names.
   No placeholders in artifact prose.
 
-## STEP 6 — Cover letter and short answers (conditional)
+## STEP 6 — Cover letter and short answers
 
-Produce a cover letter when **any** of the following is true:
-- The application form has a cover-letter field
+**Always produce a cover letter whenever the application accepts one.** It is a second
+keyword-matching surface for the ATS and a free chance to reinforce fit, so it is the
+default, not an optional extra. Produce one when **any** of the following is true:
+- The application form has a cover-letter field — **required OR optional** (an optional
+  field still means it accepts one; fill it)
+- The application is sent by email or as an attachment, so a cover letter can ride along
 - The JD explicitly requests one
 - The FIT band is stretch (< 65) and narrative framing would materially help
 
-Omit the cover letter when none of the above applies. Do not ask — decide and act.
+Only omit the cover letter when the application has **no way to accept one** (no field
+and no email/attachment channel). Do not ask — decide and act.
 
 ### Angle — automatic by default; the user can steer
 
