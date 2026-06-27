@@ -1471,5 +1471,55 @@
       },
       "demo": true
     }
-  ]
+  ],
+  "analytics": {
+    "updatedAt": "2026-06-26T12:00:00.000Z",
+    "byStatus": {
+      "accepted": 1,
+      "offer": 2,
+      "final round": 2,
+      "onsite": 1,
+      "2nd interview": 1,
+      "interview loop": 1,
+      "panel interview": 1,
+      "interview": 1,
+      "hiring manager screen": 1,
+      "recruiter screen": 2,
+      "phone screen": 2,
+      "applied": 8,
+      "submitted": 1,
+      "rejected": 4,
+      "withdrawn": 1
+    },
+    "rejected": {
+      "total": 4,
+      "byFamily": {
+        "other": 4
+      }
+    },
+    "advanced": {
+      "total": 3,
+      "byFamily": {
+        "forward-deployed-/-applied-ai": 1,
+        "staff-/-principal-software-engineer": 1,
+        "other": 1
+      }
+    },
+    "reevaluation": {
+      "thresholds": {
+        "rejectionTotal": 7,
+        "rejectionPerFamily": 3
+      },
+      "sinceLastReview": {
+        "rejectionTotal": 4,
+        "rejectionByFamily": {
+          "other": 4
+        }
+      },
+      "due": true,
+      "dueReasons": [
+        "family:other 4>=3"
+      ]
+    }
+  }
 }

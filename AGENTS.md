@@ -139,12 +139,22 @@ following as one logical write, in order, every time:
    doesn't reset on a no-op poll.)
 2. **Verify:** `node src/cli/tracker.mjs --verify` (and `npm run verify:tracker`
    when domain integrity could be affected).
-3. **Re-render:** `node src/cli/tracker.mjs` so the D module + shell publish and
+3. **Refresh analytics** *(outcome-changing writes only):* `npm run analytics -- --write`
+   re-computes `tracker.json#analytics` (rejection/advance counts, reevaluation
+   thresholds, `due`/`dueReasons`) and persists the result with `stamp:false` — it
+   does **not** move the freshness pill. Run this step whenever the write touches
+   **outcome state**: status transitions, new applications, rejections, advances
+   (`track-outcomes`, `apply-job`, `sync-status`, `reevaluate-strategy`,
+   `search-jobs`/`relationship-sourcing` when they add rows). Skip it for pure
+   comms/scheduling writes (`email-comms`, `schedule-meeting`, `calendar-sync`,
+   `interview-prep` dossier saves) — those don't alter the analytics block. Must
+   run **before** re-render so the dashboard picks up the fresh block.
+4. **Re-render:** `node src/cli/tracker.mjs` so the D module + shell publish and
    the open dev-server page hot-reloads. This re-render IS the hand-off to the
    dashboard — there is no separate "dashboard agent"; the SSE live-reload closes
    the loop automatically. Never end a tracker-mutating skill without it (every
    write path, including early-exit / CUT branches).
-4. **Log one Activity Pulse event** (`npm run activity -- append …`) for any
+5. **Log one Activity Pulse event** (`npm run activity -- append …`) for any
    tracker-visible change, so the timeline and the pill agree. Include
    `--skill <skill-id>` and `--operation <resource:verb>` (e.g.
    `--skill track-outcomes --operation application:status-advance`) so the feed

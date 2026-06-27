@@ -2804,7 +2804,41 @@ function buildStrategyReviewTrigger(bucket, reviewSignal = {}) {
   };
 }
 
-function buildStrategyLearning(applications, now, reviewState) {
+// Builds a compact view-model from tracker.json#analytics.reevaluation (the
+// persisted block written by `npm run analytics -- --write`). Fully defensive:
+// returns null when the block is absent, incomplete, or has no usable threshold,
+// so callers can short-circuit rendering safely on older trackers.
+function buildReevaluationProgress(reevaluationData) {
+  if (!reevaluationData || typeof reevaluationData !== "object") return null;
+  const { thresholds, sinceLastReview, due } = reevaluationData;
+  if (!thresholds || !sinceLastReview) return null;
+  const totalCurrent = Number(sinceLastReview.rejectionTotal) || 0;
+  const totalThreshold = Number(thresholds.rejectionTotal) || 0;
+  if (!totalThreshold) return null;
+  const familyThreshold = Number(thresholds.rejectionPerFamily) || 0;
+  const byFamily =
+    sinceLastReview.rejectionByFamily &&
+    typeof sinceLastReview.rejectionByFamily === "object"
+      ? sinceLastReview.rejectionByFamily
+      : {};
+  const familyLines = [];
+  if (familyThreshold > 0) {
+    for (const [family, rawCount] of Object.entries(byFamily)) {
+      const n = Number(rawCount) || 0;
+      if (n >= Math.ceil(familyThreshold / 2)) {
+        familyLines.push({ family, count: n, threshold: familyThreshold, over: n >= familyThreshold });
+      }
+    }
+    familyLines.sort((a, b) => b.count - a.count);
+  }
+  const isDue = Boolean(due);
+  const label = isDue
+    ? `${totalCurrent}/${totalThreshold} rejections — review due`
+    : `${totalCurrent}/${totalThreshold} rejections since last review`;
+  return { totalCurrent, totalThreshold, due: isDue, familyLines, label };
+}
+
+function buildStrategyLearning(applications, now, reviewState, reevaluationData) {
   const history = strategyLearningBuckets(applications, now);
   const current = history[0] || { applied: 0, advanced: 0, interviews: 0, rejected: 0 };
   const reviewSignal = strategyReviewSignal(applications, reviewState, now);
@@ -2814,6 +2848,7 @@ function buildStrategyLearning(applications, now, reviewState) {
     history,
     signals: buildStrategyLearningSignals(applications, now),
     reviewTrigger: buildStrategyReviewTrigger(current, reviewSignal),
+    reevaluation: buildReevaluationProgress(reevaluationData),
   };
 }
 
@@ -2946,7 +2981,12 @@ function buildStrategyInsights(trackerData, { now = new Date() } = {}) {
   const stale = buildStrategyStaleRows(applications, communications, now);
   const stageAges = buildStrategyStageRows(applications, now);
   const cadence = buildStrategyCadenceRows(applications, communications, now);
-  const learning = buildStrategyLearning(applications, now, trackerData?.strategyReview);
+  const learning = buildStrategyLearning(
+    applications,
+    now,
+    trackerData?.strategyReview,
+    trackerData?.analytics?.reevaluation,
+  );
   const topSource = sources[0] || {
     label: "No source yet",
     rate: "0%",
@@ -5966,7 +6006,25 @@ function renderStrategyLearningSignals(rows) {
     .join("");
 }
 
-function renderStrategyReviewTrigger(trigger = {}) {
+// Renders a compact one-line reevaluation progress footer inside the review
+// panel. Uses inline styles that match the shell's existing CSS token set
+// (--rgb-line, --ink-soft, #e0a93b warning amber) so no new CSS is needed.
+// Returns "" when reevaluation is null/absent — callers can safely concat it.
+function renderReevaluationProgress(reevaluation) {
+  if (!reevaluation) return "";
+  const { label, due, familyLines = [] } = reevaluation;
+  const labelColor = due ? "#e0a93b" : "var(--ink-soft)";
+  const chips = familyLines
+    .slice(0, 3)
+    .map(
+      (f) =>
+        `<span style="font-size:11px;font-weight:750;color:${f.over ? "#e0a93b" : "var(--ink-soft)"};white-space:nowrap">${esc(f.family)} ${esc(String(f.count))}/${esc(String(f.threshold))}</span>`
+    )
+    .join("");
+  return `<div style="grid-column:1/-1;border-top:1px solid rgba(var(--rgb-line),0.08);padding-top:8px;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px"><span style="font-size:12px;font-weight:650;color:${labelColor}">${esc(label)}</span>${chips}</div>`;
+}
+
+function renderStrategyReviewTrigger(trigger = {}, reevaluation) {
   const action = trigger.ctaAction || "jobs";
   const ctaLabel = trigger.ctaLabel || "Review details";
   return `
@@ -5976,7 +6034,7 @@ function renderStrategyReviewTrigger(trigger = {}) {
         <b>${esc(trigger.title || "Learning signal still forming")}</b>
         <p>${esc(trigger.summary || "Keep collecting comparable outcomes before retuning gates.")}</p>
       </div>
-      <a class="strategy-review-cta" href="#${esc(action)}">${esc(ctaLabel)}</a>
+      <a class="strategy-review-cta" href="#${esc(action)}">${esc(ctaLabel)}</a>${renderReevaluationProgress(reevaluation)}
     </div>`;
 }
 
@@ -6028,7 +6086,7 @@ function renderStrategyInsights(root, strategy) {
   const signals = root.querySelector("[data-strategy-learning-signals]");
   if (signals) signals.innerHTML = renderStrategyLearningSignals(strategy.learning?.signals);
   const trigger = root.querySelector("[data-strategy-review-trigger]");
-  if (trigger) trigger.innerHTML = renderStrategyReviewTrigger(strategy.learning?.reviewTrigger);
+  if (trigger) trigger.innerHTML = renderStrategyReviewTrigger(strategy.learning?.reviewTrigger, strategy.learning?.reevaluation);
   const recommendation = root.querySelector("[data-strategy-recommendation]");
   if (recommendation)
     recommendation.innerHTML = renderStrategyRecommendation(strategy.recommendation);
