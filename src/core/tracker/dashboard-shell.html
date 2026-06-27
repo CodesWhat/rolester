@@ -771,68 +771,15 @@ tailwind.config = {
   }
   .jobs-sankey-frame {
     position: relative;
-    min-height: 520px;
-  }
-  .jobs-sankey-scroll {
-    height: 520px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-  }
-  .jobs-sankey-scroll::-webkit-scrollbar {
-    display: none;
-  }
-  .jobs-sankey {
-    display: block;
-    width: 1800px;
-    min-width: 1800px;
-    height: 520px;
     min-height: 0;
   }
-  .jobs-sankey-scroll-button {
-    position: absolute;
-    top: 50%;
-    z-index: 4;
-    display: inline-flex;
-    width: 40px;
-    height: 56px;
-    align-items: center;
-    justify-content: center;
-    border: 0;
-    border-radius: var(--row-radius);
-    background: rgba(255, 255, 255, 0.88);
-    box-shadow: 0 10px 24px rgba(var(--rgb-line), 0.14);
-    color: var(--cool-ink);
-    cursor: pointer;
-    transform: translateY(-50%);
-    transition: opacity 0.16s ease, background 0.16s ease, transform 0.16s ease;
-  }
-  .jobs-sankey-scroll-button:hover,
-  .jobs-sankey-scroll-button:focus-visible {
-    background: #ffffff;
-    transform: translateY(-50%) scale(1.02);
-  }
-  .jobs-sankey-scroll-button:focus-visible {
-    outline: 2px solid #2170e4;
-    outline-offset: 2px;
-  }
-  .jobs-sankey-scroll-button.is-disabled {
-    opacity: 0;
-    visibility: hidden;
-    cursor: default;
-    pointer-events: none;
-  }
-  .jobs-sankey-scroll-button svg {
-    width: 20px;
-    height: 20px;
-  }
-  .jobs-sankey-scroll-button-left {
-    left: 12px;
-  }
-  .jobs-sankey-scroll-button-right {
-    right: 12px;
+  /* The funnel SVG always scales to fit the frame width (preserveAspectRatio meet), so
+     it never overflows — no scroll container or scroll buttons are needed. */
+  .jobs-sankey {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
   }
   .jobs-sankey-heading {
     fill: #76777d;
@@ -2096,15 +2043,12 @@ tailwind.config = {
   .jobs-page-variant--rail .jobs-table td {
     overflow: hidden;
   }
-  .jobs-page-variant--rail .jobs-sankey-frame,
-  .jobs-page-variant--rail .jobs-sankey-scroll,
-  .jobs-page-variant--rail .jobs-sankey {
-    height: 420px;
-    min-height: 420px;
+  .jobs-page-variant--rail .jobs-sankey-frame {
+    min-height: 0;
   }
   .jobs-page-variant--rail .jobs-sankey {
-    width: 1450px;
-    min-width: 1450px;
+    width: 100%;
+    height: auto;
   }
   @media (max-width: 1179px) {
     .jobs-page-variant--rail .page-rail {
@@ -3862,8 +3806,7 @@ tailwind.config = {
   .jobs-search:focus,
   .jobs-filter-popover select:focus,
   .jobs-filter-popover input:focus,
-  .jobs-funnel-toggle:focus-visible,
-  .jobs-sankey-scroll-button:focus-visible {
+  .jobs-funnel-toggle:focus-visible {
     outline: 2px solid var(--coral);
     outline-offset: 2px;
   }
@@ -3962,17 +3905,6 @@ tailwind.config = {
   .jobs-sankey-legend {
     color: var(--ink-soft);
     fill: var(--ink-soft);
-  }
-  .jobs-sankey-scroll-button {
-    border: 1px solid rgba(var(--rgb-line), 0.1);
-    border-radius: var(--row-radius);
-    background: rgba(var(--rgb-surface), 0.92);
-    color: var(--ink);
-    box-shadow: 0 10px 24px rgba(var(--rgb-line), 0.12);
-  }
-  .jobs-sankey-scroll-button:hover {
-    background: var(--paper-surface);
-    color: var(--coral);
   }
   .pulse-connector {
     background: var(--paper-edge);
@@ -6283,30 +6215,18 @@ tailwind.config = {
         <div class="jobs-sankey-body" id="jobs-sankey-slot">
           <div class="jobs-sankey-wrap">
             <div class="jobs-sankey-frame">
-              <button class="jobs-sankey-scroll-button jobs-sankey-scroll-button-left" type="button" data-jobs-sankey-scroll-button="left" aria-label="Scroll funnel left" title="Scroll funnel left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-              </button>
-              <div class="jobs-sankey-scroll" data-jobs-sankey-scroll tabindex="0" aria-label="Jobs funnel horizontal scroll">
-                <svg class="jobs-sankey" viewBox="0 0 1800 520" preserveAspectRatio="xMinYMid meet" role="img" aria-label="Jobs Sankey funnel">
-                  <path class="jobs-sankey-link jobs-sankey-filter is-active" d="M 155 180 C 335 180, 320 180, 500 180" fill="none" stroke="#e8553d" stroke-width="64" data-jobs-stage-filter="all" />
-                  <path class="jobs-sankey-link jobs-sankey-filter" d="M 505 225 C 660 225, 660 245, 815 245" fill="none" stroke="#2b2724" stroke-width="28" data-jobs-stage-filter="interview" />
-                  <g class="jobs-sankey-node jobs-sankey-filter is-active" data-jobs-stage-filter="all">
-                    <rect x="150" y="128" width="5" height="104" rx="2" fill="#e8553d" />
-                    <text class="jobs-sankey-node-label jobs-sankey-node-label--source" x="142" y="184" text-anchor="end">Direct apply <tspan>26</tspan></text>
-                  </g>
-                  <g class="jobs-sankey-node jobs-sankey-filter" data-jobs-stage-filter="interview">
-                    <rect x="815" y="230" width="5" height="30" rx="2" fill="#2b2724" />
-                    <text class="jobs-sankey-node-label" x="834" y="250">Interview <tspan>4</tspan></text>
-                  </g>
-                </svg>
-              </div>
-              <button class="jobs-sankey-scroll-button jobs-sankey-scroll-button-right" type="button" data-jobs-sankey-scroll-button="right" aria-label="Scroll funnel right" title="Scroll funnel right">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
-              </button>
+              <svg class="jobs-sankey" viewBox="0 0 1800 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Jobs Sankey funnel">
+                <path class="jobs-sankey-link jobs-sankey-filter is-active" d="M 155 180 C 335 180, 320 180, 500 180" fill="none" stroke="#e8553d" stroke-width="64" data-jobs-stage-filter="all" />
+                <path class="jobs-sankey-link jobs-sankey-filter" d="M 505 225 C 660 225, 660 245, 815 245" fill="none" stroke="#2b2724" stroke-width="28" data-jobs-stage-filter="interview" />
+                <g class="jobs-sankey-node jobs-sankey-filter is-active" data-jobs-stage-filter="all">
+                  <rect x="150" y="128" width="5" height="104" rx="2" fill="#e8553d" />
+                  <text class="jobs-sankey-node-label jobs-sankey-node-label--source" x="142" y="184" text-anchor="end">Direct apply <tspan>26</tspan></text>
+                </g>
+                <g class="jobs-sankey-node jobs-sankey-filter" data-jobs-stage-filter="interview">
+                  <rect x="815" y="230" width="5" height="30" rx="2" fill="#2b2724" />
+                  <text class="jobs-sankey-node-label" x="834" y="250">Interview <tspan>4</tspan></text>
+                </g>
+              </svg>
             </div>
             <div class="jobs-sankey-legend">
               <span class="jobs-sankey-legend-item"><i style="background:#e8553d"></i>Direct apply</span>
@@ -9344,20 +9264,6 @@ function setupJobsExplorer() {
     if (tooltip) tooltip.style.display = 'none';
   }
 
-  function updateSankeyScrollButtons() {
-    const scroll = funnel.querySelector('[data-jobs-sankey-scroll]');
-    if (!scroll) return;
-    const maxScroll = Math.max(0, scroll.scrollWidth - scroll.clientWidth);
-    const hasOverflow = maxScroll > 2;
-    funnel.querySelectorAll('[data-jobs-sankey-scroll-button]').forEach((button) => {
-      const direction = button.dataset.jobsSankeyScrollButton === 'right' ? 1 : -1;
-      const atEdge = direction < 0 ? scroll.scrollLeft <= 2 : scroll.scrollLeft >= maxScroll - 2;
-      const disabled = !hasOverflow || atEdge;
-      button.classList.toggle('is-disabled', disabled);
-      button.disabled = disabled;
-    });
-  }
-
   function render() {
     const rowList = rows();
     const cardList = cards();
@@ -9409,7 +9315,6 @@ function setupJobsExplorer() {
     funnel.querySelectorAll('.jobs-sankey-filter[data-jobs-stage-filter]').forEach((button) => {
       button.classList.toggle('is-active', button.dataset.jobsStageFilter === state.stage);
     });
-    updateSankeyScrollButtons();
     funnel.classList.toggle('is-collapsed', state.funnelCollapsed);
     if (showGhostedToggle) showGhostedToggle.checked = state.showGhosted;
     if (hideStaleToggle) hideStaleToggle.checked = state.hideStale;
@@ -9654,16 +9559,6 @@ function setupJobsExplorer() {
         return;
       }
 
-      const scrollButton = event.target.closest('[data-jobs-sankey-scroll-button]');
-      if (scrollButton) {
-        const scroll = funnel.querySelector('[data-jobs-sankey-scroll]');
-        if (!scroll) return;
-        const direction = scrollButton.dataset.jobsSankeyScrollButton === 'right' ? 1 : -1;
-        scroll.scrollBy({ left: direction * scroll.clientWidth * 0.72, behavior: 'smooth' });
-        window.setTimeout(updateSankeyScrollButtons, 180);
-        return;
-      }
-
       const button = event.target.closest('[data-jobs-stage-filter]');
       if (!button) return;
       state.stage = button.dataset.jobsStageFilter || 'all';
@@ -9689,9 +9584,6 @@ function setupJobsExplorer() {
       hideTooltip();
       clearSankeyFocus();
     });
-
-    funnel.querySelector('[data-jobs-sankey-scroll]')?.addEventListener('scroll', updateSankeyScrollButtons, { passive: true });
-    window.addEventListener('resize', updateSankeyScrollButtons);
 
     document.addEventListener('mousemove', (event) => {
       if (funnel.contains(event.target)) return;

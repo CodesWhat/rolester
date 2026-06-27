@@ -288,6 +288,13 @@ const SCHEDULING_CONV_RE = /\b(?:reschedul|schedul|logistic|booking|invite|confi
 // the "screen" stage, not an interview round.
 const INTERVIEW_ROUND_RE =
   /\b(?:interview|panel|technical|assessment|onsite|on-site|loop|final|deep[\s-]?dive)\w*/i;
+// Non-evaluative touchpoints that are real history but are NOT interview rounds: a
+// referral intro, an offer/negotiation call, an internal debrief, a reference check.
+// They must never inflate round DEPTH (the funnel's ordinal axis) — only
+// candidate-facing evaluative rounds (screens + interviews) count. Without this, an
+// accepted role's referral + offer + negotiation + debrief beats would read as extra
+// "rounds" (e.g. a 4-round loop showing as a 9th-round outlier).
+const NON_ROUND_CONV_RE = /\b(?:referral|offer|negotiat|debrief|reference)\w*/i;
 
 // The deepest stage an application has actually reached, derived from BOTH the
 // status string and the conversation history. The status string alone tops out
@@ -358,6 +365,7 @@ function roundCount(app) {
     const text = `${conv?.kind || ""} ${conv?.title || ""}`;
     if (/\b(?:reject|declin|withdraw)\w*/i.test(text)) continue;
     if (SCHEDULING_CONV_RE.test(text)) continue;
+    if (NON_ROUND_CONV_RE.test(text)) continue; // referral/offer/negotiation/debrief ≠ a round
     rounds += 1;
   }
   return rounds;
@@ -4222,6 +4230,9 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
   // Withdrawals that happened AFTER >= 1 real round — same structure as advancedRejectGroups
   // but route to the Withdrawn sink (muted, not red).
   const advancedWithdrawGroups = new Map();
+  // Accepted offers — the happy terminus, keyed by the round depth the accepted role
+  // reached so it flows round-N → Accepted 🎉 (a green celebratory sink, not a sink for losses).
+  const acceptedGroups = new Map();
   let awaiting = 0;
   let stale = 0;
   let ghosted = 0;
@@ -4302,6 +4313,10 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
     }
     if (rounds >= 1) {
       furthestOrders.push(rounds);
+      if (row.stage === "accepted") {
+        if (!acceptedGroups.has(rounds)) acceptedGroups.set(rounds, []);
+        acceptedGroups.get(rounds).push(row);
+      }
     } else {
       awaiting += 1;
     }
@@ -4341,6 +4356,26 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
   const maxRound = furthestOrders.reduce((max, value) => Math.max(max, value), 0);
   for (let n = 1; n <= maxRound; n += 1) {
     ensureNode(sankeyRoundMeta(n, 2 + (n - 1), reachedFor(n)));
+  }
+  // Accepted 🎉 — the celebratory terminus. An accepted offer flows out of the last round
+  // it reached into a single green sink, set just past the deepest accepted round so the
+  // win reads instantly and apart from the live chain. Green (not the red loss sink).
+  const acceptedCount = [...acceptedGroups.values()].reduce((sum, rows) => sum + rows.length, 0);
+  if (acceptedCount > 0) {
+    let acceptedRound = 0;
+    for (const round of acceptedGroups.keys()) acceptedRound = Math.max(acceptedRound, round);
+    ensureNode({
+      id: "accepted",
+      label: "Accepted 🎉",
+      color: "#2F9E55",
+      count: acceptedCount,
+      col: 2 + (acceptedRound - 1) + 0.7,
+      order: 98,
+      filter: "accepted",
+    });
+    for (const [round, rows] of acceptedGroups) {
+      addLink(`round-${round}`, "accepted", rows.length, "#2F9E55", "accepted", examplesOf(rows));
+    }
   }
   // Rejected is a single terminal sink, bottom-pinned (see the layout pass). It sits
   // HALF a column past the furthest point any rejected app actually reached — NOT way
@@ -5256,11 +5291,12 @@ function renderJobsSankey(sankey) {
       const isLast = node.col === maxCol;
       const isRound = typeof node.id === "string" && node.id.startsWith("round-");
       const isRejected = node.id === "rejected";
+      const isAccepted = node.id === "accepted";
       // Round nodes (1st → 4th round) always label ABOVE the line so the red rejection
-      // threads dropping below the chain never tangle with the names. Rejected labels to
-      // its RIGHT like a sink even though it now sits mid-chart (col 2.5) — it's
-      // bottom-pinned, so an above/below label would crash into the live chain.
-      const sideRight = (isLast || isRejected) && !isRound;
+      // threads dropping below the chain never tangle with the names. Rejected and the
+      // Accepted 🎉 terminus label to their RIGHT like sinks even when they sit mid-chart
+      // — they're pinned off the live chain, so an above/below label would crash into it.
+      const sideRight = (isLast || isRejected || isAccepted) && !isRound;
       const labelAbove =
         node.id === "awaiting" || node.id === "stale" || node.id === "ghosted" || isRound;
       const labelX = isFirst ? node.x - 8 : sideRight ? node.x + nodeW + 14 : node.x + nodeW / 2;
@@ -5307,25 +5343,15 @@ function renderJobsSankey(sankey) {
         `<span class="jobs-sankey-legend-item" data-sankey-legend-id="${esc(node.id)}"><i style="background:${esc(node.color)}"></i>${esc(node.label)}</span>`
     )
     .join("");
+  // The funnel SVG always scales to fit the frame (preserveAspectRatio meet), so it
+  // never overflows — no horizontal scroll affordance is needed even at full depth.
   return `
     <div class="jobs-sankey-wrap">
       <div class="jobs-sankey-frame">
-        <button class="jobs-sankey-scroll-button jobs-sankey-scroll-button-left" type="button" data-jobs-sankey-scroll-button="left" aria-label="Scroll funnel left" title="Scroll funnel left">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-        </button>
-        <div class="jobs-sankey-scroll" data-jobs-sankey-scroll tabindex="0" aria-label="Jobs funnel horizontal scroll">
-          <svg class="jobs-sankey" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMid meet" role="img" aria-label="Jobs Sankey funnel">
-            <g class="jobs-sankey-links">${paths}</g>
-            <g class="jobs-sankey-nodes">${nodeMarkup}</g>
-          </svg>
-        </div>
-        <button class="jobs-sankey-scroll-button jobs-sankey-scroll-button-right" type="button" data-jobs-sankey-scroll-button="right" aria-label="Scroll funnel right" title="Scroll funnel right">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        </button>
+        <svg class="jobs-sankey" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Jobs Sankey funnel">
+          <g class="jobs-sankey-links">${paths}</g>
+          <g class="jobs-sankey-nodes">${nodeMarkup}</g>
+        </svg>
       </div>
       <div class="jobs-sankey-legend">${legend}</div>
     </div>`;
