@@ -2825,8 +2825,7 @@ function buildReevaluationProgress(reevaluationData) {
   if (!totalThreshold) return null;
   const familyThreshold = Number(thresholds.rejectionPerFamily) || 0;
   const byFamily =
-    sinceLastReview.rejectionByFamily &&
-    typeof sinceLastReview.rejectionByFamily === "object"
+    sinceLastReview.rejectionByFamily && typeof sinceLastReview.rejectionByFamily === "object"
       ? sinceLastReview.rejectionByFamily
       : {};
   const familyLines = [];
@@ -2834,7 +2833,12 @@ function buildReevaluationProgress(reevaluationData) {
     for (const [family, rawCount] of Object.entries(byFamily)) {
       const n = Number(rawCount) || 0;
       if (n >= Math.ceil(familyThreshold / 2)) {
-        familyLines.push({ family, count: n, threshold: familyThreshold, over: n >= familyThreshold });
+        familyLines.push({
+          family,
+          count: n,
+          threshold: familyThreshold,
+          over: n >= familyThreshold,
+        });
       }
     }
     familyLines.sort((a, b) => b.count - a.count);
@@ -2993,7 +2997,7 @@ function buildStrategyInsights(trackerData, { now = new Date() } = {}) {
     applications,
     now,
     trackerData?.strategyReview,
-    trackerData?.analytics?.reevaluation,
+    trackerData?.analytics?.reevaluation
   );
   const topSource = sources[0] || {
     label: "No source yet",
@@ -3147,9 +3151,15 @@ function logoThemeSuffix() {
 
 // One avatar surface: a real logo masking an initials chip, or just the chip.
 // `wrapperClass` carries the size/shape/color utilities for the call site.
-function avatarMarkup(domain, name, initialsText, wrapperClass) {
-  const base = buildLogoUrl(domain, name);
+// `logoSrc` is an OPTIONAL explicit image path (e.g. a bundled demo-corp logo); when
+// present it wins over the logo.dev lookup. Real workspaces never set it, so this stays
+// domain-neutral — it's just "use the logo the data already carries, else resolve one."
+function avatarMarkup(domain, name, initialsText, wrapperClass, logoSrc) {
   const safeInitials = esc(initialsText);
+  if (logoSrc) {
+    return `<span class="${wrapperClass} avatar-has-logo"><img class="avatar-logo-img" src="${esc(logoSrc)}" alt="" loading="lazy" onerror="this.remove()"><span class="avatar-logo-initials">${safeInitials}</span></span>`;
+  }
+  const base = buildLogoUrl(domain, name);
   if (!base) {
     return `<span class="${wrapperClass}">${safeInitials}</span>`;
   }
@@ -3998,6 +4008,7 @@ function applicationJobRow(app, index, communications = [], now = new Date()) {
     appliedLabel: formatDateShort(app.appliedAt, "Tracked"),
     initials: initials(app.company),
     domain: app.domain || app.companyDomain || "",
+    logo: app.logo || "",
     link: app.link || app.url || "",
     warn: app.warn || "",
     avatarClass: AVATAR_CLASSES[index % AVATAR_CLASSES.length],
@@ -4078,6 +4089,7 @@ function sourcedJobRow(role, index, now = new Date()) {
     appliedLabel: "Sourced",
     initials: initials(role.company),
     domain: role.domain || role.companyDomain || "",
+    logo: role.logo || "",
     link: role.link || role.url || "",
     warn: role.warn || "",
     avatarClass: AVATAR_CLASSES[(index + 3) % AVATAR_CLASSES.length],
@@ -5103,7 +5115,7 @@ function renderJobRow(row) {
     <tr class="${row.terminal ? "rejected-row " : ""}hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="openDrawer('${esc(jsArg(row.drawerId))}')">
       <td class="px-6 py-4">
         <div class="flex items-center gap-3">
-          ${avatarMarkup(row.domain, row.company, row.initials, `w-8 h-8 rounded ${esc(row.avatarClass)} flex items-center justify-center font-black text-[10px]`)}
+          ${avatarMarkup(row.domain, row.company, row.initials, `w-8 h-8 rounded ${esc(row.avatarClass)} flex items-center justify-center font-black text-[10px]`, row.logo)}
           <div>
             <div class="font-bold ${muted ? "text-outline" : "text-primary"}">${esc(row.company)}</div>
             <div class="text-[11px] text-outline">${esc(row.location || "Location TBD")}</div>
@@ -5465,7 +5477,7 @@ function renderJobsExplorerRow(row) {
     <tr data-jobs-row data-detail-id="${esc(row.drawerId)}" data-stage="${esc(row.stage)}" data-source-kind="${esc(row.source)}" data-source-bucket="${esc(row.sourceBucket)}" data-channel="${esc(String(row.channel || "").toLowerCase())}" data-source-label="${esc(sourceLabel.toLowerCase())}" data-terminal="${row.terminal ? "1" : "0"}" data-rounds-reached="${row.roundsReached || 0}" data-needs-review="${row.needsReview ? "1" : "0"}" ${jobActionAttrs(row)} data-search="${esc(row.searchText)}" data-company="${esc(row.company.toLowerCase())}" data-role="${esc(row.role.toLowerCase())}" data-location="${esc(locationLabel.toLowerCase())}" data-mode="${esc(row.mode || modeLabel.toLowerCase())}" data-fit="${esc(row.fit)}" data-base="${esc(row.compMidpointK || row.baseK)}" data-applied="${esc(row.appliedAt || row.appliedLabel)}" data-tip="${tooltipPayload(row)}">
       <td>
         <div class="jobs-company-cell">
-          ${avatarMarkup(row.domain, row.company, row.initials, `jobs-avatar ${esc(row.avatarClass)}`)}
+          ${avatarMarkup(row.domain, row.company, row.initials, `jobs-avatar ${esc(row.avatarClass)}`, row.logo)}
           <span class="jobs-company-copy">
             <strong class="${muted ? "is-muted" : ""}">${esc(row.company)}</strong>
             <small>${esc(sourceLabel)}</small>
@@ -5530,7 +5542,7 @@ function renderJobsCards(rows) {
               : ""
           }
           <div class="jobs-card-top">
-            ${avatarMarkup(row.domain, row.company, row.initials, `jobs-avatar ${esc(row.avatarClass)}`)}
+            ${avatarMarkup(row.domain, row.company, row.initials, `jobs-avatar ${esc(row.avatarClass)}`, row.logo)}
             <span class="jobs-stage-pill jobs-stage-has-icon" style="--jobs-stage-color:${esc(stageTone)}" aria-label="${esc(statusHint)}">${inlineIcon(statusPillIcon(row), "jobs-stage-icon-svg")}<span>${esc(statusLabel)}</span></span>
           </div>
           <div class="jobs-card-copy">
@@ -6112,7 +6124,11 @@ function renderStrategyInsights(root, strategy) {
   const signals = root.querySelector("[data-strategy-learning-signals]");
   if (signals) signals.innerHTML = renderStrategyLearningSignals(strategy.learning?.signals);
   const trigger = root.querySelector("[data-strategy-review-trigger]");
-  if (trigger) trigger.innerHTML = renderStrategyReviewTrigger(strategy.learning?.reviewTrigger, strategy.learning?.reevaluation);
+  if (trigger)
+    trigger.innerHTML = renderStrategyReviewTrigger(
+      strategy.learning?.reviewTrigger,
+      strategy.learning?.reevaluation
+    );
   const recommendation = root.querySelector("[data-strategy-recommendation]");
   if (recommendation)
     recommendation.innerHTML = renderStrategyRecommendation(strategy.recommendation);

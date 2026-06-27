@@ -122,7 +122,8 @@
         "dueAt": "2026-06-29",
         "note": "Respond to the E Corp offer — weigh against the Cyberdyne onsite + Massive panel this week."
       },
-      "warn": "E Corp wants an answer soon; two live loops (Cyberdyne, Massive) aren't done yet."
+      "warn": "E Corp wants an answer soon; two live loops (Cyberdyne, Massive) aren't done yet.",
+      "logo": "../assets/logos/e-corp.png"
     },
     {
       "id": "demo-app-2",
@@ -204,7 +205,8 @@
         "wellness",
         "bonus",
         "mental_health"
-      ]
+      ],
+      "logo": "../assets/logos/aperture-science.png"
     },
     {
       "id": "demo-app-3",
@@ -266,7 +268,8 @@
         "remote_stipend",
         "bonus",
         "wellness"
-      ]
+      ],
+      "logo": "../assets/logos/hooli.png"
     },
     {
       "id": "demo-app-4",
@@ -340,7 +343,8 @@
         "learning",
         "parental",
         "bonus"
-      ]
+      ],
+      "logo": "../assets/logos/weyland-yutani.png"
     },
     {
       "id": "demo-app-5",
@@ -411,7 +415,8 @@
         "learning",
         "bonus"
       ],
-      "interviewAt": "2026-06-28T16:00:00.000Z"
+      "interviewAt": "2026-06-28T16:00:00.000Z",
+      "logo": "../assets/logos/cyberdyne.png"
     },
     {
       "id": "demo-app-6",
@@ -452,7 +457,8 @@
         "vision",
         "pto",
         "learning"
-      ]
+      ],
+      "logo": "../assets/logos/pied-piper.png"
     },
     {
       "id": "demo-app-7",
@@ -494,7 +500,8 @@
         "learning",
         "parental",
         "bonus"
-      ]
+      ],
+      "logo": "../assets/logos/tyrell.png"
     },
     {
       "id": "demo-app-8",
@@ -534,7 +541,8 @@
         "bonus",
         "learning",
         "pto"
-      ]
+      ],
+      "logo": "../assets/logos/black-mesa.png"
     },
     {
       "id": "demo-app-9",
@@ -602,7 +610,8 @@
         "pto"
       ],
       "warn": "Staff Eng scope skews platform/infra; less FDE/customer-facing than the primary target family.",
-      "interviewAt": "2026-07-01T16:00:00.000Z"
+      "interviewAt": "2026-07-01T16:00:00.000Z",
+      "logo": "../assets/logos/massive-dynamic.png"
     },
     {
       "id": "demo-app-10",
@@ -641,7 +650,8 @@
         "dental",
         "vision",
         "pto"
-      ]
+      ],
+      "logo": "../assets/logos/abstergo.png"
     },
     {
       "id": "demo-app-11",
@@ -680,7 +690,8 @@
         "vision",
         "bonus",
         "pto"
-      ]
+      ],
+      "logo": "../assets/logos/ocp.png"
     },
     {
       "id": "demo-app-12",
@@ -719,7 +730,8 @@
         "vision",
         "retirement",
         "equity"
-      ]
+      ],
+      "logo": "../assets/logos/umbrella.png"
     },
     {
       "id": "demo-app-13",
@@ -759,7 +771,8 @@
         "equity",
         "pto",
         "learning"
-      ]
+      ],
+      "logo": "../assets/logos/buy-n-large.png"
     },
     {
       "id": "demo-app-14",
@@ -797,7 +810,8 @@
         "vision",
         "retirement",
         "remote_stipend"
-      ]
+      ],
+      "logo": "../assets/logos/vault-tec.png"
     },
     {
       "id": "demo-app-15",
@@ -836,7 +850,8 @@
       "followUp": {
         "dueAt": "2026-07-01",
         "note": "No reply yet — send a short follow-up nudge."
-      }
+      },
+      "logo": "../assets/logos/aviato.png"
     },
     {
       "id": "demo-app-16",
@@ -869,7 +884,8 @@
         "health",
         "dental"
       ],
-      "warn": "Base ceiling matches floor only — tight on comp"
+      "warn": "Base ceiling matches floor only — tight on comp",
+      "logo": "../assets/logos/nakatomi.png"
     },
     {
       "id": "demo-app-17",
@@ -902,7 +918,8 @@
         "health",
         "pto"
       ],
-      "warn": "Base below target floor"
+      "warn": "Base below target floor",
+      "logo": "../assets/logos/veridian.png"
     },
     {
       "id": "demo-app-18",
@@ -940,7 +957,8 @@
       "followUp": {
         "dueAt": "2026-06-29",
         "note": "No reply yet — send a short follow-up nudge."
-      }
+      },
+      "logo": "../assets/logos/dharma.png"
     },
     {
       "id": "demo-app-19",
@@ -983,7 +1001,8 @@
       "followUp": {
         "dueAt": "2026-07-02",
         "note": "No reply yet — send a short follow-up nudge."
-      }
+      },
+      "logo": "../assets/logos/ingen.png"
     },
     {
       "id": "demo-app-20",
@@ -1015,7 +1034,8 @@
         "retirement",
         "health"
       ],
-      "warn": "Base below target floor; no AI surface in JD"
+      "warn": "Base below target floor; no AI surface in JD",
+      "logo": "../assets/logos/biosyn.png"
     },
     {
       "id": "demo-app-21",
@@ -1047,7 +1067,8 @@
         "health",
         "dental"
       ],
-      "warn": "Base below target floor; workflow-automation signal but no LLM surface mentioned"
+      "warn": "Base below target floor; workflow-automation signal but no LLM surface mentioned",
+      "logo": "../assets/logos/initech.png"
     },
     {
       "id": "demo-app-22",
@@ -1083,7 +1104,8 @@
         "health",
         "pto"
       ],
-      "warn": "Seed-stage comp likely below floor; no AI surface"
+      "warn": "Seed-stage comp likely below floor; no AI surface",
+      "logo": "../assets/logos/bachmanity.png"
     },
     {
       "id": "demo-app-23",
@@ -1115,7 +1137,8 @@
         "retirement",
         "health"
       ],
-      "warn": "Base below target floor; pure platform SWE, no AI surface"
+      "warn": "Base below target floor; pure platform SWE, no AI surface",
+      "logo": "../assets/logos/encom.png"
     },
     {
       "id": "demo-app-24",
@@ -1148,7 +1171,8 @@
         "dental",
         "parental"
       ],
-      "warn": "Base below target floor; no AI or agentic surface in JD"
+      "warn": "Base below target floor; no AI or agentic surface in JD",
+      "logo": "../assets/logos/momcorp.png"
     },
     {
       "id": "demo-app-25",
@@ -1187,7 +1211,8 @@
         "health",
         "dental",
         "vision"
-      ]
+      ],
+      "logo": "../assets/logos/spectre.png"
     },
     {
       "id": "demo-app-26",
@@ -1219,7 +1244,8 @@
         "retirement",
         "health",
         "pto"
-      ]
+      ],
+      "logo": "../assets/logos/spacely.png"
     },
     {
       "id": "demo-app-27",
@@ -1251,7 +1277,8 @@
         "health",
         "equity"
       ],
-      "warn": "No AI surface — core backend only, clear cut-signal"
+      "warn": "No AI surface — core backend only, clear cut-signal",
+      "logo": "../assets/logos/zorg.png"
     },
     {
       "id": "demo-app-28",
@@ -1284,7 +1311,8 @@
         "dental",
         "bonus"
       ],
-      "warn": "Base below floor ($155-190K vs $190K floor) — and no AI scope"
+      "warn": "Base below floor ($155-190K vs $190K floor) — and no AI scope",
+      "logo": "../assets/logos/cobra.png"
     },
     {
       "id": "demo-app-29",
@@ -1322,7 +1350,8 @@
         "health",
         "dental",
         "pto"
-      ]
+      ],
+      "logo": "../assets/logos/monsters-inc.png"
     }
   ],
   "sources": [
@@ -1995,7 +2024,8 @@
         "type": "network",
         "name": "Demo lab-director lead"
       },
-      "demo": true
+      "demo": true,
+      "logo": "../assets/logos/black-mesa.png"
     },
     {
       "id": "demo-prospect-2",
@@ -2015,7 +2045,8 @@
         "type": "network",
         "name": "Demo alumni intro"
       },
-      "demo": true
+      "demo": true,
+      "logo": "../assets/logos/massive-dynamic.png"
     }
   ],
   "analytics": {

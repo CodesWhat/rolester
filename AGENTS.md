@@ -270,6 +270,30 @@ whenever an interview is the featured item — so the featured interview always 
 dossier to open. With no packet yet, the preview shows a "prep this interview"
 prompt.
 
+### Company logos
+
+The company chip on every Jobs row resolves its avatar in one fixed order
+(`avatarMarkup` in `dashboard-data.js`), and skills only ever touch the first rung:
+
+1. **`applications[].logo`** (and `sourced[].logo`) — an explicit image path or URL.
+   If set, it wins. This is the **standard field a skill writes** when it has a real
+   logo in hand: the user asked you to fetch the employer's logo, or you captured one
+   while applying. Write the path/URL here and the dashboard picks it up — no other
+   wiring. A relative path resolves against the generated `workspace/tracker.html`
+   (the demo seed uses `../assets/logos/<slug>.png`); a full `https://` URL also works.
+2. **logo.dev lookup** — only when `settings.logoToken` is set (a PRIVATE, opt-in
+   publishable token; off by default). Keys on a clean employer domain, else the
+   company name. This is the zero-upkeep path for real searches that opt in.
+3. **Monogram initials** — the fallback when `logo` is empty and logo.dev is off (or
+   its image 404s, via the `<img onerror>`). Always-correct, never blocks rendering.
+
+So the rule for skills: **if you have/fetch a real logo, write `app.logo`; otherwise
+leave it empty** and the dashboard falls back to logo.dev-if-wired, else a monogram.
+Stay domain-neutral (see Domain-Neutral Rule) — never hardcode a real employer's logo
+in code. The only bundled logos are the fictional-corp demo seed (`assets/logos/`,
+mapped in `demo-logos.mjs`), normalized to a uniform 256×256 white-padded square PNG;
+`stripDemo()` drops them the moment real data arrives.
+
 ### Round Vocabulary (hard — the canonical interview ladder)
 
 Interview rounds are named by **type**, never numbered. The dashboard derives an
