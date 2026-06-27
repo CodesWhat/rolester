@@ -5,7 +5,8 @@
 // and OIDC token under dist/.vercel never enter the served bundle.
 //
 //   Project: codeswhat/rolester-demo   (link lives at dist/.vercel, gitignored)
-//   Scope:   codeswhat   (NEVER the default sypartners — that's the employer account)
+//   Scope:   codeswhat   (ALWAYS pass --scope explicitly; the CLI's default account is
+//                         a different, non-public org and must never receive this deploy)
 //
 // One-time setup already done: `cd dist && vercel link --project rolester-demo --scope codeswhat`
 // and the demo.rolester.codeswhat.com domain + Cloudflare CNAME. Re-run this anytime to
