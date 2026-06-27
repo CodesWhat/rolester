@@ -4169,9 +4169,12 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
   const linkMap = new Map();
   const sourceRows = new Map(Object.keys(SANKEY_SOURCE_META).map((key) => [key, []]));
   const furthestOrders = [];
-  // Decay links keyed `awaiting->${decayId}` — only pre-interview (0-round) apps drain
-  // into Going stale / Ghosted, so the band always flows forward out of Awaiting.
-  const decayGroups = new Map();
+  // Decay band: only pre-interview (0-round) apps that went quiet drain forward as a
+  // progression — Awaiting → Going stale, then the fully-ghosted subset continues
+  // Going stale → Ghosted. A ghosted app was stale first, so it passes THROUGH the
+  // stale node rather than branching straight off Awaiting.
+  const decayStaleRows = []; // quiet 14–30d, still merely stale — terminates at the stale node
+  const decayGhostedRows = []; // quiet 30d+, fully ghosted — continues stale → ghosted
   // Rejections that happened AFTER >= 1 real round, keyed `round-${n}`, so a role lost
   // after its 1st round drops round-1 → Rejected. These drop forward into the single
   // bottom-right Rejected sink, alongside the bulk of pre-response form-rejections.
@@ -4263,16 +4266,18 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
       awaiting += 1;
     }
     // Decay overlay: a quiet PRE-interview app (0 rounds, still Awaiting) drains forward
-    // into Going stale / Ghosted. An app that already reached a round and went quiet
-    // stays counted at its round node (its card carries the stale flag) — routing it back
-    // into the col-1.5 decay sinks would draw an ugly backward band, so we don't.
+    // through Going stale, and on to Ghosted if it has fully ghosted. An app that already
+    // reached a round and went quiet stays counted at its round node (its card carries the
+    // stale flag) — routing it back into the col-1.5 decay sink would draw an ugly backward
+    // band, so we don't.
     if ((row.ghosted || row.stale) && rounds < 1) {
-      const decayId = row.ghosted ? "ghosted" : "stale";
-      if (row.ghosted) ghosted += 1;
-      else stale += 1;
-      const key = `awaiting->${decayId}`;
-      if (!decayGroups.has(key)) decayGroups.set(key, { from: "awaiting", to: decayId, rows: [] });
-      decayGroups.get(key).rows.push(row);
+      if (row.ghosted) {
+        ghosted += 1;
+        decayGhostedRows.push(row);
+      } else {
+        stale += 1;
+        decayStaleRows.push(row);
+      }
     }
   }
 
@@ -4340,15 +4345,20 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
 
   // Decay is rendered as a fading grey, not a colour — a quiet app is signal
   // draining away, so it desaturates and goes translucent as it decays. Going
-  // stale sits halfway between Awaiting (col 1) and the Screen column (col 2) at
-  // a visible grey; Ghosted lands in the Screen column itself, faded almost to
-  // nothing. The legend + hover tooltip identify the unlabelled ghosted exit.
-  if (stale > 0)
+  // stale sits halfway between Awaiting (col 1) and the first round (col 2) at a
+  // visible grey; Ghosted is a labelled dead-exit pinned to the TOP of its own
+  // column (2.25), so the faded band peels UP off Going stale and leaks away —
+  // the mirror of Rejected, which sinks to the bottom.
+  // "Going stale" is the cumulative quiet state: every ghosted app was stale on the way,
+  // so the node counts ALL pre-response quiet apps (stale + ghosted). The merely-stale
+  // ones terminate here; the ghosted subset flows one hop further to Ghosted.
+  const quiet = stale + ghosted;
+  if (quiet > 0)
     ensureNode({
       id: "stale",
       label: "Going stale",
       color: DECAY_STALE_COLOR,
-      count: stale,
+      count: quiet,
       col: 1.5,
       order: 1.5,
       filter: "stale",
@@ -4359,10 +4369,9 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
       label: "Ghosted",
       color: DECAY_GHOSTED_COLOR,
       count: ghosted,
-      col: 2,
-      order: 98,
+      col: 2.25,
+      order: 0,
       filter: "ghosted",
-      hideLabel: true,
     });
 
   for (const [bucket, bucketRows] of sourceRows) {
@@ -4422,11 +4431,27 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
     );
   }
 
-  // Decay overlay links — from each stage node into the decay sinks, fading grey.
-  for (const group of decayGroups.values()) {
-    const color = group.to === "ghosted" ? DECAY_GHOSTED_COLOR : DECAY_STALE_COLOR;
-    addLink(group.from, group.to, group.rows.length, color, group.to, examplesOf(group.rows));
-  }
+  // Decay overlay links — the quiet band flows FORWARD as a progression: Awaiting →
+  // Going stale carries every pre-response quiet app, then the fully-ghosted subset
+  // continues Going stale → Ghosted. (addLink no-ops on count <= 0, so an all-stale or
+  // all-ghosted pipeline just drops the empty hop.)
+  const decayAllRows = decayStaleRows.concat(decayGhostedRows);
+  addLink(
+    "awaiting",
+    "stale",
+    decayAllRows.length,
+    DECAY_STALE_COLOR,
+    "stale",
+    examplesOf(decayAllRows)
+  );
+  addLink(
+    "stale",
+    "ghosted",
+    decayGhostedRows.length,
+    DECAY_GHOSTED_COLOR,
+    "ghosted",
+    examplesOf(decayGhostedRows)
+  );
 
   const nodes = [...nodeMap.values()].sort((a, b) => a.col - b.col || a.order - b.order);
   const links = [...linkMap.values()].sort((a, b) => {
@@ -5123,6 +5148,12 @@ function renderJobsSankey(sankey) {
       // flat from Heard back (which also sits low), the per-round cuts drop in from the
       // chain above. Bottom-anchoring keeps that heavy band out of the live chain.
       y = top + columnHeight - usedHeight;
+    } else if (nodes.some((node) => node.id === "ghosted")) {
+      // Ghosted is the decay dead-exit, pinned to the TOP of its own column so the faded
+      // band peels UP off Going stale and leaks away — the mirror of Rejected sinking to
+      // the bottom. Top-anchoring guarantees the band always reads as a rising exit,
+      // whatever height Going stale lands at.
+      y = top;
     }
     for (let index = 0; index < nodes.length; index += 1) {
       const node = nodes[index];
@@ -5190,7 +5221,8 @@ function renderJobsSankey(sankey) {
       // its RIGHT like a sink even though it now sits mid-chart (col 2.5) — it's
       // bottom-pinned, so an above/below label would crash into the live chain.
       const sideRight = (isLast || isRejected) && !isRound;
-      const labelAbove = node.id === "awaiting" || node.id === "stale" || isRound;
+      const labelAbove =
+        node.id === "awaiting" || node.id === "stale" || node.id === "ghosted" || isRound;
       const labelX = isFirst ? node.x - 8 : sideRight ? node.x + nodeW + 14 : node.x + nodeW / 2;
       const anchor = isFirst ? "end" : sideRight ? "start" : "middle";
       // Two-line label: name on top, (count) stacked underneath. Offset the block
