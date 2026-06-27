@@ -245,6 +245,11 @@ extra surface area.
   and human while staying restrained, favicon-legible, and theme-agnostic.
 - **More sources** — additional job-board and ATS adapters behind provider modules,
   beyond the current Wellfound + Lever coverage.
+- **Interactive live demo on the site** — render the dashboard against the bundled
+  sample workspace as a static, client-side-only build and serve it from the project
+  site so anyone can click through a realistic, fully populated job search (emails,
+  interview notes, an offer-to-accept arc) without installing anything. No backend; the
+  demo data ships with the build.
 
 ## Principles
 
