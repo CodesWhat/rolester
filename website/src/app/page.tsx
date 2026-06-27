@@ -738,7 +738,7 @@ export default function Home() {
                   Clone it. Run it. Own it.
                 </h2>
                 <p className="section-sub">
-                  Free to self-host, source-available (BUSL-1.1). No install
+                  Free to self-host, open source (MIT). No install
                   wizard, no account, no cloud. Clone the repo and one command
                   does the rest.
                 </p>
@@ -1032,7 +1032,7 @@ export default function Home() {
                   Releases
                 </a>
                 <a
-                  href="https://mariadb.com/bsl11/"
+                  href="https://github.com/CodesWhat/rolester/blob/main/LICENSE"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -1046,11 +1046,11 @@ export default function Home() {
             <p className="footer-legal">
               © {new Date().getFullYear()} CodesWhat. Released under the{" "}
               <a
-                href="https://mariadb.com/bsl11/"
+                href="https://github.com/CodesWhat/rolester/blob/main/LICENSE"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                BUSL-1.1 License
+                MIT License
               </a>
               .
             </p>
