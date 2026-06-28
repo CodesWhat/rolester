@@ -1,22 +1,23 @@
 {
   "meta": {
-    "lastUpdatedAt": "2026-06-15T13:12:00.000Z",
-    "lastSweepAt": "2026-06-15T13:12:00.000Z"
+    "lastUpdatedAt": "2026-06-25T17:30:00.000Z",
+    "lastSweepAt": "2026-06-25T17:30:00.000Z",
+    "demoAnchor": "2026-06-26"
   },
   "applications": [
     {
       "id": "demo-app-1",
       "company": "E Corp",
       "role": "Staff Software Engineer",
-      "status": "accepted",
+      "status": "offer",
       "channel": "referral",
-      "appliedAt": "2026-04-10",
+      "appliedAt": "2026-04-29",
       "fitScore": 95,
       "loc": "Remote (US)",
       "mode": "remote",
       "base": "$215–255K",
       "tc": "~$320–380K",
-      "note": "Signed with E Corp — the one everyone calls Evil Corp. Irony noted.",
+      "note": "Offer in hand from E Corp — weighing it against the Cyberdyne onsite and Massive panel this week.",
       "domain": "e-corp.com",
       "link": "https://e-corp.com/careers",
       "source": {
@@ -25,59 +26,165 @@
         "url": "https://e-corp.com/careers/staff-software-engineer"
       },
       "artifacts": {
-        "jd": "Staff backend/platform role owning reliability, internal developer tooling, and incident automation for a large financial platform.\n\nArtifact: workspace/jds/demo/e-corp-staff-software-engineer.md",
-        "resume": "workspace/renders/demo/e-corp-staff-swe-resume.pdf",
-        "coverLetter": "Short referral cover note; no private compensation data included.\n\nArtifact: workspace/renders/demo/e-corp-cover-letter.pdf",
-        "offerPacket": {
-          "path": "workspace/offers/demo/e-corp-signed-offer-summary.md",
-          "capturedAt": "2026-06-12T17:45:00.000Z",
-          "note": "Fake accepted-offer summary for demo pipeline state."
-        },
+        "jd": "Staff IC role on Platform Intelligence team: build AI-powered incident triage (RAG over runbooks) and agentic approval workflows for a 340-service financial platform. Remote US, $215-255K base.\n\nArtifact: workspace/jds/demo/e-corp-staff-software-engineer.md",
         "jdPath": "workspace/jds/demo/e-corp-staff-software-engineer.md",
-        "jdSummary": "Staff backend/platform role owning reliability, internal developer tooling, and incident automation for a large financial platform.",
+        "jdSummary": "Staff IC role building AI-powered incident triage and agentic approval workflows for E Corp's 340-service financial platform. Remote US.",
         "jdCapturedAt": "2026-04-08T15:20:00.000Z",
+        "resume": "Tailored resume emphasizing production RAG pipeline (Meridian), agentic tool-use workflow with human-in-the-loop safety (Meridian), and enterprise deployment scale + cross-functional scope (Pulsar).\n\nArtifact: workspace/renders/demo/e-corp-staff-swe-resume.pdf",
         "resumePath": "workspace/renders/demo/e-corp-staff-swe-resume.pdf",
-        "resumeNote": "Demo-only tailored resume emphasizing distributed systems, observability, and incident reduction.",
+        "resumeNote": "Tailored for Platform Intelligence: leads with RAG pipeline and agentic workflow experience; frames Pulsar FDE work as enterprise AI delivery at scale.",
         "resumeGeneratedAt": "2026-04-09T18:05:00.000Z",
+        "coverLetter": "Short referral cover note: connects Meridian RAG and Pulsar FDE experience directly to E Corp's AI-ops initiative; no compensation data disclosed.\n\nArtifact: workspace/renders/demo/e-corp-cover-letter.pdf",
         "coverLetterPath": "workspace/renders/demo/e-corp-cover-letter.pdf",
-        "coverLetterNote": "Short referral cover note; no private compensation data included.",
-        "coverLetterGeneratedAt": "2026-04-09T18:18:00.000Z"
+        "coverLetterNote": "Referral cover note referencing Alex Winters intro; positions Meridian RAG and Pulsar deployment scale as direct match for Platform Intelligence needs.",
+        "coverLetterGeneratedAt": "2026-04-09T18:18:00.000Z",
+        "interviewPacket": {
+          "path": "workspace/interview-packets/demo/e-corp-staff-swe.md",
+          "generatedAt": "2026-05-18T09:30:00.000Z",
+          "note": "Pre-onsite prep: live cue card, 5 expected Qs with grounded answers, comp anchor, 2 questions to ask, 10-min study layer."
+        },
+        "offerPacket": {
+          "path": "workspace/offers/demo/e-corp-offer.md",
+          "capturedAt": "2026-06-25T17:30:00.000Z",
+          "note": "Offer letter received: $232K base, $90K/yr RSU (4-yr vest), $15K sign-on, ~$355K TC, start 2026-07-07 — under review, not yet signed."
+        },
+        "interviewDossier": {
+          "title": "E Corp — Staff SWE | Interview Dossier",
+          "round": null,
+          "path": null,
+          "generatedAt": "2026-06-12T13:12:00.000Z",
+          "markdown": "# E Corp — Staff SWE | Interview Dossier\n\n**Role:** Staff Software Engineer, Platform Intelligence — build AI-powered incident triage and agentic approval workflows for a 340-service financial platform. Staff IC, remote US.\n\n**Outcome:** Offer extended 2026-06-24; decision pending.\n\n---\n\n## Live cue card\n\n**The role in one sentence:** Lead AI-augmented incident automation and developer tooling at E Corp — the kind of RAG + agentic work I've already shipped in production, at 10x the scale.\n\n**Why I fit (say this early):**\n- Meridian RAG: 4M-page corpus, sub-60s triage, 200 daily users, ~60% research-cycle reduction\n- Meridian agentic workflow: Claude API + custom tools, human-in-the-loop safety, 87% procurement admin cut\n- Pulsar: 3 concurrent enterprise deployments, all on schedule, zero P1s, avg ttv 14→9 weeks\n\n**Comp anchor:** Target $240K base + $15K sign-on. Floor $190K — not a negotiating position.\n\n---\n\n## Key questions + grounded answers\n\n**1. Walk me through a system you built that reduced operational toil.**\n\nMeridian RAG pipeline: replaced a 3-hour manual research triage process with sub-60s cited-excerpt queries over a 4M-page internal corpus. Prototype to production in 8 weeks; 200+ daily internal users; approximately 60% reduction in research-cycle time. Key technical unlock: sliding-window chunking + parent-document retrieval — naive sentence-level chunking lost cross-document context and caused hallucinated citations in the early build. Fixed that, shipped the working version, added a citation-verification suite to catch future regressions.\n\n**2. How would you design an LLM-powered incident triage pipeline for a high-volume financial platform?**\n\nIndex runbooks, past postmortems, and service topology docs in a vector store — pgvector on existing Postgres to start, HNSW index for sub-500ms retrieval. On alert: extract structured context (service, error class, affected metrics), run semantic search, retrieve top-k chunks, pass with alert context to an LLM, produce a structured triage card (probable cause, severity reasoning, recommended first action, escalation path). Deliver to on-call in Slack in under 10 seconds. Human reviews and acts; the AI layer is strictly read-only and additive — never in the alert delivery path, never auto-executing on write actions.\n\n**3. Tell me about aligning non-technical stakeholders on a risky AI feature.**\n\nMeridian agentic procurement: finance team's default was \"no\" — they'd seen automation projects fail silently before. I didn't ask for permission. I ran a live demo on 10 of their own already-resolved procurement requests, showed the agent's draft email and budget-code lookup, then showed the human-in-the-loop confirmation step before any send. I invited them to find errors. They found two: ambiguous budget code mappings. We fixed those live. By the end of the session the finance manager asked to expand the pilot. Observable system plus an explicit human gate turns \"do you trust AI?\" into \"do you trust your own judgment?\" They always do.\n\n**4. How do you evaluate retrieval quality without a labeled test set?**\n\nThree layers: offline gold-standard (30-50 known-good scenarios, run on a schedule after every corpus update — catches regressions before they hit production); implicit in-production feedback (did the on-call act on the suggestion within 5 minutes, and did they click through on the cited source?); explicit feedback (thumbs-up/down on the triage card in Slack — even 10% response rate on high-sev alerts catches systematic gaps). At Meridian this combo caught a deprecated procurement policy doc that kept surfacing in retrieval; fixed the corpus hygiene, not the model.\n\n**5. How do you mentor as a staff IC without formal management authority?**\n\nBe the person they show the design to before the PR, not after. Office-hours 1:1s where they drive — they bring the problem, I ask questions. Most of the time the person already has 80% of the right answer and needs a thinking partner, not an authority figure. I externalize my own design reasoning: short design docs, \"why\" comments in code rather than \"what.\" If I get the same category of question twice, I build the document or pattern that handles it — not another 1:1 answer. The goal is to remove myself as the bottleneck, not become one.\n\n---\n\n## Questions I asked\n\n1. What does success look like at 6 months — what's shipped and what's measurably better?\n2. Is this team starting greenfield, or inheriting existing infrastructure I'd own from day one?\n\n---\n\n## Study notes (pre-onsite skim)\n\n- E Corp AI-ops initiative is greenfield within a mature infra org. Public SRE blog mentions \"zero-ticket incident response\" as the north star — tie answers to that.\n- Tech stack pointers: pgvector + HNSW for retrieval; Claude or OpenAI API for completion; Python primary in the team.\n- Human-in-the-loop pattern: draft → confirm → execute. Never auto-execute write-side actions (email sends, infra changes, permission grants).\n- Alert deduplication: (service_name, error_class) keyed sliding window; count is the severity proxy, not noise volume.\n- Eval harness: offline gold-standard regression suite + implicit in-production feedback + periodic explicit thumbs-up/down. Run offline suite on a schedule after every corpus update or prompt change.\n- Distributed systems concepts: multi-region failover, HNSW approximate nearest-neighbor, p99 latency at burst load, graceful degradation when AI layer is unavailable (always additive, never in the critical path).\n"
+        }
       },
       "conversations": [
         {
-          "date": "2026-04-11",
-          "kind": "Referral intro",
-          "who": "Demo referrer",
-          "notes": "Referrer sent warm intro and highlighted staff-level incident automation experience. Recruiter confirmed the role was funded and remote-friendly."
+          "date": "2026-05-07",
+          "kind": "Recruiter screen",
+          "who": "Morgan Hayes (Sr. Technical Recruiter)",
+          "notes": "30 min. Confirmed $215-255K base, remote-first. Riley described Meridian agentic workflow; Morgan flagged strong fit with AI-ops initiative. Next: HM screen w/ Jordan Park."
         },
         {
-          "date": "2026-05-02",
-          "kind": "Technical loop",
-          "who": "Platform panel",
-          "notes": "Covered multi-region failover, alert hygiene, and migration planning. Panel feedback: strongest on pragmatic architecture tradeoffs."
+          "date": "2026-05-15",
+          "kind": "Hiring-manager screen",
+          "who": "Jordan Park (Engineering Director, Platform Intelligence)",
+          "notes": "45 min; ran 10 min over. Jordan building AI triage layer on incident pipeline; Riley's Meridian RAG resonated strongly. Jordan set up technical round directly. Strong energy."
         },
         {
-          "date": "2026-06-12",
-          "kind": "Offer close",
-          "who": "Recruiting lead",
-          "notes": "Accepted demo offer after written terms matched target range and remote terms were confirmed."
+          "date": "2026-05-27",
+          "kind": "Technical screen",
+          "who": "Sam Rivera (Staff Engineer)",
+          "notes": "90 min system design: RAG-over-runbooks incident triage pipeline. Riley proposed HNSW index + parent-doc retrieval + human-in-the-loop on writes. Sam: strong signal both ways."
+        },
+        {
+          "date": "2026-06-10",
+          "kind": "Onsite / panel",
+          "who": "Jordan Park, Sam Rivera, Priya Okoye, Dana Kim",
+          "notes": "Full-day virtual panel (4 sessions). Highlight: live-coded alert dedup sketch in Python. Committee feedback: strongest technical and stakeholder empathy in the cycle."
+        },
+        {
+          "date": "2026-06-20",
+          "kind": "Offer call",
+          "who": "Morgan Hayes (Sr. Technical Recruiter)",
+          "notes": "Initial offer: $222K base, $95K/yr RSU, $10K sign-on. Riley flagged intent to counter in writing. Morgan taking to comp committee; written terms expected within 24 hrs."
+        },
+        {
+          "date": "2026-06-22",
+          "kind": "Negotiation",
+          "who": "Morgan Hayes (Sr. Technical Recruiter)",
+          "notes": "Counter sent in writing: $240K base, $15K sign-on, requested RSU review. Morgan confirmed comp committee response by end of week; positive signal. Response expected 2026-06-24."
+        },
+        {
+          "date": "2026-06-24",
+          "kind": "Offer call",
+          "who": "Morgan Hayes (Sr. Technical Recruiter)",
+          "notes": "Revised offer received: $232K base, $90K/yr RSU, $15K sign-on (~$355K TC). E Corp moved base $7K, matched sign-on fully. Reviewing — decision pending."
         }
       ],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 215,
+        "askK": 240
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "pto",
+        "learning",
+        "parental",
+        "bonus",
+        "mental_health"
+      ],
+      "followUp": {
+        "dueAt": "2026-06-29",
+        "note": "Respond to the E Corp offer — weigh against the Cyberdyne onsite + Massive panel this week."
+      },
+      "warn": "E Corp wants an answer soon; two live loops (Cyberdyne, Massive) aren't done yet.",
+      "logo": "../assets/logos/e-corp.png",
+      "companyHealth": {
+        "rating": "healthy",
+        "forFunction": "applied AI engineering",
+        "asOf": "2026-06-25",
+        "provenance": "built-from-data",
+        "crossCut": [],
+        "fitDelta": 0,
+        "dimensions": {
+          "layoffRisk": {
+            "level": "good",
+            "note": "No layoffs on record; Platform Intelligence is a named growth bet.",
+            "functionHit": false
+          },
+          "hiringMomentum": {
+            "level": "good",
+            "note": "Actively scaling the org behind this role — multiple open reqs."
+          },
+          "financial": {
+            "level": "good",
+            "note": "Profitable; raised full-year guidance last quarter."
+          },
+          "sentiment": {
+            "level": "good",
+            "note": "Glassdoor 4.1 and rising; strong engineering reviews.",
+            "trend": "up"
+          },
+          "leadership": {
+            "level": "good",
+            "note": "Stable; the hiring director has been in seat four years."
+          }
+        },
+        "rationale": "Healthy across the board, and your exact function is a stated growth priority — the safest landing of the live options. Nothing here dents the fit; it reinforces taking the offer seriously.",
+        "signals": [
+          {
+            "source": "Q1 earnings",
+            "date": "2026-05-05",
+            "summary": "Revenue up; raised full-year guidance, AI platform called out as a growth driver.",
+            "url": "https://example.com/e-corp-q1"
+          },
+          {
+            "source": "Glassdoor",
+            "date": "2026-06-08",
+            "summary": "4.1 rating, trending up; recurring 'strong eng culture' theme.",
+            "url": "https://glassdoor.com"
+          }
+        ]
+      }
     },
     {
       "id": "demo-app-2",
       "company": "Aperture Science",
       "role": "Forward Deployed Engineer",
-      "status": "offer",
+      "status": "withdrew — offer below comp floor",
       "channel": "recruiter",
-      "appliedAt": "2026-05-15",
+      "appliedAt": "2026-05-05",
       "fitScore": 92,
       "loc": "Remote (US)",
       "mode": "remote",
       "base": "$155–190K",
       "tc": "~$200–260K",
-      "note": "Offer in hand — Enrichment Center launch. The cake is a lie.",
+      "note": "FDE role, Enrichment Center launch. Offer came in under the $190K floor after counter — passed.",
       "domain": "aperturescience.com",
       "link": "https://aperturescience.com/careers",
       "source": {
@@ -86,69 +193,81 @@
         "url": "https://aperturescience.com/careers/forward-deployed-engineer"
       },
       "artifacts": {
-        "jd": "Forward deployed engineer role embedding with launch customers, building agent workflows, and owning production adoption.\n\nArtifact: workspace/jds/demo/aperture-forward-deployed-engineer.md",
-        "resume": "workspace/renders/demo/aperture-fde-resume.pdf",
-        "coverLetter": "Tight note connecting field deployment, ambiguous customer data, and production ownership.\n\nArtifact: workspace/renders/demo/aperture-cover-letter.pdf",
-        "interviewPacket": {
-          "path": "workspace/interview-packets/demo/aperture-offer-negotiation.md",
-          "generatedAt": "2026-06-08T11:40:00.000Z",
-          "note": "Offer prep with scope questions, comp anchor, and value proof points."
-        },
-        "jdPath": "workspace/jds/demo/aperture-forward-deployed-engineer.md",
-        "jdSummary": "Forward deployed engineer role embedding with launch customers, building agent workflows, and owning production adoption.",
-        "jdCapturedAt": "2026-05-14T20:10:00.000Z",
-        "resumePath": "workspace/renders/demo/aperture-fde-resume.pdf",
-        "resumeNote": "Demo-only FDE version led with customer-facing delivery and agent workflow implementation.",
-        "resumeGeneratedAt": "2026-05-15T13:35:00.000Z",
-        "coverLetterPath": "workspace/renders/demo/aperture-cover-letter.pdf",
-        "coverLetterNote": "Tight note connecting field deployment, ambiguous customer data, and production ownership.",
-        "coverLetterGeneratedAt": "2026-05-15T13:48:00.000Z"
+        "jd": "Forward deployed engineer role embedding with enterprise launch customers, building agent workflows, and owning production adoption end to end.\n\nArtifact: workspace/jds/demo/aperture-forward-deployed-engineer.md"
       },
       "conversations": [
         {
-          "date": "2026-05-16",
+          "date": "2026-05-12",
           "kind": "Recruiter screen",
-          "who": "Demo recruiter",
-          "notes": "Confirmed remote US, customer-facing expectation, and lower-than-target posted base range. Proceeded because scope is strong and offer includes equity."
+          "who": "Jordan Marsh, Recruiting Lead",
+          "notes": "Confirmed remote US, FDE scope, and base range $155–190K. Riley flagged $190K floor upfront. Recruiter said flexibility depends on context; loop starting."
         },
         {
-          "date": "2026-05-29",
-          "kind": "Technical deep dive",
-          "who": "Deployment engineering panel",
-          "notes": "Discussed RAG evaluation, tool-use safety, and handoff from prototype to managed service. Panel asked for concrete examples of customer adoption work."
+          "date": "2026-05-24",
+          "kind": "Hiring-manager screen",
+          "who": "Celeste Park, Head of Deployment Engineering",
+          "notes": "HM focused on customer adoption ownership and integration breadth. Strong alignment on deploy-and-adopt model. Technical loop scheduled."
         },
         {
-          "date": "2026-06-09",
-          "kind": "Offer call",
-          "who": "Recruiting lead",
-          "notes": "Verbal offer received. Base range trails the stronger offers; equity and remote scope may offset. Written counter recommended before accepting."
+          "date": "2026-06-04",
+          "kind": "Technical screen",
+          "who": "Nadia Kuznetsova (FDE) + Marcus Webb (Platform Eng)",
+          "notes": "75-min deep dive: RAG eval in field contexts, agentic tool-use safety, human-in-the-loop write gates. Strong signal both directions. Take-home next."
+        },
+        {
+          "date": "2026-06-10",
+          "kind": "Take-home review",
+          "who": "Marcus Webb, Platform Engineering Lead",
+          "notes": "Integration scoping exercise reviewed live. Positive feedback on the Greenhouse schema-drift story and evaluation instrumentation approach."
+        },
+        {
+          "date": "2026-06-14",
+          "kind": "Offer received",
+          "who": "Jordan Marsh, Recruiting Lead",
+          "notes": "Written offer: $182K base, below the $190K floor. Riley reviewing."
+        },
+        {
+          "date": "2026-06-17",
+          "kind": "Negotiation / Withdrawal",
+          "who": "Jordan Marsh, Recruiting Lead",
+          "notes": "Countered to $190K; Aperture's best was $185K — below hard floor. Withdrew, amicably."
         }
       ],
-      "warn": "Offer base below preferred target; compare equity and scope before closing.",
-      "followUp": {
-        "kind": "offer-counter",
-        "dueAt": "2026-06-16T17:00:00.000Z",
-        "generatedAt": "2026-06-15T13:20:00.000Z",
-        "draft": {
-          "subject": "Re: Aperture Science offer",
-          "body": "Hi,\n\nThank you again for the offer and for the time the team spent walking me through the Enrichment Center deployment work. I'm excited about the scope and the chance to own customer outcomes end to end.\n\nGiven the role's field ownership, technical ambiguity, and production responsibility, I would be comfortable moving forward if we can bring the base closer to the top of the discussed range while keeping the rest of the package intact.\n\nBest,\nJane"
-        }
+      "warn": "Final base ($185K after counter) sat below the $190K hard floor — the deciding factor.",
+      "demo": true,
+      "compEstimate": {
+        "floorK": 190,
+        "askK": 190
       },
-      "demo": true
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "pto",
+        "learning",
+        "parental",
+        "wellness",
+        "bonus",
+        "mental_health"
+      ],
+      "logo": "../assets/logos/aperture-science.png"
     },
     {
       "id": "demo-app-3",
       "company": "Hooli",
       "role": "Principal Engineer",
-      "status": "offer",
+      "status": "rejected",
       "channel": "referral",
-      "appliedAt": "2026-05-08",
+      "appliedAt": "2026-05-28",
       "fitScore": 90,
       "loc": "Hybrid · SF",
       "mode": "hybrid",
       "base": "$250–290K",
       "tc": "~$390–470K",
-      "note": "Offer from Hooli. Gavin Belson wants a signed, framed photo of himself.",
+      "note": "Rejected after the technical screen — strong loop, but hybrid SF likely counted against a remote-only search.",
       "domain": "hooli.com",
       "link": "https://hooli.com/careers",
       "source": {
@@ -157,70 +276,61 @@
         "url": "https://hooli.com/careers/principal-engineer"
       },
       "artifacts": {
-        "jd": "Principal engineer role for platform architecture, developer velocity, and high-scale migration leadership.\n\nArtifact: workspace/jds/demo/hooli-principal-engineer.md",
-        "resume": "workspace/renders/demo/hooli-principal-engineer-resume.pdf",
-        "interviewPacket": {
-          "path": "workspace/interview-packets/demo/hooli-principal-final-loop.md",
-          "generatedAt": "2026-05-30T16:30:00.000Z",
-          "note": "Final loop notes with systems-design prompts and leadership story reminders."
-        },
-        "offerPacket": {
-          "path": "workspace/offers/demo/hooli-offer-summary.md",
-          "capturedAt": "2026-06-13T19:15:00.000Z",
-          "note": "Demo offer summary awaiting comparison against E Corp acceptance."
-        },
-        "jdPath": "workspace/jds/demo/hooli-principal-engineer.md",
-        "jdSummary": "Principal engineer role for platform architecture, developer velocity, and high-scale migration leadership.",
-        "jdCapturedAt": "2026-05-07T21:04:00.000Z",
-        "resumePath": "workspace/renders/demo/hooli-principal-engineer-resume.pdf",
-        "resumeNote": "Principal-level version emphasizing architecture reviews, cross-team influence, and migration sequencing.",
-        "resumeGeneratedAt": "2026-05-08T10:25:00.000Z"
+        "jd": "Principal Engineer, AI Platform — Hooli. Own architecture + roadmap of multi-tenant LLM orchestration layer; lead 4–6 engineers. Hybrid SF 2 days/week. $250–290K base.\n\nArtifact: workspace/jds/demo/hooli-principal-engineer.md"
       },
       "conversations": [
         {
-          "date": "2026-05-12",
-          "kind": "Hiring manager screen",
-          "who": "Demo VP Engineering",
-          "notes": "HM focused on staff-to-principal transition, operating through influence, and platform migration strategy."
+          "date": "2026-06-08",
+          "kind": "Recruiter screen",
+          "who": "Dana Park, Technical Recruiter (Hooli)",
+          "notes": "30 min with Dana. Confirmed comp band ($250–290K base), hybrid SF 2x/week. Role: lead AI platform infra for LLM orchestration. Next: HM screen."
         },
         {
-          "date": "2026-05-27",
-          "kind": "Architecture panel",
-          "who": "Infrastructure review panel",
-          "notes": "Deep discussion on service boundaries and staged migration. Feedback was positive; one panelist wanted more detail on de-risking rollout order."
+          "date": "2026-06-12",
+          "kind": "Hiring-manager screen",
+          "who": "Marcus Webb, VP Engineering (Hooli)",
+          "notes": "45 min. Deep dive on Meridian RAG pipeline + Pulsar FDE ops. Strong mutual signal. Wants Riley for system design round next. Next: tech screen."
         },
         {
-          "date": "2026-06-13",
-          "kind": "Offer review",
-          "who": "Recruiting partner",
-          "notes": "Offer is strongest on total comp but hybrid SF is a practical drawback. Keep as comparison data only unless remote terms change."
+          "date": "2026-06-16",
+          "kind": "Technical screen",
+          "who": "Priya Nair, Staff Engineer (Hooli)",
+          "notes": "60 min. RAG retrieval tradeoffs, multi-tenant quota enforcement. Priya gave strong positive feedback. Next: system design panel."
         }
       ],
-      "warn": "Hybrid SF requirement conflicts with remote preference.",
-      "followUp": {
-        "kind": "offer-decline-or-remote-ask",
-        "dueAt": "2026-06-17T00:00:00.000Z",
-        "generatedAt": "2026-06-15T13:20:00.000Z",
-        "draft": {
-          "subject": "Re: Principal Engineer offer",
-          "body": "Hi,\n\nThank you for the offer and for such a thoughtful process. The scope is compelling, especially the platform migration work.\n\nBefore I can make a final call, I wanted to ask whether the team can support a remote-first arrangement with planned visits for key planning and launch moments. That would make the opportunity much easier to compare seriously.\n\nBest,\nJane"
-        }
+      "warn": "Hybrid SF 2x/week — a stretch against Austin-remote; probably surfaced in the debrief.",
+      "demo": true,
+      "compEstimate": {
+        "floorK": 250,
+        "askK": 270
       },
-      "demo": true
+      "benefits": [
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "parental",
+        "learning",
+        "remote_stipend",
+        "bonus",
+        "wellness"
+      ],
+      "logo": "../assets/logos/hooli.png"
     },
     {
       "id": "demo-app-4",
       "company": "Weyland-Yutani",
       "role": "Staff Engineer, Spaceframe",
-      "status": "final round",
-      "channel": "recruiter",
-      "appliedAt": "2026-05-22",
+      "status": "rejected",
+      "channel": "referral",
+      "appliedAt": "2026-05-21",
       "fitScore": 88,
       "loc": "Remote (Global)",
       "mode": "remote",
       "base": "$215–255K",
       "tc": "~$320–380K",
-      "note": "Final loop. 'Building Better Worlds.' Crew-expendability clause under review.",
+      "note": "Final loop done — strong, rigorous process, but lost on a narrow internal calibration after the panel.",
       "domain": "weylandyutani.com",
       "link": "https://weylandyutani.com/careers",
       "source": {
@@ -229,59 +339,73 @@
         "url": "https://weylandyutani.com/careers/staff-engineer-spaceframe"
       },
       "artifacts": {
-        "jd": "Staff engineering role for distributed systems, telemetry, and mission-critical automation across remote operations.\n\nArtifact: workspace/jds/demo/weyland-yutani-staff-spaceframe.md",
-        "resume": "workspace/renders/demo/weyland-yutani-staff-spaceframe-resume.pdf",
-        "interviewPacket": {
-          "path": "workspace/interview-packets/demo/weyland-yutani-final-loop.md",
-          "generatedAt": "2026-06-12T08:20:00.000Z",
-          "note": "Final-loop packet with safety, incident, and autonomy-boundary talking points."
-        },
-        "jdPath": "workspace/jds/demo/weyland-yutani-staff-spaceframe.md",
-        "jdSummary": "Staff engineering role for distributed systems, telemetry, and mission-critical automation across remote operations.",
-        "jdCapturedAt": "2026-05-21T14:45:00.000Z",
-        "resumePath": "workspace/renders/demo/weyland-yutani-staff-spaceframe-resume.pdf",
-        "resumeNote": "Demo resume version emphasizes reliability and human-in-the-loop operational tooling.",
-        "resumeGeneratedAt": "2026-05-22T09:55:00.000Z"
+        "jd": "Staff engineering role for distributed systems, telemetry, and mission-critical automation across remote operations. Base $215-255K, TC ~$320-380K, remote-first.\n\nArtifact: workspace/jds/demo/weyland-yutani-staff-spaceframe.md"
       },
       "conversations": [
         {
           "date": "2026-05-24",
           "kind": "Recruiter screen",
-          "who": "Demo recruiter",
-          "notes": "Confirmed global remote, heavy incident-response ownership, and unclear on-call expectations. Recruiter promised written clarification."
+          "who": "Priya Vasquez, Technical Recruiter",
+          "notes": "Confirmed remote, on-call ~1 wk/quarter primary, ~10% travel. Riley flagged need to understand escalation tree. Advanced to technical screen."
         },
         {
-          "date": "2026-06-03",
-          "kind": "Systems interview",
-          "who": "Spaceframe architecture panel",
-          "notes": "Designed telemetry pipeline for high-latency environments. Good signal on distributed systems; concern remains about operational load."
+          "date": "2026-06-07",
+          "kind": "Technical screen",
+          "who": "Soren Holt, Principal Engineer",
+          "notes": "75-min design: telemetry pipeline for degraded-link ops. Riley's Meridian HITL pattern mapped directly. Advance to HM screen + final loop."
+        },
+        {
+          "date": "2026-06-11",
+          "kind": "Hiring-manager screen",
+          "who": "Commander Lena Park, VP Engineering Spaceframe",
+          "notes": "Vision alignment, cross-functional leadership. Lena confirmed plan-level HITL approval redesign is open scope for Staff hire. Strong positive."
+        },
+        {
+          "date": "2026-06-14",
+          "kind": "Final panel",
+          "who": "Lena Park, Soren Holt, Kira Oduya, Dag Eriksen",
+          "notes": "4-panel final loop. On-call scope + safety-escalation ownership raised with Dag and Lena — not fully resolved. Strong technical signal throughout."
+        },
+        {
+          "date": "2026-06-19",
+          "kind": "Debrief / rejection",
+          "who": "Priya Vasquez, Technical Recruiter",
+          "notes": "Priya delivered close debrief. No offer — narrow internal calibration on ownership scope went the other way. Panel feedback was strong across all 4 interviewers."
         }
       ],
-      "warn": "Clarify on-call burden and safety escalation ownership before accepting any offer.",
-      "followUp": {
-        "kind": "pre-final-clarification",
-        "dueAt": "2026-06-16T12:00:00.000Z",
-        "generatedAt": "2026-06-15T13:20:00.000Z",
-        "draft": {
-          "subject": "Final loop logistics and role questions",
-          "body": "Hi,\n\nAhead of the final loop, could you confirm the expected on-call rotation and how safety escalation decisions are handled for the Spaceframe team? I want to make sure I understand the operating model before the final conversations.\n\nBest,\nJane"
-        }
+      "warn": "On-call burden + safety-escalation ownership never got fully nailed down before the panel.",
+      "demo": true,
+      "compEstimate": {
+        "floorK": 215,
+        "askK": 230
       },
-      "demo": true
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "pto",
+        "learning",
+        "parental",
+        "bonus"
+      ],
+      "logo": "../assets/logos/weyland-yutani.png"
     },
     {
       "id": "demo-app-5",
       "company": "Cyberdyne Systems",
       "role": "Staff ML Engineer",
       "status": "onsite",
-      "channel": "board",
+      "channel": "recruiter",
       "appliedAt": "2026-05-15",
       "fitScore": 86,
       "loc": "Hybrid · SF",
       "mode": "hybrid",
       "base": "$215–255K",
       "tc": "~$320–380K",
-      "note": "Onsite done. Neural-net division. Definitely won't go self-aware.",
+      "note": "Three screens done — final onsite is Jun 28. Stop-deploy governance question still open.",
       "domain": "cyberdyne.com",
       "link": "https://cyberdyne.com/careers",
       "source": {
@@ -290,60 +414,125 @@
         "url": "https://cyberdyne.com/careers/staff-ml-engineer"
       },
       "artifacts": {
-        "jd": "Staff ML role for model-serving infrastructure, evaluation pipelines, and safety reviews for autonomous systems.\n\nArtifact: workspace/jds/demo/cyberdyne-staff-ml-engineer.md",
-        "resume": "workspace/renders/demo/cyberdyne-staff-ml-resume.pdf",
-        "interviewPacket": {
-          "path": "workspace/interview-packets/demo/cyberdyne-onsite-debrief.md",
-          "generatedAt": "2026-06-06T18:00:00.000Z",
-          "note": "Post-onsite debrief with panel-by-panel signals and unresolved questions."
-        },
-        "jdPath": "workspace/jds/demo/cyberdyne-staff-ml-engineer.md",
-        "jdSummary": "Staff ML role for model-serving infrastructure, evaluation pipelines, and safety reviews for autonomous systems.",
-        "jdCapturedAt": "2026-05-14T16:25:00.000Z",
-        "resumePath": "workspace/renders/demo/cyberdyne-staff-ml-resume.pdf",
-        "resumeNote": "ML platform version highlighting evaluation, observability, and production model operations.",
-        "resumeGeneratedAt": "2026-05-15T10:12:00.000Z"
+        "jd": "Staff ML role for model-serving infrastructure, evaluation pipelines, and safety reviews for autonomous systems. Hybrid SF, 2 days/week. $215–255K base / $320–380K TC.\n\nArtifact: workspace/jds/demo/cyberdyne-staff-ml-engineer.md",
+        "interviewDossier": {
+          "title": "Cyberdyne Systems — Staff ML Engineer · Onsite Prep",
+          "round": null,
+          "path": null,
+          "generatedAt": "2026-06-24T13:12:00.000Z",
+          "markdown": "## Cyberdyne Systems — Staff ML Engineer · Onsite Prep\n**The role in one line:** Own model-serving reliability and evaluation pipelines for autonomous systems — production ML conscience of the neural-net division.\n\n---\n\n### Likely questions + grounded answers\n\n**Q: Walk me through a production ML system you owned end-to-end.**\nPulsar scheduling AI — owned the full deployment lifecycle across 3 concurrent enterprise accounts in one quarter. Discovery, integration (Salesforce, Greenhouse, Workday), config, go-live, hypercare. Zero P1 incidents. Cut avg time-to-value 14→9 weeks. The metric was reliability, not model novelty.\n\n**Q: How do you design an eval pipeline for high-stakes model outputs?**\nMeridian RAG pipeline over 4M pages: eval was recall + citation precision, human-review gate on any excerpt driving downstream action. Offline eval gives coverage; online sampling tells you if the model is still behaving in prod. For autonomous systems I'd add shadow scoring + confidence gating before any write action.\n\n**Q: Tell me about a time you stopped or delayed a deployment.**\nPulsar, mid-quarter: customer pushed an undocumented schema change. Model eval on new format untested — pulled go-live by one week, ran evals, re-confirmed with customer. Pre-agreed readiness criteria gave me cover to hold without a political fight.\n\n**Q: How do you handle safety vs. product disagreement on a release?**\nSet stop criteria before the model is done, not during launch review. At Pulsar I brought readiness criteria into the project kickoff; a hold becomes 'enforcing what we agreed,' not 'engineer slowing things down.' Safety veto should be structural.\n\n**Q: What's your read on agentic systems in production?**\nShipped one at Meridian: Claude API + custom tools parsing vendor quotes, ERP budget lookups, drafting approval emails with human-in-the-loop confirmation before writes. ~87% reduction in procurement admin. Confidence gate on every tool call; full audit log; human step non-negotiable until 3 months of prod data.\n\n---\n\n### Comp anchor\nBand $215–255K base / $320–380K TC (posted). Ask $240K+ — hybrid SF is a real concession for an Austin-remote candidate; price it in.\n\n### Questions to ask\n1. Who has stop-deploy authority — engineering, safety, or product — and what happens when they disagree?\n2. What does the eval pipeline look like today, and what's the biggest coverage gap?\n\n---\n\n### Study layer\n- **Model-serving:** batching (dynamic, request coalescing), canary deploys, P50/P99 latency budgets, rollback automation\n- **Eval patterns:** offline evals, shadow scoring, confidence-gate thresholds, outcome feedback loops, human-in-the-loop review\n- **Safety context:** Cyberdyne's layered review process for models touching physical/operational systems; understand OKR cycle overlap between safety and infra"
+        }
       },
       "conversations": [
         {
           "date": "2026-05-19",
           "kind": "Recruiter screen",
-          "who": "Demo recruiter",
-          "notes": "Role is hybrid SF with two fixed office days. Recruiter said team values production ML reliability more than research novelty."
+          "who": "Priya Desai, Recruiting Manager",
+          "notes": "30-min intro. Role is hybrid SF, 2 fixed days/week. Band $215–255K confirmed. Riley flagged $230K+ ask; Priya said within range. Advancing to technical screen."
         },
         {
-          "date": "2026-06-05",
-          "kind": "Onsite loop",
-          "who": "Neural-net division panel",
-          "notes": "Strong model-serving and incident-response signal. Ambiguous answer from team on safety review authority and deployment stop criteria."
+          "date": "2026-05-26",
+          "kind": "Technical screen",
+          "who": "Marcus Webb, Staff ML Engineer",
+          "notes": "60-min deep dive on model-serving latency, batching, and observability. Walked through Pulsar deploy reliability work. Strong signal; advancing to system design."
+        },
+        {
+          "date": "2026-06-02",
+          "kind": "System design",
+          "who": "Dr. Sarah Kazan, ML Platform Lead",
+          "notes": "Designed an online eval + shadow-scoring pipeline for an autonomous scheduling system. Kazan probed cold-start handling. Advancing to onsite loop."
         }
       ],
-      "warn": "Safety governance questions unresolved after onsite.",
+      "warn": "Hybrid SF (2 days/week) conflicts with Austin-remote. Stop-deploy authority still unresolved — needs clarity before any offer.",
       "followUp": {
-        "kind": "post-onsite-thank-you",
-        "dueAt": "2026-06-06T00:00:00.000Z",
-        "generatedAt": "2026-06-06T18:05:00.000Z",
-        "sentAt": "2026-06-06T19:10:00.000Z",
-        "draft": {
-          "subject": "Thank you — Staff ML Engineer onsite",
-          "body": "Hi,\n\nThank you for a thoughtful onsite. I especially appreciated the discussion around evaluation and production readiness for model-serving systems. The role is closely aligned with the kind of reliability-focused ML infrastructure work I want to keep doing.\n\nBest,\nJane"
-        }
+        "dueAt": "2026-06-27",
+        "note": "Prep for the Cyberdyne final onsite (Jun 28)."
       },
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 215,
+        "askK": 240
+      },
+      "benefits": [
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "learning",
+        "bonus"
+      ],
+      "interviewAt": "2026-06-28T16:00:00.000Z",
+      "logo": "../assets/logos/cyberdyne.png",
+      "companyHealth": {
+        "rating": "risky",
+        "forFunction": "ML engineering",
+        "asOf": "2026-06-25",
+        "provenance": "built-from-data",
+        "crossCut": [
+          "stability"
+        ],
+        "fitDelta": -5,
+        "dimensions": {
+          "layoffRisk": {
+            "level": "poor",
+            "note": "Cut ~12% of the autonomy org six weeks ago — ML-platform roles adjacent to this team were named.",
+            "functionHit": true
+          },
+          "hiringMomentum": {
+            "level": "mixed",
+            "note": "Backfilling rather than expanding; two reqs pulled in Q2."
+          },
+          "financial": {
+            "level": "mixed",
+            "note": "Burned through the last raise; a bridge round is rumored at a flat valuation."
+          },
+          "sentiment": {
+            "level": "poor",
+            "note": "Glassdoor sliding 3.6 → 3.1 over twelve months; recurring leadership-churn complaints.",
+            "trend": "down"
+          },
+          "leadership": {
+            "level": "poor",
+            "note": "Third VP of Engineering in two years; the hiring manager joined four months ago."
+          }
+        },
+        "rationale": "Strong product, but a fresh RIF hit the exact org you'd join and the funding picture is thin. The role is real and senior — it's just a riskier landing than the offer in hand. Push on team stability and runway in the onsite.",
+        "signals": [
+          {
+            "source": "layoffs.fyi",
+            "date": "2026-05-12",
+            "summary": "Cyberdyne cut ~12% (~340 roles); autonomy + ML platform teams named.",
+            "url": "https://layoffs.fyi"
+          },
+          {
+            "source": "TechCrunch",
+            "date": "2026-05-28",
+            "summary": "Reported to be raising a bridge round at a flat valuation.",
+            "url": "https://techcrunch.com"
+          },
+          {
+            "source": "Glassdoor",
+            "date": "2026-06-06",
+            "summary": "Rating down to 3.1; 'leadership churn' and 'reorg fatigue' recur.",
+            "url": "https://glassdoor.com"
+          }
+        ]
+      }
     },
     {
       "id": "demo-app-6",
       "company": "Pied Piper",
       "role": "Senior Software Engineer",
-      "status": "final round",
+      "status": "rejected",
       "channel": "referral",
-      "appliedAt": "2026-05-22",
+      "appliedAt": "2026-05-29",
       "fitScore": 84,
       "loc": "Hybrid · SF",
       "mode": "hybrid",
       "base": "$180–215K",
       "tc": "~$250–310K",
-      "note": "Final round. Middle-out compression — allegedly real this time.",
+      "note": "Form rejection — never advanced past intake. Middle-out compression, allegedly real this time.",
       "domain": "piedpiper.com",
       "link": "https://piedpiper.com/careers",
       "source": {
@@ -352,50 +541,40 @@
         "url": "https://piedpiper.com/careers/senior-software-engineer"
       },
       "artifacts": {
-        "jd": "Senior SWE role on compression platform services, developer tooling, and customer-facing technical integrations.\n\nArtifact: workspace/jds/demo/pied-piper-senior-software-engineer.md",
-        "resume": "workspace/renders/demo/pied-piper-senior-swe-resume.pdf",
-        "interviewPacket": {
-          "path": "workspace/interview-packets/demo/pied-piper-final-founder-chat.md",
-          "generatedAt": "2026-06-14T15:10:00.000Z",
-          "note": "Founder-chat prep with startup tradeoffs, ambiguity stories, and equity questions."
-        },
-        "jdPath": "workspace/jds/demo/pied-piper-senior-software-engineer.md",
-        "jdSummary": "Senior SWE role on compression platform services, developer tooling, and customer-facing technical integrations.",
-        "jdCapturedAt": "2026-05-21T19:30:00.000Z",
-        "resumePath": "workspace/renders/demo/pied-piper-senior-swe-resume.pdf",
-        "resumeNote": "Demo resume kept systems depth while adding customer integration examples.",
-        "resumeGeneratedAt": "2026-05-22T08:50:00.000Z"
+        "jd": "Senior SWE on PP's enterprise AI product team — build AI-powered features on compression infrastructure, own integrations with customer data systems (Salesforce, Workday, custom ERP), drive reliability and adoption on the enterprise tier.\n\nArtifact: workspace/jds/demo/pied-piper-senior-swe.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-23",
-          "kind": "Referral intro",
-          "who": "Demo founder contact",
-          "notes": "Intro emphasized startup pace and broad ownership. Hiring team moved directly to technical screen."
-        },
-        {
-          "date": "2026-06-07",
-          "kind": "Technical screen",
-          "who": "Core platform engineer",
-          "notes": "Implementation-heavy discussion on APIs, performance profiling, and rollout plans. Positive signal; final founder chat scheduled."
-        }
+      "conversations": [],
+      "warn": "Base floor $180K is $10K below Riley's hard floor; must come in at top of band or negotiate up.",
+      "demo": true,
+      "compEstimate": {
+        "floorK": 190,
+        "askK": 215
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "pto",
+        "learning"
       ],
-      "warn": "Equity and runway need verification before prioritizing over larger-company offers.",
-      "demo": true
+      "logo": "../assets/logos/pied-piper.png"
     },
     {
       "id": "demo-app-7",
       "company": "Tyrell Corporation",
       "role": "Senior Platform Engineer",
-      "status": "2nd interview",
-      "channel": "recruiter",
-      "appliedAt": "2026-05-08",
+      "status": "applied",
+      "channel": "board",
+      "appliedAt": "2026-05-26",
       "fitScore": 82,
       "loc": "Onsite · NYC",
       "mode": "onsite",
       "base": "$180–215K",
       "tc": "~$250–310K",
-      "note": "Second interview. More human than human.",
+      "note": "More human than human.",
       "domain": "tyrellcorp.com",
       "link": "https://tyrellcorp.com/careers",
       "source": {
@@ -404,58 +583,41 @@
         "url": "https://tyrellcorp.com/careers/senior-platform-engineer"
       },
       "artifacts": {
-        "jd": "Platform engineering role for telemetry ingestion, workflow orchestration, and internal tools supporting advanced product teams.\n\nArtifact: workspace/jds/demo/tyrell-senior-platform-engineer.md",
-        "resume": "workspace/renders/demo/tyrell-platform-resume.pdf",
-        "interviewPacket": {
-          "path": "workspace/interview-packets/demo/tyrell-second-interview.md",
-          "generatedAt": "2026-05-12T07:30:00.000Z",
-          "note": "Prep packet for architecture follow-up and onsite-location objection handling."
-        },
-        "jdPath": "workspace/jds/demo/tyrell-senior-platform-engineer.md",
-        "jdSummary": "Platform engineering role for telemetry ingestion, workflow orchestration, and internal tools supporting advanced product teams.",
-        "jdCapturedAt": "2026-05-07T12:15:00.000Z",
-        "resumePath": "workspace/renders/demo/tyrell-platform-resume.pdf",
-        "resumeNote": "Platform-heavy resume with reliability, API design, and data pipeline bullets.",
-        "resumeGeneratedAt": "2026-05-08T09:40:00.000Z"
+        "jd": "Senior Platform Engineer — own enterprise integration layer (SAP, Salesforce, Veeva, HL7) and AI workflow engine. Remote-US. $180–215K base / $250–310K TC.\n\nArtifact: workspace/jds/demo/tyrell-senior-platform-engineer.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-09",
-          "kind": "Recruiter screen",
-          "who": "Demo recruiter",
-          "notes": "Recruiter confirmed onsite NYC expectation and said remote exceptions are rare. Proceeding because role scope is close enough to explore."
-        },
-        {
-          "date": "2026-05-12",
-          "kind": "Second interview",
-          "who": "Platform director",
-          "notes": "Discussed telemetry schema evolution and reliability ownership. Director pushed on willingness to be onsite four days per week."
-        }
-      ],
+      "conversations": [],
       "demo": true,
-      "followUp": {
-        "kind": "post-interview-nudge",
-        "dueAt": "2026-05-13T00:00:00.000Z",
-        "generatedAt": "2026-06-10T00:00:00.000Z",
-        "draft": {
-          "subject": "Following up — Senior Platform Engineer, 2nd interview",
-          "body": "Hi,\n\nI wanted to check in after our second interview for the Senior Platform Engineer role. I came away from the conversation with a strong sense of the scope and the caliber of the team — both of which are exactly what I'm looking for.\n\nHappy to answer any remaining questions or accommodate a different timeline if that helps.\n\nBest,\nJane"
-        }
-      }
+      "compEstimate": {
+        "floorK": 190,
+        "askK": 215
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "pto",
+        "learning",
+        "parental",
+        "bonus"
+      ],
+      "logo": "../assets/logos/tyrell.png"
     },
     {
       "id": "demo-app-8",
       "company": "Black Mesa",
       "role": "Research Engineer",
-      "status": "interview loop",
+      "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-05-08",
+      "appliedAt": "2026-05-30",
       "fitScore": 81,
       "loc": "Onsite · Boston",
       "mode": "onsite",
       "base": "$195–235K",
       "tc": "~$285–345K",
-      "note": "Interview loop. Anomalous materials. Hard hats provided.",
+      "note": "Anomalous materials. Hard hats provided.",
       "domain": "blackmesa.com",
       "link": "https://blackmesa.com/careers",
       "source": {
@@ -464,59 +626,39 @@
         "url": "https://blackmesa.com/careers/research-engineer"
       },
       "artifacts": {
-        "jd": "Research engineering role translating experimental systems into reliable internal tooling and data collection workflows.\n\nArtifact: workspace/jds/demo/black-mesa-research-engineer.md",
-        "resume": "workspace/renders/demo/black-mesa-research-engineer-resume.pdf",
-        "interviewPacket": {
-          "path": "workspace/interview-packets/demo/black-mesa-loop.md",
-          "generatedAt": "2026-05-12T19:25:00.000Z",
-          "note": "Loop packet with research-to-production examples and questions about lab safety boundaries."
-        },
-        "jdPath": "workspace/jds/demo/black-mesa-research-engineer.md",
-        "jdSummary": "Research engineering role translating experimental systems into reliable internal tooling and data collection workflows.",
-        "jdCapturedAt": "2026-05-07T17:50:00.000Z",
-        "resumePath": "workspace/renders/demo/black-mesa-research-engineer-resume.pdf",
-        "resumeNote": "Research-engineering version emphasizing tooling around ambiguous technical investigations.",
-        "resumeGeneratedAt": "2026-05-08T08:35:00.000Z"
+        "jd": "Research engineering role translating experimental systems into reliable internal tooling and data collection workflows. Base $195-235K + bonus + equity.\n\nArtifact: workspace/jds/demo/black-mesa-research-engineer.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-10",
-          "kind": "Technical screen",
-          "who": "Research systems lead",
-          "notes": "Good discussion on instrumenting messy workflows and turning experiments into repeatable systems."
-        },
-        {
-          "date": "2026-05-13",
-          "kind": "Interview loop",
-          "who": "Anomalous materials panel",
-          "notes": "Panel liked pragmatic debugging stories. Remaining concern: onsite Boston requirement and undefined weekend escalation policy."
-        }
-      ],
-      "warn": "Onsite Boston and unclear escalation policy make this a review, not an auto-keep.",
+      "conversations": [],
       "demo": true,
-      "followUp": {
-        "kind": "post-interview-nudge",
-        "dueAt": "2026-05-13T00:00:00.000Z",
-        "generatedAt": "2026-06-11T00:00:00.000Z",
-        "draft": {
-          "subject": "Following up — Research Engineer, interview loop",
-          "body": "Hi,\n\nI wanted to follow up on my interview loop for the Research Engineer role. I enjoyed every conversation and left with a clear picture of the work ahead — I'm genuinely excited about contributing to the anomalous materials research program.\n\nPlease let me know if there are any remaining steps or if the timeline has shifted.\n\nBest,\nJane"
-        }
-      }
+      "compEstimate": {
+        "floorK": 190,
+        "askK": 215
+      },
+      "benefits": [
+        "health",
+        "dental",
+        "vision",
+        "retirement",
+        "equity",
+        "bonus",
+        "learning",
+        "pto"
+      ],
+      "logo": "../assets/logos/black-mesa.png"
     },
     {
       "id": "demo-app-9",
       "company": "Massive Dynamic",
       "role": "Staff Engineer",
       "status": "panel interview",
-      "channel": "referral",
-      "appliedAt": "2026-05-01",
+      "channel": "recruiter",
+      "appliedAt": "2026-06-08",
       "fitScore": 78,
       "loc": "Hybrid · SF",
       "mode": "hybrid",
       "base": "$215–255K",
       "tc": "~$320–380K",
-      "note": "Panel next week. The answer is 42; the questions are classified.",
+      "note": "Panel is Jul 1. Staff scope skews platform/infra — lighter on the FDE/customer-facing angle.",
       "domain": "massivedynamic.com",
       "link": "https://massivedynamic.com/careers",
       "source": {
@@ -525,58 +667,114 @@
         "url": "https://massivedynamic.com/careers/staff-engineer"
       },
       "artifacts": {
-        "jd": "Staff engineer role for internal AI platforms, experimentation tools, and field-facing integrations.\n\nArtifact: workspace/jds/demo/massive-dynamic-staff-engineer.md",
-        "resume": "workspace/renders/demo/massive-dynamic-staff-engineer-resume.pdf",
-        "interviewPacket": {
-          "path": "workspace/interview-packets/demo/massive-dynamic-panel.md",
-          "generatedAt": "2026-05-05T20:10:00.000Z",
-          "note": "Panel prep with cross-functional influence stories and role-scope questions."
-        },
-        "jdPath": "workspace/jds/demo/massive-dynamic-staff-engineer.md",
-        "jdSummary": "Staff engineer role for internal AI platforms, experimentation tools, and field-facing integrations.",
-        "jdCapturedAt": "2026-04-30T13:05:00.000Z",
-        "resumePath": "workspace/renders/demo/massive-dynamic-staff-engineer-resume.pdf",
-        "resumeNote": "Balanced platform architecture with customer-facing integration examples.",
-        "resumeGeneratedAt": "2026-05-01T09:20:00.000Z"
+        "jd": "Staff Engineer on the AI Platform team. Owns the LLM integration layer (retrieval infra, prompt SDK, context assembly). Staff scope with team-lead duties and enterprise customer touchpoints. Base $215–255K, TC $320–380K.\n\nArtifact: workspace/jds/demo/massive-dynamic-staff-engineer.md",
+        "interviewDossier": {
+          "title": "Massive Dynamic — Staff Engineer",
+          "round": null,
+          "path": null,
+          "generatedAt": "2026-06-24T09:00:00.000Z",
+          "markdown": "## Massive Dynamic — Staff Engineer\n**Panel Interview | 2026-07-01 | Remote (Zoom) | 10 AM–1 PM CT**\n\n---\n\n### Live cue card\n\n**Role in one line:** Staff Engineer on the AI Platform team — own the LLM integration layer; team-lead duties; cross-functional with data science and enterprise customers.\n\n**Q: Walk us through the most complex distributed system you've designed.**\n> Meridian RAG pipeline over 4M pages. Key decisions: 512-token chunks + 64-token overlap, hybrid BM25+dense retrieval, cross-encoder reranker top-20→top-5. Built eval harness (LLM-as-judge + human spot-check) before shipping. Prototype→prod in 8 weeks; 200+ daily users; ~60% research-cycle-time reduction.\n\n**Q: How do you handle multi-tenant data isolation in a shared LLM platform?**\n> Namespace-level corpus separation per tenant. Metadata filtering applied *before* retrieval (not post-filter — that risks internal leakage). Audit log every retrieval: tenant_id, query hash, retrieved doc_ids. Rate-limit at API gateway, not inside the model call.\n\n**Q: Describe leading a cross-functional initiative without formal authority.**\n> Pulsar Q1 2026: 3 concurrent enterprise deployments, 4 customer eng teams + internal infra. Shared status board, weekly 15-min standups, escalation ladder documented upfront. All 3 live on schedule; 0 P1 incidents. Time-to-value 14→9 weeks.\n\n**Q: How do you evaluate retrieval quality continuously?**\n> Three layers: (1) offline eval on 500+ labeled query/doc pairs (Recall@5, MRR@5); (2) online A/B on live traffic (click-through, session length); (3) LLM-as-judge sampling 50 queries/day. Regression gate in CI: PR that drops Recall@5 by >2 points blocks deploy.\n\n**Q: Where do you want to be in 3 years?**\n> Staff or Principal, still hands-on, owning architecture of a platform multiple product teams build on. Player-coach, not full EM. The best version has me in customer conversations once a quarter and writing production code the rest of the time.\n\n**Comp anchor:** Floor $215K base. Ask $240K. Posted band $215–255K — targeting mid-range; use TC ($320–380K) as the headline number with the panel.\n\n**2 questions to ask:**\n1. \"What's the biggest gap between where the LLM integration layer is today and where the roadmap needs it in 12 months?\"\n2. \"How does Staff Eng interface with enterprise customers — do you join discovery or onboarding calls?\"\n\n---\n\n### Study layer\n\n**What Riley brings:** Meridian RAG (production, 200+ users, 8-week build) + Pulsar FDE (enterprise deployment lifecycle, 3 concurrent) gives a rare combo of platform depth + customer-facing instinct.\n\n**Gap to address proactively:** Marcus probed platform-side depth in the HM screen — lean into the Meridian pipeline architecture when the panel pushes on infra depth. If asked about ACL change handling: \"I'd tighten the async cache TTL to synchronous invalidation on write for compliance-critical changes — the 60-second window is a tradeoff worth closing given the firm's compliance posture.\"\n\n**Watch for:** Role is more inward-facing than Riley's FDE targets. Acknowledge honestly — the quarterly enterprise BRs are the feedback loop Riley would lean on.\n\n**Artifact:** workspace/interview-packets/demo/massive-dynamic-panel.md"
+        }
       },
       "conversations": [
         {
-          "date": "2026-05-03",
-          "kind": "Referral chat",
-          "who": "Demo referrer",
-          "notes": "Referrer said team values engineers who can explain technical ambiguity to product and field teams."
+          "date": "2026-06-16",
+          "kind": "Recruiter screen",
+          "who": "Camille Torres, Talent Partner",
+          "notes": "30-min call. Role owns LLM integration layer, some enterprise customer touchpoints. Confirmed fully remote. Comp band $215–255K base / $320–380K TC. Advanced to HM screen."
         },
         {
-          "date": "2026-05-06",
-          "kind": "Panel interview",
-          "who": "Staff platform panel",
-          "notes": "Panel focused on platform extensibility and customer feedback loops. Strong signal on systems design; follow-up pending."
+          "date": "2026-06-23",
+          "kind": "Hiring-manager screen",
+          "who": "Marcus Webb, Director of Engineering",
+          "notes": "45-min. Covered RAG pipeline at Meridian + 3 concurrent deployments at Pulsar. Marcus liked the FDE angle; probed platform-side depth. Advanced to panel interview."
         }
       ],
       "demo": true,
       "followUp": {
-        "kind": "post-interview-nudge",
-        "dueAt": "2026-05-06T00:00:00.000Z",
-        "generatedAt": "2026-06-10T00:00:00.000Z",
-        "draft": {
-          "subject": "Following up — Staff Engineer panel at Massive Dynamic",
-          "body": "Hi,\n\nI wanted to follow up after the panel interview for the Staff Engineer role. I've been looking forward to hearing about next steps — the conversation reinforced my interest in the platform infrastructure work your team is doing.\n\nPlease let me know if there's any additional information I can provide or if scheduling needs to shift.\n\nBest,\nJane"
-        }
+        "dueAt": "2026-06-30",
+        "note": "Prep for the upcoming Massive Dynamic panel (Jul 1)."
+      },
+      "compEstimate": {
+        "floorK": 215,
+        "askK": 240
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "bonus",
+        "learning",
+        "parental",
+        "pto"
+      ],
+      "warn": "Staff Eng scope skews platform/infra; less FDE/customer-facing than the primary target family.",
+      "interviewAt": "2026-07-01T16:00:00.000Z",
+      "logo": "../assets/logos/massive-dynamic.png",
+      "companyHealth": {
+        "rating": "watch",
+        "forFunction": "platform engineering",
+        "asOf": "2026-06-24",
+        "provenance": "built-from-data",
+        "crossCut": [],
+        "fitDelta": 0,
+        "dimensions": {
+          "layoffRisk": {
+            "level": "good",
+            "note": "No RIFs on record; the platform org you'd join is growing.",
+            "functionHit": false
+          },
+          "hiringMomentum": {
+            "level": "good",
+            "note": "Eight open reqs on the platform team this quarter."
+          },
+          "financial": {
+            "level": "mixed",
+            "note": "Profitable core line, but a flagship launch slipped two quarters."
+          },
+          "sentiment": {
+            "level": "mixed",
+            "note": "Glassdoor steady at 3.8; some pace-of-change grumbling.",
+            "trend": "flat"
+          },
+          "leadership": {
+            "level": "good",
+            "note": "Stable engineering leadership; your panel includes the function lead."
+          }
+        },
+        "rationale": "Healthy on the signals that matter to your role — your function is growing and there's no layoff risk. The one yellow flag (a slipped flagship) doesn't touch the team you'd join, so it's a watch, not a worry. Didn't move your fit.",
+        "signals": [
+          {
+            "source": "Company blog",
+            "date": "2026-05-20",
+            "summary": "Platform-team expansion announced; multiple senior roles opened.",
+            "url": "https://example.com/massive-blog"
+          },
+          {
+            "source": "Glassdoor",
+            "date": "2026-06-10",
+            "summary": "Steady 3.8; 'good people, fast pace' recurs.",
+            "url": "https://glassdoor.com"
+          }
+        ]
       }
     },
     {
       "id": "demo-app-10",
       "company": "Abstergo Industries",
       "role": "Senior Software Engineer",
-      "status": "interview",
+      "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-05-15",
+      "appliedAt": "2026-06-02",
       "fitScore": 76,
       "loc": "Onsite · NYC",
       "mode": "onsite",
       "base": "$180–215K",
       "tc": "~$250–310K",
-      "note": "First interview. Animus team. Templar-funded, allegedly.",
+      "note": "Animus team. Templar-funded, allegedly.",
       "domain": "abstergo.com",
       "link": "https://abstergo.com/careers",
       "source": {
@@ -585,47 +783,38 @@
         "url": "https://abstergo.com/careers/senior-software-engineer"
       },
       "artifacts": {
-        "jd": "Senior SWE role on identity, simulation data pipelines, and internal product infrastructure.\n\nArtifact: workspace/jds/demo/abstergo-senior-software-engineer.md",
-        "resume": "workspace/renders/demo/abstergo-senior-swe-resume.pdf",
-        "jdPath": "workspace/jds/demo/abstergo-senior-software-engineer.md",
-        "jdSummary": "Senior SWE role on identity, simulation data pipelines, and internal product infrastructure.",
-        "jdCapturedAt": "2026-05-14T22:15:00.000Z",
-        "resumePath": "workspace/renders/demo/abstergo-senior-swe-resume.pdf",
-        "resumeNote": "General senior SWE resume with backend systems and data workflow examples.",
-        "resumeGeneratedAt": "2026-05-15T09:30:00.000Z"
+        "jd": "Senior Software Engineer on Abstergo's AI Tooling team — production RAG and agentic workflows for internal ops (procurement, research, legal).\n\nArtifact: workspace/jds/demo/abstergo-senior-software-engineer.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-17",
-          "kind": "Recruiter screen",
-          "who": "Demo recruiter",
-          "notes": "Recruiter confirmed onsite NYC and product-infrastructure focus. First technical interview scheduled."
-        }
+      "conversations": [],
+      "demo": true,
+      "compEstimate": {
+        "floorK": 190,
+        "askK": 215
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "pto"
       ],
-      "followUp": {
-        "kind": "interview-confirmation",
-        "dueAt": "2026-06-17T14:00:00.000Z",
-        "generatedAt": "2026-06-15T13:20:00.000Z",
-        "draft": {
-          "subject": "Re: Senior Software Engineer interview",
-          "body": "Hi,\n\nConfirming that June 17 at 2pm ET works for my first technical interview. Looking forward to speaking with the team.\n\nBest,\nJane"
-        }
-      },
-      "demo": true
+      "logo": "../assets/logos/abstergo.png"
     },
     {
       "id": "demo-app-11",
       "company": "Omni Consumer Products",
       "role": "Principal Engineer",
-      "status": "hiring manager screen",
+      "status": "applied",
       "channel": "referral",
-      "appliedAt": "2026-05-22",
+      "appliedAt": "2026-05-19",
       "fitScore": 79,
       "loc": "Onsite · NYC",
       "mode": "onsite",
       "base": "$250–290K",
       "tc": "~$390–470K",
-      "note": "HM screen. They also run the police department now.",
+      "note": "They also run the police department now.",
       "domain": "ocp.com",
       "link": "https://ocp.com/careers",
       "source": {
@@ -634,44 +823,38 @@
         "url": "https://ocp.com/careers/principal-engineer"
       },
       "artifacts": {
-        "jd": "Principal engineer role modernizing public-sector automation platforms with reliability and governance constraints.\n\nArtifact: workspace/jds/demo/ocp-principal-engineer.md",
-        "resume": "workspace/renders/demo/ocp-principal-engineer-resume.pdf",
-        "interviewPacket": {
-          "path": "workspace/interview-packets/demo/ocp-hm-screen.md",
-          "generatedAt": "2026-05-26T07:15:00.000Z",
-          "note": "HM screen prep: platform modernization, risk management, and stakeholder alignment."
-        },
-        "jdPath": "workspace/jds/demo/ocp-principal-engineer.md",
-        "jdSummary": "Principal engineer role modernizing public-sector automation platforms with reliability and governance constraints.",
-        "jdCapturedAt": "2026-05-21T11:05:00.000Z",
-        "resumePath": "workspace/renders/demo/ocp-principal-engineer-resume.pdf",
-        "resumeNote": "Principal architecture resume with governance and platform-risk framing.",
-        "resumeGeneratedAt": "2026-05-22T12:45:00.000Z"
+        "jd": "Principal engineer role modernizing public-sector automation platforms with reliability and governance constraints.\n\nArtifact: workspace/jds/demo/ocp-principal-engineer.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-27",
-          "kind": "Hiring manager screen",
-          "who": "Demo HM",
-          "notes": "HM described a broad principal seat with public-sector stakeholders and a heavy governance surface. Good scope; onsite NYC still a constraint."
-        }
+      "conversations": [],
+      "demo": true,
+      "compEstimate": {
+        "floorK": 190,
+        "askK": 270
+      },
+      "benefits": [
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "bonus",
+        "pto"
       ],
-      "warn": "High-comp scope, but onsite requirement should be resolved before deep loop.",
-      "demo": true
+      "logo": "../assets/logos/ocp.png"
     },
     {
       "id": "demo-app-12",
       "company": "Umbrella Corporation",
       "role": "Senior Infrastructure Engineer",
-      "status": "recruiter screen",
-      "channel": "recruiter",
+      "status": "rejected",
+      "channel": "board",
       "appliedAt": "2026-05-29",
       "fitScore": 74,
       "loc": "Remote (Global)",
       "mode": "remote",
       "base": "$180–215K",
       "tc": "~$250–310K",
-      "note": "Recruiter screen. Biohazard-adjacent. Excellent dental.",
+      "note": "Form rejection — no interview. Biohazard-adjacent. Excellent dental.",
       "domain": "umbrellacorp.com",
       "link": "https://umbrellacorp.com/careers",
       "source": {
@@ -680,48 +863,38 @@
         "url": "https://umbrellacorp.com/careers/senior-infrastructure-engineer"
       },
       "artifacts": {
-        "jd": "Infrastructure role supporting global research systems, secure deployment pipelines, and incident response.\n\nArtifact: workspace/jds/demo/umbrella-senior-infrastructure-engineer.md",
-        "resume": "workspace/renders/demo/umbrella-infra-resume.pdf",
-        "jdPath": "workspace/jds/demo/umbrella-senior-infrastructure-engineer.md",
-        "jdSummary": "Infrastructure role supporting global research systems, secure deployment pipelines, and incident response.",
-        "jdCapturedAt": "2026-05-28T18:00:00.000Z",
-        "resumePath": "workspace/renders/demo/umbrella-infra-resume.pdf",
-        "resumeNote": "Infrastructure resume emphasizing deployment safety and operational maturity.",
-        "resumeGeneratedAt": "2026-05-29T08:55:00.000Z"
+        "jd": "Senior Infrastructure Engineer focused on hybrid cloud/on-prem platform reliability and automation at Umbrella Corporation.\n\nArtifact: workspace/jds/demo/umbrella-senior-infra-engineer.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-30",
-          "kind": "Recruiter screen",
-          "who": "Demo recruiter",
-          "notes": "Recruiter described distributed infrastructure team and frequent incident response. Asked for availability for HM screen."
-        }
+      "conversations": [],
+      "warn": "Base band low end below target floor ($180K vs $190K floor)",
+      "demo": true,
+      "compEstimate": {
+        "floorK": 190,
+        "askK": 215
+      },
+      "benefits": [
+        "remote_stipend",
+        "health",
+        "dental",
+        "vision",
+        "retirement",
+        "equity"
       ],
-      "warn": "Biohazard-adjacent research infra: ask about safety governance and pager expectations.",
-      "followUp": {
-        "kind": "hm-screen-availability",
-        "dueAt": "2026-06-16T00:00:00.000Z",
-        "generatedAt": "2026-06-15T13:20:00.000Z",
-        "draft": {
-          "subject": "Re: Senior Infrastructure Engineer next steps",
-          "body": "Hi,\n\nThanks for the conversation. I can meet for the hiring manager screen on June 18 after 11am ET or June 19 between 9am and 1pm ET.\n\nBest,\nJane"
-        }
-      },
-      "demo": true
+      "logo": "../assets/logos/umbrella.png"
     },
     {
       "id": "demo-app-13",
       "company": "Buy n Large",
       "role": "Staff Engineer",
-      "status": "phone screen",
+      "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-05-15",
+      "appliedAt": "2026-05-24",
       "fitScore": 68,
       "loc": "Remote (US)",
       "mode": "remote",
       "base": "$215–255K",
       "tc": "~$320–380K",
-      "note": "Phone screen. They run everything, including the evacuation.",
+      "note": "They run everything, including the evacuation.",
       "domain": "buynlarge.com",
       "link": "https://buynlarge.com/careers",
       "source": {
@@ -730,47 +903,39 @@
         "url": "https://buynlarge.com/careers/staff-engineer"
       },
       "artifacts": {
-        "jd": "Staff engineering role on commerce platform reliability, fleet telemetry, and internal automation.\n\nArtifact: workspace/jds/demo/buy-n-large-staff-engineer.md",
-        "resume": "workspace/renders/demo/buy-n-large-staff-engineer-resume.pdf",
-        "jdPath": "workspace/jds/demo/buy-n-large-staff-engineer.md",
-        "jdSummary": "Staff engineering role on commerce platform reliability, fleet telemetry, and internal automation.",
-        "jdCapturedAt": "2026-05-14T15:30:00.000Z",
-        "resumePath": "workspace/renders/demo/buy-n-large-staff-engineer-resume.pdf",
-        "resumeNote": "Staff platform resume with scale and operational tooling bullets.",
-        "resumeGeneratedAt": "2026-05-15T10:45:00.000Z"
+        "jd": "Staff Engineer role on Buy n Large's developer-platform team, owning internal tooling and AI-assisted workflow automation at scale.\n\nArtifact: workspace/jds/demo/buy-n-large-staff-engineer.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-20",
-          "kind": "Phone screen",
-          "who": "Demo recruiter",
-          "notes": "Screen covered remote policy, platform scope, and whether the team is more commerce or infrastructure. Next step would be HM screen."
-        }
+      "conversations": [],
+      "demo": true,
+      "compEstimate": {
+        "floorK": 215,
+        "askK": 240
+      },
+      "benefits": [
+        "remote_stipend",
+        "health",
+        "dental",
+        "vision",
+        "retirement",
+        "equity",
+        "pto",
+        "learning"
       ],
-      "followUp": {
-        "kind": "screen-follow-up",
-        "dueAt": "2026-06-18T00:00:00.000Z",
-        "generatedAt": "2026-06-15T13:20:00.000Z",
-        "draft": {
-          "subject": "Following up — Staff Engineer phone screen",
-          "body": "Hi,\n\nI wanted to follow up after our phone screen for the Staff Engineer role. I'm still interested in the platform reliability scope and would be glad to speak with the hiring manager if the team is moving ahead.\n\nBest,\nJane"
-        }
-      },
-      "demo": true
+      "logo": "../assets/logos/buy-n-large.png"
     },
     {
       "id": "demo-app-14",
       "company": "Vault-Tec",
       "role": "Backend Engineer",
-      "status": "phone screen",
+      "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-05-15",
+      "appliedAt": "2026-05-12",
       "fitScore": 67,
       "loc": "Remote (US)",
       "mode": "remote",
       "base": "$155–190K",
       "tc": "~$200–260K",
-      "note": "Phone screen. Prepare for the future — underground.",
+      "note": "Prepare for the future — underground.",
       "domain": "vault-tec.com",
       "link": "https://vault-tec.com/careers",
       "source": {
@@ -779,44 +944,63 @@
         "url": "https://vault-tec.com/careers/backend-engineer"
       },
       "artifacts": {
-        "jd": "Backend role for scheduling, monitoring, and resource-allocation systems in long-running facilities.\n\nArtifact: workspace/jds/demo/vault-tec-backend-engineer.md",
-        "resume": "workspace/renders/demo/vault-tec-backend-resume.pdf",
-        "jdPath": "workspace/jds/demo/vault-tec-backend-engineer.md",
-        "jdSummary": "Backend role for scheduling, monitoring, and resource-allocation systems in long-running facilities.",
-        "jdCapturedAt": "2026-05-14T16:05:00.000Z",
-        "resumePath": "workspace/renders/demo/vault-tec-backend-resume.pdf",
-        "resumeNote": "Backend-focused version; lower fit because role is narrower and comp band is lower.",
-        "resumeGeneratedAt": "2026-05-15T11:15:00.000Z"
+        "jd": "Backend Engineer at Vault-Tec building internal APIs and microservices for the company's enterprise data platform.\n\nArtifact: workspace/jds/demo/vault-tec-backend-engineer.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-19",
-          "kind": "Phone screen",
-          "who": "Demo recruiter",
-          "notes": "Recruiter confirmed role is mostly backend maintenance with little customer-facing scope. Keep warm, but deprioritize versus FDE/applied AI opportunities."
-        }
+      "conversations": [],
+      "warn": "Base below target floor; role has no AI surface — cut-signal mismatch",
+      "demo": true,
+      "compEstimate": {
+        "floorK": 190,
+        "askK": 190
+      },
+      "benefits": [
+        "health",
+        "dental",
+        "vision",
+        "retirement",
+        "remote_stipend"
       ],
-      "warn": "Lower-fit backend role and base range trails stronger opportunities.",
-      "demo": true
+      "logo": "../assets/logos/vault-tec.png"
     },
     {
       "id": "demo-app-15",
       "company": "Aviato",
       "role": "Senior Software Engineer",
-      "status": "recruiter screen",
+      "status": "applied",
       "channel": "referral",
-      "appliedAt": "2026-05-08",
+      "appliedAt": "2026-06-21",
       "fitScore": 64,
       "loc": "Hybrid · SF",
       "mode": "hybrid",
       "base": "$180–215K",
       "tc": "~$250–310K",
-      "note": "Recruiter screen. The logo has a bird because Erlich flies.",
+      "note": "The logo has a bird because Erlich flies.",
       "domain": "aviato.com",
       "link": "https://aviato.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Senior Software Engineer at Aviato joining a cross-functional product engineering team with occasional ML infrastructure work.\n\nArtifact: workspace/jds/demo/aviato-senior-swe.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 190,
+        "askK": 210
+      },
+      "benefits": [
+        "remote_stipend",
+        "health",
+        "dental",
+        "vision",
+        "retirement",
+        "equity",
+        "pto"
+      ],
+      "warn": "Base band low end below target floor; AI surface unclear",
+      "followUp": {
+        "dueAt": "2026-07-01",
+        "note": "No reply yet — send a short follow-up nudge."
+      },
+      "logo": "../assets/logos/aviato.png"
     },
     {
       "id": "demo-app-16",
@@ -824,7 +1008,7 @@
       "role": "Platform Engineer",
       "status": "applied",
       "channel": "referral",
-      "appliedAt": "2026-05-29",
+      "appliedAt": "2026-05-28",
       "fitScore": 66,
       "loc": "Onsite · NYC",
       "mode": "onsite",
@@ -833,9 +1017,24 @@
       "note": "Applied via a friend on the 30th floor.",
       "domain": "nakatomi.com",
       "link": "https://nakatomi.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Platform Engineer — own infrastructure reliability, deployment pipelines, and internal developer tooling across a hybrid cloud estate.\n\nArtifact: workspace/jds/demo/nakatomi-platform-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 155,
+        "askK": 190
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental"
+      ],
+      "warn": "Base ceiling matches floor only — tight on comp",
+      "logo": "../assets/logos/nakatomi.png"
     },
     {
       "id": "demo-app-17",
@@ -843,7 +1042,7 @@
       "role": "Platform Engineer",
       "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-05-29",
+      "appliedAt": "2026-05-16",
       "fitScore": 65,
       "loc": "Hybrid · Seattle",
       "mode": "hybrid",
@@ -852,9 +1051,24 @@
       "note": "Applied. 'Science. For a better everything.'",
       "domain": "veridiandynamics.com",
       "link": "https://veridiandynamics.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Platform Engineer — build and scale Veridian Dynamics' internal platform serving 300+ engineers; own CI/CD, observability stack, and service mesh.\n\nArtifact: workspace/jds/demo/veridian-dynamics-platform-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 155,
+        "askK": 190
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "pto"
+      ],
+      "warn": "Base below target floor",
+      "logo": "../assets/logos/veridian.png"
     },
     {
       "id": "demo-app-18",
@@ -862,7 +1076,7 @@
       "role": "Research Engineer",
       "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-05-29",
+      "appliedAt": "2026-06-19",
       "fitScore": 64,
       "loc": "Remote (Global)",
       "mode": "remote",
@@ -871,17 +1085,37 @@
       "note": "Applied. Must enter 4 8 15 16 23 42 every 108 minutes.",
       "domain": "dharmainitiative.com",
       "link": "https://dharmainitiative.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Research Engineer — design and deploy applied ML systems at The Dharma Initiative; own model evaluation harnesses, agentic workflows, and cross-site data pipelines.\n\nArtifact: workspace/jds/demo/dharma-initiative-research-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 195,
+        "askK": 235
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision",
+        "learning"
+      ],
+      "followUp": {
+        "dueAt": "2026-06-29",
+        "note": "No reply yet — send a short follow-up nudge."
+      },
+      "logo": "../assets/logos/dharma.png"
     },
     {
       "id": "demo-app-19",
       "company": "InGen",
       "role": "Senior Software Engineer",
-      "status": "submitted",
-      "channel": "board",
-      "appliedAt": "2026-06-05",
+      "status": "applied",
+      "channel": "referral",
+      "appliedAt": "2026-06-22",
       "fitScore": 63,
       "loc": "Onsite · NYC",
       "mode": "onsite",
@@ -896,18 +1130,28 @@
         "url": "https://ingen.com/careers/senior-software-engineer"
       },
       "artifacts": {
-        "jd": "Senior SWE role supporting park operations, telemetry, and safety-critical backend services.\n\nArtifact: workspace/jds/demo/ingen-senior-software-engineer.md",
-        "resume": "workspace/renders/demo/ingen-senior-swe-resume.pdf",
-        "jdPath": "workspace/jds/demo/ingen-senior-software-engineer.md",
-        "jdSummary": "Senior SWE role supporting park operations, telemetry, and safety-critical backend services.",
-        "jdCapturedAt": "2026-06-04T22:00:00.000Z",
-        "resumePath": "workspace/renders/demo/ingen-senior-swe-resume.pdf",
-        "resumeNote": "General systems resume; includes incident and safety-review language.",
-        "resumeGeneratedAt": "2026-06-05T09:35:00.000Z"
+        "jd": "Senior Software Engineer (AI Platform) — build ML-serving infra and internal tooling for InGen's biotech data platform.\n\nArtifact: workspace/jds/demo/ingen-senior-swe.md"
       },
       "conversations": [],
       "warn": "Safety-critical operations role; clarify operational authority before interviews.",
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 180,
+        "askK": 215
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision"
+      ],
+      "followUp": {
+        "dueAt": "2026-07-02",
+        "note": "No reply yet — send a short follow-up nudge."
+      },
+      "logo": "../assets/logos/ingen.png"
     },
     {
       "id": "demo-app-20",
@@ -915,7 +1159,7 @@
       "role": "Backend Engineer",
       "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-06-05",
+      "appliedAt": "2026-05-22",
       "fitScore": 62,
       "loc": "Onsite · Boston",
       "mode": "onsite",
@@ -924,15 +1168,29 @@
       "note": "Applied. Amber-based genomics. Definitely no locusts.",
       "domain": "biosyn.com",
       "link": "https://biosyn.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Backend Engineer — build high-throughput data ingestion and API services for BioSyn's life-sciences platform; Python/Go stack, cloud-native.\n\nArtifact: workspace/jds/demo/biosyn-backend-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 155,
+        "askK": 190
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health"
+      ],
+      "warn": "Base below target floor; no AI surface in JD",
+      "logo": "../assets/logos/biosyn.png"
     },
     {
       "id": "demo-app-21",
       "company": "Initech",
       "role": "Software Engineer",
-      "status": "applied",
+      "status": "rejected",
       "channel": "board",
       "appliedAt": "2026-05-29",
       "fitScore": 61,
@@ -940,12 +1198,26 @@
       "mode": "hybrid",
       "base": "$155–190K",
       "tc": "~$200–260K",
-      "note": "Applied. TPS report cover sheet attached this time.",
+      "note": "Form rejection — no interview. TPS report cover sheet attached this time.",
       "domain": "initech.com",
       "link": "https://initech.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Software Engineer — join Initech's core platform team; build internal tools, APIs, and workflow automations used by ops and finance teams.\n\nArtifact: workspace/jds/demo/initech-software-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 155,
+        "askK": 190
+      },
+      "benefits": [
+        "remote_stipend",
+        "retirement",
+        "health",
+        "dental"
+      ],
+      "warn": "Base below target floor; workflow-automation signal but no LLM surface mentioned",
+      "logo": "../assets/logos/initech.png"
     },
     {
       "id": "demo-app-22",
@@ -953,7 +1225,7 @@
       "role": "Software Engineer",
       "status": "applied",
       "channel": "referral",
-      "appliedAt": "2026-05-22",
+      "appliedAt": "2026-06-20",
       "fitScore": 61,
       "loc": "Hybrid · SF",
       "mode": "hybrid",
@@ -962,18 +1234,27 @@
       "note": "Applied. Burned $20K on a party with a live tiger. Solid runway.",
       "domain": "bachmanity.com",
       "link": "https://bachmanity.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Software Engineer — Bachmanity's small product team; full-stack features, some internal tooling, music-tech stack (Python, React, Postgres).\n\nArtifact: workspace/jds/demo/bachmanity-software-engineer.md"
+      },
       "conversations": [],
       "demo": true,
       "followUp": {
-        "kind": "app-nudge",
-        "dueAt": "2026-05-29T00:00:00.000Z",
-        "generatedAt": "2026-06-11T00:00:00.000Z",
-        "draft": {
-          "subject": "Following up — Software Engineer application",
-          "body": "Hi,\n\nI'm writing to follow up on my application for the Software Engineer role at Bachmanity, submitted about three weeks ago. I remain very interested in the position and would welcome the chance to connect.\n\nPlease let me know if you need anything further from my end.\n\nBest,\nJane"
-        }
-      }
+        "dueAt": "2026-06-30",
+        "note": "No reply yet — send a short follow-up nudge."
+      },
+      "compEstimate": {
+        "floorK": 155,
+        "askK": 190
+      },
+      "benefits": [
+        "equity",
+        "retirement",
+        "health",
+        "pto"
+      ],
+      "warn": "Seed-stage comp likely below floor; no AI surface",
+      "logo": "../assets/logos/bachmanity.png"
     },
     {
       "id": "demo-app-23",
@@ -981,7 +1262,7 @@
       "role": "Software Engineer",
       "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-06-05",
+      "appliedAt": "2026-05-09",
       "fitScore": 60,
       "loc": "Remote (US)",
       "mode": "remote",
@@ -990,9 +1271,23 @@
       "note": "Applied. On the grid.",
       "domain": "encom.com",
       "link": "https://encom.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Software Engineer — Encom's core infrastructure team; distributed systems, cloud-native services, and internal developer tooling.\n\nArtifact: workspace/jds/demo/encom-software-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 155,
+        "askK": 190
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health"
+      ],
+      "warn": "Base below target floor; pure platform SWE, no AI surface",
+      "logo": "../assets/logos/encom.png"
     },
     {
       "id": "demo-app-24",
@@ -1000,7 +1295,7 @@
       "role": "Software Engineer",
       "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-06-05",
+      "appliedAt": "2026-05-31",
       "fitScore": 60,
       "loc": "Hybrid · Austin",
       "mode": "hybrid",
@@ -1009,9 +1304,24 @@
       "note": "Applied. Mom's Friendly Robot Company. She's watching.",
       "domain": "momcorp.com",
       "link": "https://momcorp.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Software Engineer — MomCorp consumer-products platform; own backend services, integrations, and data pipelines for a global e-commerce footprint.\n\nArtifact: workspace/jds/demo/momcorp-software-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 155,
+        "askK": 190
+      },
+      "benefits": [
+        "remote_stipend",
+        "retirement",
+        "health",
+        "dental",
+        "parental"
+      ],
+      "warn": "Base below target floor; no AI or agentic surface in JD",
+      "logo": "../assets/logos/momcorp.png"
     },
     {
       "id": "demo-app-25",
@@ -1019,13 +1329,13 @@
       "role": "Senior Software Engineer",
       "status": "rejected",
       "channel": "recruiter",
-      "appliedAt": "2026-05-01",
+      "appliedAt": "2026-05-29",
       "fitScore": 64,
       "loc": "Onsite · NYC",
       "mode": "onsite",
       "base": "$180–215K",
       "tc": "~$250–310K",
-      "note": "Rejected. The org chart is suspiciously octopus-shaped.",
+      "note": "Form rejection — no interview. The org chart is suspiciously octopus-shaped.",
       "domain": "spectre.com",
       "link": "https://spectre.com/careers",
       "source": {
@@ -1034,102 +1344,138 @@
         "url": "https://spectre.com/careers/senior-software-engineer"
       },
       "artifacts": {
-        "jd": "Senior SWE role for secure communications tooling and backend services.\n\nArtifact: workspace/jds/demo/spectre-senior-software-engineer.md",
-        "resume": "workspace/renders/demo/spectre-senior-swe-resume.pdf",
-        "jdPath": "workspace/jds/demo/spectre-senior-software-engineer.md",
-        "jdSummary": "Senior SWE role for secure communications tooling and backend services.",
-        "jdCapturedAt": "2026-04-30T12:40:00.000Z",
-        "resumePath": "workspace/renders/demo/spectre-senior-swe-resume.pdf",
-        "resumeNote": "General backend resume; not deeply tailored because the role stayed vague.",
-        "resumeGeneratedAt": "2026-05-01T08:40:00.000Z"
+        "jd": "Senior Software Engineer — backend platform, distributed systems, Kafka/Kubernetes. AI roadmap deferred. Austin office preferred, hybrid.\n\nArtifact: workspace/jds/demo/spectre-senior-swe.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-02",
-          "kind": "Recruiter screen",
-          "who": "Demo recruiter",
-          "notes": "Recruiter could not share much about team charter. Comp was in range, but role definition was opaque."
-        },
-        {
-          "date": "2026-05-09",
-          "kind": "Outcome",
-          "who": "Demo recruiter",
-          "notes": "Rejected after screen. Feedback: team wanted more direct secure-comms domain experience."
-        }
-      ],
+      "conversations": [],
       "warn": "Outcome learning: vague security roles need sharper qualification before investing time.",
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 180,
+        "askK": 215
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "vision"
+      ],
+      "logo": "../assets/logos/spectre.png"
     },
     {
       "id": "demo-app-26",
       "company": "Spacely Sprockets",
       "role": "Senior Engineer",
-      "status": "rejected",
+      "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-04-24",
+      "appliedAt": "2026-06-04",
       "fitScore": 63,
       "loc": "Hybrid · Austin",
       "mode": "hybrid",
       "base": "$180–215K",
       "tc": "~$250–310K",
-      "note": "Rejected. Mr. Spacely fired me before the offer. Classic.",
+      "note": "Mr. Spacely runs a tight shop. Sprocket logistics at scale.",
       "domain": "spacely.com",
       "link": "https://spacely.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Senior Engineer — automation tooling and integrations, React/Node/Python, LLM features on roadmap. Remote-friendly.\n\nArtifact: workspace/jds/demo/spacely-sprockets-senior-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 180,
+        "askK": 215
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "pto"
+      ],
+      "logo": "../assets/logos/spacely.png"
     },
     {
       "id": "demo-app-27",
       "company": "Zorg Industries",
       "role": "Senior Engineer",
-      "status": "rejected",
+      "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-05-01",
+      "appliedAt": "2026-05-13",
       "fitScore": 62,
       "loc": "Onsite · NYC",
       "mode": "onsite",
       "base": "$180–215K",
       "tc": "~$250–310K",
-      "note": "Rejected. Mr. Zorg was not impressed.",
+      "note": "Zorg Industries — backend platform. Applied cold.",
       "domain": "zorgindustries.com",
       "link": "https://zorgindustries.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Senior Engineer — backend services, Go/Postgres, microservices. No current AI surface. Fully remote.\n\nArtifact: workspace/jds/demo/zorg-industries-senior-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 180,
+        "askK": 215
+      },
+      "benefits": [
+        "remote_stipend",
+        "retirement",
+        "health",
+        "equity"
+      ],
+      "warn": "No AI surface — core backend only, clear cut-signal",
+      "logo": "../assets/logos/zorg.png"
     },
     {
       "id": "demo-app-28",
       "company": "Cobra",
       "role": "Platform Engineer",
-      "status": "rejected",
+      "status": "applied",
       "channel": "board",
-      "appliedAt": "2026-04-10",
+      "appliedAt": "2026-05-27",
       "fitScore": 60,
       "loc": "Onsite · NYC",
       "mode": "onsite",
       "base": "$155–190K",
       "tc": "~$200–260K",
-      "note": "Rejected. The recruiter hissed. Literally.",
+      "note": "Cobra — applied cold. The recruiter hissed. Literally.",
       "domain": "cobra.com",
       "link": "https://cobra.com/careers",
-      "artifacts": {},
+      "artifacts": {
+        "jd": "Platform Engineer — Kubernetes, Terraform, CI/CD pipelines, SRE focus. No current AI surface. Hybrid Austin or remote.\n\nArtifact: workspace/jds/demo/cobra-platform-engineer.md"
+      },
       "conversations": [],
-      "demo": true
+      "demo": true,
+      "compEstimate": {
+        "floorK": 155,
+        "askK": 190
+      },
+      "benefits": [
+        "remote_stipend",
+        "retirement",
+        "health",
+        "dental",
+        "bonus"
+      ],
+      "warn": "Base below floor ($155-190K vs $190K floor) — and no AI scope",
+      "logo": "../assets/logos/cobra.png"
     },
     {
       "id": "demo-app-29",
       "company": "Monsters Inc",
       "role": "Senior Engineer",
-      "status": "withdrawn",
-      "channel": "recruiter",
-      "appliedAt": "2026-05-08",
+      "status": "applied",
+      "channel": "board",
+      "appliedAt": "2026-05-20",
       "fitScore": 67,
       "loc": "Onsite · NYC",
       "mode": "onsite",
       "base": "$180–215K",
       "tc": "~$250–310K",
-      "note": "Withdrew — full onsite, and the commute is through a closet.",
+      "note": "Scare-floor scale-up. The commute is through a closet.",
       "domain": "monstersinc.com",
       "link": "https://monstersinc.com/careers",
       "source": {
@@ -1138,25 +1484,23 @@
         "url": "https://monstersinc.com/careers/senior-engineer"
       },
       "artifacts": {
-        "jd": "Senior engineering role on factory-floor operational systems and internal tooling.\n\nArtifact: workspace/jds/demo/monsters-inc-senior-engineer.md",
-        "resume": "workspace/renders/demo/monsters-inc-senior-engineer-resume.pdf",
-        "jdPath": "workspace/jds/demo/monsters-inc-senior-engineer.md",
-        "jdSummary": "Senior engineering role on factory-floor operational systems and internal tooling.",
-        "jdCapturedAt": "2026-05-07T18:25:00.000Z",
-        "resumePath": "workspace/renders/demo/monsters-inc-senior-engineer-resume.pdf",
-        "resumeNote": "Light tailoring only; onsite constraint was known early.",
-        "resumeGeneratedAt": "2026-05-08T08:25:00.000Z"
+        "jd": "Senior Engineer — Backend & AI Tooling at Monsters Inc, focused on internal developer-platform and AI-assisted incident response tooling.\n\nArtifact: workspace/jds/demo/monsters-inc-senior-engineer.md"
       },
-      "conversations": [
-        {
-          "date": "2026-05-09",
-          "kind": "Recruiter screen",
-          "who": "Demo recruiter",
-          "notes": "Recruiter confirmed full onsite requirement. Candidate withdrew before technical loop to protect pipeline focus."
-        }
+      "conversations": [],
+      "demo": true,
+      "compEstimate": {
+        "floorK": 180,
+        "askK": 215
+      },
+      "benefits": [
+        "remote_stipend",
+        "equity",
+        "retirement",
+        "health",
+        "dental",
+        "pto"
       ],
-      "warn": "Withdrawn because location model conflicts with remote/hybrid preference.",
-      "demo": true
+      "logo": "../assets/logos/monsters-inc.png"
     }
   ],
   "sources": [
@@ -1171,260 +1515,640 @@
   ],
   "communications": [
     {
-      "id": "demo-comm-1",
-      "applicationId": "demo-app-2",
-      "company": "Aperture Science",
-      "role": "Forward Deployed Engineer",
-      "channel": "email",
-      "subject": "Aperture Science offer follow-up",
-      "status": "needs-reply",
-      "summary": "Written offer received; draft counter is ready and should be reviewed before replying.",
-      "nextAction": "Review and send written counter",
-      "nextActionDue": "2026-06-16",
-      "lastInboundAt": "2026-06-14",
-      "draft": {
-        "subject": "Re: Aperture Science offer",
-        "body": "Hi,\n\nThank you again for the offer and for the time the team spent walking me through the Enrichment Center deployment work. I'm excited about the scope and the chance to own customer outcomes end to end.\n\nGiven the role's field ownership, technical ambiguity, and production responsibility, I would be comfortable moving forward if we can bring the base closer to the top of the discussed range while keeping the rest of the package intact.\n\nBest,\nJane"
-      },
-      "messages": [
-        {
-          "id": "demo-msg-1",
-          "direction": "outbound-sent",
-          "at": "2026-05-15",
-          "from": "jane.candidate@example.test",
-          "to": [
-            "recruiting@aperturescience.com"
-          ],
-          "subject": "Application — Forward Deployed Engineer",
-          "summary": "Submitted application; flagged strong interest in the deploy-and-adopt scope."
-        },
-        {
-          "id": "demo-msg-2",
-          "direction": "inbound",
-          "at": "2026-05-27",
-          "from": "cave@aperturescience.com",
-          "to": [
-            "jane.candidate@example.test"
-          ],
-          "subject": "Re: Forward Deployed Engineer",
-          "summary": "Cave Johnson: loved the background, wants to move fast. Proposed a recruiter screen — done 5/28."
-        },
-        {
-          "id": "demo-msg-3",
-          "direction": "inbound",
-          "at": "2026-06-09",
-          "from": "cave@aperturescience.com",
-          "to": [
-            "jane.candidate@example.test"
-          ],
-          "subject": "Re: Forward Deployed Engineer — next steps",
-          "summary": "Technical loop offered: three slots; candidate replied and completed loop."
-        },
-        {
-          "id": "demo-msg-4",
-          "direction": "inbound",
-          "at": "2026-06-14",
-          "from": "cave@aperturescience.com",
-          "to": [
-            "jane.candidate@example.test"
-          ],
-          "subject": "Aperture Science offer",
-          "summary": "Written offer attached. Base is below preferred target, with meaningful equity and remote terms."
-        }
-      ],
-      "demo": true
-    },
-    {
-      "id": "demo-comm-2",
-      "applicationId": "demo-app-1",
+      "id": "comm-e-corp-1",
       "company": "E Corp",
       "role": "Staff Software Engineer",
+      "applicationId": "demo-app-1",
       "channel": "email",
-      "subject": "Signed offer and start-date confirmation",
-      "status": "closed",
-      "summary": "Accepted offer; recruiter confirmed remote start date and onboarding packet.",
-      "nextAction": "None",
-      "lastInboundAt": "2026-06-12",
-      "messages": [
-        {
-          "id": "demo-msg-5",
-          "direction": "outbound-sent",
-          "at": "2026-04-10",
-          "from": "jane.candidate@example.test",
-          "to": [
-            "demo.recruiting@e-corp.com"
-          ],
-          "subject": "Referral application — Staff Software Engineer",
-          "summary": "Sent application after warm referral and attached demo-tailored resume."
-        },
-        {
-          "id": "demo-msg-6",
-          "direction": "inbound",
-          "at": "2026-06-11",
-          "from": "demo.recruiting@e-corp.com",
-          "to": [
-            "jane.candidate@example.test"
-          ],
-          "subject": "E Corp offer packet",
-          "summary": "Recruiting sent final offer packet with remote terms and onboarding timeline."
-        },
-        {
-          "id": "demo-msg-7",
-          "direction": "outbound-sent",
-          "at": "2026-06-12",
-          "from": "jane.candidate@example.test",
-          "to": [
-            "demo.recruiting@e-corp.com"
-          ],
-          "subject": "Re: E Corp offer packet",
-          "summary": "Accepted the offer and asked for onboarding documents."
-        }
-      ],
-      "demo": true
-    },
-    {
-      "id": "demo-comm-3",
-      "applicationId": "demo-app-3",
-      "company": "Hooli",
-      "role": "Principal Engineer",
-      "channel": "email",
-      "subject": "Principal Engineer offer — remote arrangement",
+      "subject": "Staff Software Engineer — E Corp",
       "status": "waiting",
-      "summary": "Candidate asked whether Hooli can support remote-first terms before comparing the offer seriously.",
-      "nextAction": "Wait for remote-policy answer",
-      "nextActionDue": "2026-06-17",
-      "lastOutboundAt": "2026-06-15",
+      "summary": "Offer extended Jun 24 — $232K base, $90K/yr RSU, $15K sign-on (~$355K TC). Riley asked for a few days to decide; response due Jun 29.",
+      "lastInboundAt": "2026-06-24",
       "messages": [
         {
-          "id": "demo-msg-8",
+          "id": "msg-ecorp-1",
           "direction": "inbound",
-          "at": "2026-06-13",
-          "from": "demo.recruiting@hooli.com",
+          "at": "2026-04-12",
+          "from": "mhayes@e-corp.example",
           "to": [
-            "jane.candidate@example.test"
+            "riley.chen@rolester.dev"
           ],
-          "subject": "Hooli Principal Engineer offer",
-          "summary": "Offer received with strong total compensation and default hybrid SF expectation."
+          "subject": "Staff Software Engineer — E Corp (referral from Alex Winters)",
+          "summary": "Morgan Hayes reached out via Alex Winters referral; flagged strong fit with AI-ops initiative, invited 30-min recruiter screen."
         },
         {
-          "id": "demo-msg-9",
+          "id": "msg-ecorp-2",
           "direction": "outbound-sent",
-          "at": "2026-06-15",
-          "from": "jane.candidate@example.test",
+          "at": "2026-04-13",
+          "from": "riley.chen@rolester.dev",
           "to": [
-            "demo.recruiting@hooli.com"
+            "mhayes@e-corp.example"
           ],
-          "subject": "Re: Hooli Principal Engineer offer",
-          "summary": "Asked whether the team can support remote-first terms with planned visits."
-        }
-      ],
-      "demo": true
-    },
-    {
-      "id": "demo-comm-4",
-      "applicationId": "demo-app-4",
-      "company": "Weyland-Yutani",
-      "role": "Staff Engineer, Spaceframe",
-      "channel": "email",
-      "subject": "Final loop logistics and role questions",
-      "status": "needs-reply",
-      "summary": "Need to send clarification questions about on-call and safety escalation before final loop.",
-      "nextAction": "Send pre-final clarification note",
-      "nextActionDue": "2026-06-16",
-      "draft": {
-        "subject": "Final loop logistics and role questions",
-        "body": "Hi,\n\nAhead of the final loop, could you confirm the expected on-call rotation and how safety escalation decisions are handled for the Spaceframe team? I want to make sure I understand the operating model before the final conversations.\n\nBest,\nJane"
-      },
-      "messages": [
-        {
-          "id": "demo-msg-10",
-          "direction": "inbound",
-          "at": "2026-05-22",
-          "from": "demo.recruiter@weylandyutani.com",
-          "to": [
-            "jane.candidate@example.test"
-          ],
-          "subject": "Staff Engineer, Spaceframe",
-          "summary": "Recruiter reached out with global remote staff engineering role and attached JD."
+          "subject": "Re: Staff Software Engineer — E Corp (referral from Alex Winters)",
+          "summary": "Riley confirmed interest and availability; offered Thursday April 17 for the recruiter screen."
         },
         {
-          "id": "demo-msg-11",
+          "id": "msg-ecorp-3",
           "direction": "inbound",
-          "at": "2026-06-12",
-          "from": "demo.recruiter@weylandyutani.com",
+          "at": "2026-05-08",
+          "from": "mhayes@e-corp.example",
           "to": [
-            "jane.candidate@example.test"
+            "riley.chen@rolester.dev"
           ],
-          "subject": "Final loop details",
-          "summary": "Final loop scheduled; on-call and safety ownership not yet clarified."
-        }
-      ],
-      "demo": true
-    },
-    {
-      "id": "demo-comm-5",
-      "applicationId": "demo-app-12",
-      "company": "Umbrella Corporation",
-      "role": "Senior Infrastructure Engineer",
-      "channel": "email",
-      "subject": "Senior Infrastructure Engineer next steps",
-      "status": "needs-reply",
-      "summary": "Recruiter asked for HM screen availability.",
-      "nextAction": "Reply with availability",
-      "nextActionDue": "2026-06-16",
-      "lastInboundAt": "2026-06-14",
-      "draft": {
-        "subject": "Re: Senior Infrastructure Engineer next steps",
-        "body": "Hi,\n\nThanks for the conversation. I can meet for the hiring manager screen on June 18 after 11am ET or June 19 between 9am and 1pm ET.\n\nBest,\nJane"
-      },
-      "messages": [
+          "subject": "Next step: Hiring-manager intro w/ Jordan Park | E Corp",
+          "summary": "Morgan confirmed strong recruiter-screen feedback; set up 45-min HM intro with Jordan Park. Shared comp range: $215-255K base."
+        },
         {
-          "id": "demo-msg-12",
+          "id": "msg-ecorp-4",
+          "direction": "outbound-sent",
+          "at": "2026-05-16",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "mhayes@e-corp.example"
+          ],
+          "subject": "Re: HM intro — thank you + ready for technical round",
+          "summary": "Riley thanked Morgan after HM screen — call ran 10 min over; excited about incident-triage problem. Ready for technical round."
+        },
+        {
+          "id": "msg-ecorp-5",
           "direction": "inbound",
+          "at": "2026-05-28",
+          "from": "mhayes@e-corp.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Onsite panel details — E Corp | Staff SWE",
+          "summary": "Morgan confirmed Sam's strong tech-screen feedback; issued virtual onsite invite for June 10. Panel: Jordan, Sam, Priya Okoye, Dana Kim."
+        },
+        {
+          "id": "msg-ecorp-6",
+          "direction": "outbound-sent",
           "at": "2026-05-29",
-          "from": "demo.sourcer@umbrellacorp.com",
+          "from": "riley.chen@rolester.dev",
           "to": [
-            "jane.candidate@example.test"
+            "mhayes@e-corp.example"
           ],
-          "subject": "Senior Infrastructure Engineer at Umbrella",
-          "summary": "Inbound sourcer note for global infrastructure role."
+          "subject": "Re: Onsite panel details — confirmed for June 10",
+          "summary": "Riley confirmed June 10 onsite and asked about preferred live-coding environment for the session."
         },
         {
-          "id": "demo-msg-13",
+          "id": "msg-ecorp-7",
+          "direction": "inbound",
+          "at": "2026-06-20",
+          "from": "mhayes@e-corp.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "E Corp offer — Staff Software Engineer",
+          "summary": "Morgan extended written initial offer: $222K base, $95K/yr RSU (4-yr vest), $10K sign-on. Committee unanimous; offer expires June 30."
+        },
+        {
+          "id": "msg-ecorp-8",
+          "direction": "outbound-sent",
+          "at": "2026-06-22",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "mhayes@e-corp.example"
+          ],
+          "subject": "Re: E Corp offer — counter proposal",
+          "summary": "Riley submitted written counter: $240K base, $15K sign-on, and requested RSU review. Signaled E Corp as top choice; confident in closing."
+        },
+        {
+          "id": "msg-ecorp-9",
+          "direction": "inbound",
+          "at": "2026-06-24",
+          "from": "mhayes@e-corp.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Re: E Corp offer — revised terms",
+          "summary": "Morgan returned with revised: $232K base (discretionary max), $90K/yr RSU, $15K sign-on matched in full. Est. Year-1 TC ~$355K."
+        },
+        {
+          "id": "msg-ecorp-10",
+          "direction": "outbound-sent",
+          "at": "2026-06-25",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "mhayes@e-corp.example"
+          ],
+          "subject": "Re: E Corp offer — request for a few days",
+          "summary": "Riley thanked Morgan and asked for a few days to weigh against two active processes; will respond by June 29."
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "demo-comm-1",
+      "company": "Aperture Science",
+      "role": "Forward Deployed Engineer",
+      "applicationId": "demo-app-2",
+      "channel": "email",
+      "subject": "Forward Deployed Engineer — offer and negotiation",
+      "status": "closed",
+      "summary": "Recruiter inbound → loop → written offer ($182K base) → counter ($190K) → Aperture final ($185K) — below floor. Riley withdrew amicably.",
+      "lastInboundAt": "2026-06-15",
+      "messages": [
+        {
+          "id": "demo-msg-ap-1",
+          "direction": "inbound",
+          "at": "2026-05-14",
+          "from": "jordan.marsh@aperturescience.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Forward Deployed Engineer — Aperture Science",
+          "summary": "Jordan Marsh reached out; remote FDE role for Enrichment Center enterprise deployments. Proposed 20-min intro call."
+        },
+        {
+          "id": "demo-msg-ap-2",
+          "direction": "outbound-sent",
+          "at": "2026-05-15",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "jordan.marsh@aperturescience.example"
+          ],
+          "subject": "Re: Forward Deployed Engineer — Aperture Science",
+          "summary": "Riley replied with interest, flagged $190K base target upfront, proposed Thursday 2pm CT. Jordan confirmed and noted top of band is $190K."
+        },
+        {
+          "id": "demo-msg-ap-3",
+          "direction": "inbound",
+          "at": "2026-06-05",
+          "from": "nadia.k@aperturescience.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Thank you — Aperture Science FDE loop",
+          "summary": "Nadia (panel lead) thanked Riley after tech deep dive; cited deployment pipeline and write-gate answers as standouts. Offer coming."
+        },
+        {
+          "id": "demo-msg-ap-4",
           "direction": "inbound",
           "at": "2026-06-14",
-          "from": "demo.sourcer@umbrellacorp.com",
+          "from": "jordan.marsh@aperturescience.example",
           "to": [
-            "jane.candidate@example.test"
+            "riley.chen@rolester.dev"
           ],
-          "subject": "Next step: hiring manager screen",
-          "summary": "Asked for availability and mentioned incident-response scope."
+          "subject": "Aperture Science — offer letter",
+          "summary": "Aperture written offer: $182K base, 48K options, 10% bonus, $10K signing. Jordan noted below target but above midpoint. Expires June 19."
+        },
+        {
+          "id": "demo-msg-ap-5",
+          "direction": "outbound-sent",
+          "at": "2026-06-15",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "jordan.marsh@aperturescience.example"
+          ],
+          "subject": "Re: Aperture Science — offer letter",
+          "summary": "Riley countered in writing: $190K base (floor) to move forward; everything else acceptable. Offered to jump on a call. Waiting for response."
+        },
+        {
+          "id": "demo-msg-ap-6",
+          "direction": "inbound",
+          "at": "2026-06-15",
+          "from": "jordan.marsh@aperturescience.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Re: Aperture Science — offer letter",
+          "summary": "Aperture came back at $185K — best they can do. Door stays open if priorities change. Below the $190K floor; Riley deciding."
+        },
+        {
+          "id": "demo-msg-ap-7",
+          "direction": "outbound-sent",
+          "at": "2026-06-17",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "jordan.marsh@aperturescience.example"
+          ],
+          "subject": "Re: Aperture Science — offer letter (withdrawal)",
+          "summary": "Riley withdrew amicably; thanked the team, cited base below the $190K hard floor. No hard feelings, door left open on both sides."
         }
       ],
       "demo": true
     },
     {
-      "id": "demo-comm-6",
-      "applicationId": "demo-app-25",
-      "company": "Spectre",
-      "role": "Senior Software Engineer",
+      "id": "comm-hooli-1",
+      "company": "Hooli",
+      "role": "Principal Engineer",
+      "applicationId": "demo-app-3",
       "channel": "email",
-      "subject": "Spectre application outcome",
+      "subject": "Principal Engineer, AI Platform — Hooli",
       "status": "closed",
-      "summary": "Rejected after recruiter screen; feedback logged as a qualification lesson.",
-      "nextAction": "None",
-      "lastInboundAt": "2026-05-09",
+      "summary": "Marcus Webb referral → recruiter intro → HM → technical screen; Hooli rejected Riley post-technical. Dana Park sent warm rejection 2026-06-19.",
+      "lastInboundAt": "2026-06-19",
       "messages": [
         {
-          "id": "demo-msg-14",
+          "id": "msg-hooli-1",
           "direction": "inbound",
-          "at": "2026-05-09",
-          "from": "demo.recruiter@spectre.com",
+          "at": "2026-05-08",
+          "from": "dana.park@hooli.example",
           "to": [
-            "jane.candidate@example.test"
+            "riley.chen@rolester.dev"
           ],
-          "subject": "Update on Senior Software Engineer role",
-          "summary": "Team declined to move forward; wanted more secure-comms domain experience."
+          "subject": "Principal Engineer, AI Platform — Hooli (referral from Marcus Webb)",
+          "summary": "Dana Park cites Marcus Webb's referral and invites Riley to a 30-min intro call about the Principal Engineer, AI Platform role."
+        },
+        {
+          "id": "msg-hooli-2",
+          "direction": "outbound-sent",
+          "at": "2026-05-09",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "dana.park@hooli.example"
+          ],
+          "subject": "Re: Principal Engineer, AI Platform — Hooli (referral from Marcus Webb)",
+          "summary": "Riley confirms interest, proposes Thursday 5/14 or Friday 5/15, and flags target base of $265K+ upfront to avoid wasted cycles."
+        },
+        {
+          "id": "msg-hooli-3",
+          "direction": "inbound",
+          "at": "2026-05-10",
+          "from": "dana.park@hooli.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Re: Principal Engineer, AI Platform — Hooli (referral from Marcus Webb)",
+          "summary": "Dana confirms Thursday 5/14 11am CT and notes the posted band is $250–290K base — should align with Riley's ask."
+        },
+        {
+          "id": "msg-hooli-4",
+          "direction": "outbound-sent",
+          "at": "2026-06-17",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "dana.park@hooli.example"
+          ],
+          "subject": "Thank you — Hooli Principal Eng loop",
+          "summary": "Riley thanks Dana and the team for three strong rounds and calls out the technical discussion with Priya as a highlight."
+        },
+        {
+          "id": "msg-hooli-5",
+          "direction": "inbound",
+          "at": "2026-06-19",
+          "from": "dana.park@hooli.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Re: Thank you — Hooli Principal Eng loop",
+          "summary": "Dana thanks Riley for three strong rounds; team went another direction. Warm close, Hooli keeping the profile on file."
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "comm-demo-app-4-recruiter",
+      "company": "Weyland-Yutani",
+      "role": "Staff Engineer, Spaceframe",
+      "applicationId": "demo-app-4",
+      "channel": "email",
+      "subject": "Staff Engineer, Spaceframe — Weyland-Yutani (remote, $215–255K base)",
+      "status": "closed",
+      "summary": "Priya Vasquez outreach → screen May 24 → technical Jun 7 → HM Jun 11 → final panel Jun 14 → rejected Jun 19. Narrow internal calibration, no offer.",
+      "lastInboundAt": "2026-06-19",
+      "messages": [
+        {
+          "id": "msg-demo-app-4-1",
+          "direction": "inbound",
+          "at": "2026-05-20",
+          "from": "priya.vasquez@weylandyutani.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Staff Engineer, Spaceframe — Weyland-Yutani (remote, $215–255K base)",
+          "summary": "Priya Vasquez (W-Y recruiter) reached out after finding Riley's profile. HITL workflow and RAG pipeline experience flagged as strong fit. Invited to 30-min screen."
+        },
+        {
+          "id": "msg-demo-app-4-2",
+          "direction": "outbound-sent",
+          "at": "2026-05-21",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "priya.vasquez@weylandyutani.example"
+          ],
+          "subject": "Re: Staff Engineer, Spaceframe — Weyland-Yutani (remote, $215–255K base)",
+          "summary": "Riley expressed interest, noted Meridian HITL pattern as direct fit, requested JD and offered Thu/Fri availability for a call."
+        },
+        {
+          "id": "msg-demo-app-4-3",
+          "direction": "inbound",
+          "at": "2026-05-23",
+          "from": "priya.vasquez@weylandyutani.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Re: Staff Engineer, Spaceframe — JD + screen scheduling",
+          "summary": "Priya sent the JD and booked the recruiter screen for May 24 at 10 AM CT. Pre-flagged on-call (~1 wk/quarter) and ~10% travel to confirm no blockers."
+        },
+        {
+          "id": "msg-demo-app-4-4",
+          "direction": "outbound-sent",
+          "at": "2026-05-23",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "priya.vasquez@weylandyutani.example"
+          ],
+          "subject": "Re: Staff Engineer, Spaceframe — JD + screen scheduling",
+          "summary": "Riley confirmed May 24 screen, said on-call and travel are not blockers but wants to understand the escalation tree during the process."
+        },
+        {
+          "id": "msg-demo-app-4-5",
+          "direction": "inbound",
+          "at": "2026-06-10",
+          "from": "priya.vasquez@weylandyutani.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Weyland-Yutani Final Loop — invitation + logistics",
+          "summary": "Strong feedback from tech and HM screens. Final-loop invite: Jun 14 4-panel (Lena Park, Soren Holt, Kira Oduya, Dag Eriksen). Debrief by Jun 16."
+        },
+        {
+          "id": "msg-demo-app-4-6",
+          "direction": "outbound-sent",
+          "at": "2026-06-11",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "priya.vasquez@weylandyutani.example"
+          ],
+          "subject": "Re: Weyland-Yutani Final Loop — invitation + logistics",
+          "summary": "Riley confirmed Jun 14. Flagged intent to raise on-call scope and safety-escalation ownership with Dag and Lena in the loop."
+        },
+        {
+          "id": "msg-demo-app-4-7",
+          "direction": "outbound-sent",
+          "at": "2026-06-14",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "priya.vasquez@weylandyutani.example"
+          ],
+          "subject": "Re: Weyland-Yutani Final Loop — thank you",
+          "summary": "Riley thanked all 4 panelists, noted strong energy throughout, and flagged on-call escalation ownership as the one open thread to resolve."
+        },
+        {
+          "id": "msg-demo-app-4-8",
+          "direction": "inbound",
+          "at": "2026-06-19",
+          "from": "priya.vasquez@weylandyutani.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Re: Weyland-Yutani Final Loop — decision update",
+          "summary": "Priya: no offer — narrow internal calibration on ownership scope went the other way. Panel feedback was strong across all 4 interviewers."
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "comm-demo-app-5-recruiter",
+      "company": "Cyberdyne Systems",
+      "role": "Staff ML Engineer",
+      "applicationId": "demo-app-5",
+      "channel": "email",
+      "subject": "Staff ML Engineer at Cyberdyne — quick intro call?",
+      "status": "scheduled",
+      "summary": "Applied 2026-05-15; Priya Desai reached out 2026-05-17. Recruiter screen 2026-05-19 confirmed hybrid SF and $215–255K band. Technical screen with Marcus Webb 2026-05-26 and system design with Dr. Kazan 2026-06-02 both advanced. Final onsite invite received 2026-06-22 for June 28.",
+      "lastInboundAt": "2026-06-22",
+      "nextAction": "Final onsite 2026-06-28",
+      "nextActionDue": "2026-06-28",
+      "messages": [
+        {
+          "id": "msg-demo-app-5-1",
+          "direction": "inbound",
+          "at": "2026-05-15",
+          "from": "careers@cyberdyne.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Application Received — Staff ML Engineer at Cyberdyne Systems",
+          "summary": "Auto-confirmation of Riley's board application. Recruiting team will follow up in 5–7 business days if there's a match."
+        },
+        {
+          "id": "msg-demo-app-5-2",
+          "direction": "inbound",
+          "at": "2026-05-17",
+          "from": "priya.desai@cyberdyne.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Staff ML Engineer at Cyberdyne — quick intro call?",
+          "summary": "Priya flagged Pulsar + Meridian as a strong fit. Disclosed hybrid SF 2 days/week and $215–255K band up front; asked for a 30-min intro call."
+        },
+        {
+          "id": "msg-demo-app-5-3",
+          "direction": "outbound-sent",
+          "at": "2026-05-18",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "priya.desai@cyberdyne.example"
+          ],
+          "subject": "Re: Staff ML Engineer at Cyberdyne — quick intro call?",
+          "summary": "Riley confirmed Tuesday 5/19 at 10am PT, noted Austin base and $230K+ ask given the SF hybrid concession."
+        },
+        {
+          "id": "msg-demo-app-5-4",
+          "direction": "inbound",
+          "at": "2026-05-22",
+          "from": "priya.desai@cyberdyne.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Re: Staff ML Engineer — next step: technical screen with Marcus Webb",
+          "summary": "Positive screen feedback. Priya confirmed $230K+ ask is within band; scheduled 60-min technical screen with Marcus Webb for May 26."
+        },
+        {
+          "id": "msg-demo-app-5-5",
+          "direction": "inbound",
+          "at": "2026-05-28",
+          "from": "priya.desai@cyberdyne.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Re: Staff ML Engineer — next step: system design with Dr. Kazan",
+          "summary": "Marcus gave strong feedback on the technical screen. Advancing to 60-min system design with Dr. Sarah Kazan (ML Platform Lead) on June 2."
+        },
+        {
+          "id": "msg-demo-app-5-6",
+          "direction": "inbound",
+          "at": "2026-06-22",
+          "from": "priya.desai@cyberdyne.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Cyberdyne final onsite — invitation for June 28",
+          "summary": "Dr. Kazan gave strong system design feedback. Final onsite confirmed June 28: coding, HM, system design debrief, and safety panel."
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "comm-massive-dynamic-1",
+      "company": "Massive Dynamic",
+      "role": "Staff Engineer",
+      "applicationId": "demo-app-9",
+      "channel": "email",
+      "subject": "Staff Engineer, AI Platform — Massive Dynamic",
+      "status": "scheduled",
+      "summary": "Camille Torres reached out via alumni referral; recruiter screen Jun 16, HM screen with Marcus Webb Jun 23. Panel scheduled 2026-07-01.",
+      "nextAction": "Confirm links for the 2026-07-01 panel",
+      "nextActionDue": "2026-06-29",
+      "lastInboundAt": "2026-06-24",
+      "messages": [
+        {
+          "id": "comm-md-1-msg-1",
+          "direction": "inbound",
+          "at": "2026-06-10",
+          "from": "camille.torres@massive-dynamic.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Staff Engineer, AI Platform — Massive Dynamic (referred by alumni)",
+          "summary": "Camille reaches out via alumni referral; role owns LLM integration layer, team-lead duties, $215–255K base. Invited to 30-min intro call."
+        },
+        {
+          "id": "comm-md-1-msg-2",
+          "direction": "outbound-sent",
+          "at": "2026-06-11",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "camille.torres@massive-dynamic.example"
+          ],
+          "subject": "Re: Staff Engineer, AI Platform — Massive Dynamic (referred by alumni)",
+          "summary": "Riley confirms interest and offers Thursday 6/12 or Friday 6/13 availability. Flags $240K base target upfront."
+        },
+        {
+          "id": "comm-md-1-msg-3",
+          "direction": "inbound",
+          "at": "2026-06-17",
+          "from": "camille.torres@massive-dynamic.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Re: Staff Engineer, AI Platform — great talking with you!",
+          "summary": "Post-recruiter-screen follow-up. Camille confirms strong fit signal and schedules 45-min HM screen with Marcus Webb for Jun 23 at 11 AM CT."
+        },
+        {
+          "id": "comm-md-1-msg-4",
+          "direction": "inbound",
+          "at": "2026-06-24",
+          "from": "camille.torres@massive-dynamic.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Panel Interview Invitation — Massive Dynamic | 2026-07-01",
+          "summary": "Marcus gave strong fit signal on platform depth and FDE. Panel invite for Jul 1 (10 AM CT): Jordan Reyes, Alicia Morrow, Marcus Webb."
+        },
+        {
+          "id": "comm-md-1-msg-5",
+          "direction": "outbound-sent",
+          "at": "2026-06-25",
+          "from": "riley.chen@rolester.dev",
+          "to": [
+            "camille.torres@massive-dynamic.example"
+          ],
+          "subject": "Re: Panel Interview Invitation — Massive Dynamic | 2026-07-01",
+          "summary": "Riley confirms the Jul 1 panel and thanks Camille. Will watch for Zoom links before the weekend."
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "comm-demo-app-6",
+      "company": "Pied Piper",
+      "role": "Senior Software Engineer",
+      "applicationId": "demo-app-6",
+      "channel": "referral",
+      "subject": "Your application for Senior Software Engineer at Pied Piper",
+      "status": "closed",
+      "summary": "ATS auto-rejection after apply; no interview rounds — application did not advance.",
+      "lastInboundAt": "2026-06-10",
+      "messages": [
+        {
+          "id": "msg-demo-app-6-01",
+          "direction": "inbound",
+          "at": "2026-06-10",
+          "from": "no-reply@piedpiper.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Your application for Senior Software Engineer at Pied Piper",
+          "summary": "Generic ATS notice: Pied Piper will not be moving forward with Riley's application; no feedback provided."
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "comm-demo-app-12",
+      "company": "Umbrella Corporation",
+      "role": "Senior Infrastructure Engineer",
+      "applicationId": "demo-app-12",
+      "channel": "board",
+      "subject": "Your application for Senior Infrastructure Engineer at Umbrella Corporation",
+      "status": "closed",
+      "summary": "ATS form rejection 2026-06-10, no interview — applied 2026-05-29, never advanced.",
+      "lastInboundAt": "2026-06-10",
+      "messages": [
+        {
+          "id": "msg-demo-app-12-01",
+          "direction": "inbound",
+          "at": "2026-06-10",
+          "from": "no-reply@umbrellacorp.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Your application for Senior Infrastructure Engineer at Umbrella Corporation",
+          "summary": "Generic ATS rejection — thanked Riley for applying, role filled with another candidate, encouraged future applications."
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "comm-demo-app-21",
+      "company": "Initech",
+      "role": "Software Engineer",
+      "applicationId": "demo-app-21",
+      "channel": "board",
+      "subject": "Your application to Initech",
+      "status": "closed",
+      "summary": "ATS form rejection from Initech for Software Engineer — no interview, 12 days after applying.",
+      "lastInboundAt": "2026-06-10",
+      "messages": [
+        {
+          "id": "msg-demo-app-21-01",
+          "direction": "inbound",
+          "at": "2026-06-10",
+          "from": "no-reply@initech.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Your application to Initech",
+          "summary": "Generic ATS rejection — Initech thanks Riley for applying to Software Engineer but is moving forward with other candidates."
+        }
+      ],
+      "demo": true
+    },
+    {
+      "id": "comm-demo-app-25",
+      "company": "Spectre",
+      "role": "Senior Software Engineer",
+      "applicationId": "demo-app-25",
+      "channel": "recruiter",
+      "subject": "Your application — Senior Software Engineer at Spectre",
+      "status": "closed",
+      "summary": "ATS form rejection from Spectre — applied 2026-05-29 via recruiter, no interview, declined 2026-06-10.",
+      "lastInboundAt": "2026-06-10",
+      "messages": [
+        {
+          "id": "msg-demo-app-25-01",
+          "direction": "inbound",
+          "at": "2026-06-10",
+          "from": "no-reply@spectre.example",
+          "to": [
+            "riley.chen@rolester.dev"
+          ],
+          "subject": "Your application — Senior Software Engineer at Spectre",
+          "summary": "Generic ATS rejection: Spectre thanks Riley for applying but is moving forward with other candidates."
         }
       ],
       "demo": true
@@ -1449,7 +2173,8 @@
         "type": "network",
         "name": "Demo lab-director lead"
       },
-      "demo": true
+      "demo": true,
+      "logo": "../assets/logos/black-mesa.png"
     },
     {
       "id": "demo-prospect-2",
@@ -1469,7 +2194,53 @@
         "type": "network",
         "name": "Demo alumni intro"
       },
-      "demo": true
+      "demo": true,
+      "logo": "../assets/logos/massive-dynamic.png"
     }
-  ]
+  ],
+  "analytics": {
+    "updatedAt": "2026-06-25T17:30:00.000Z",
+    "byStatus": {
+      "offer": 1,
+      "withdrew — offer below comp floor": 1,
+      "rejected": 6,
+      "onsite": 1,
+      "applied": 19,
+      "panel interview": 1
+    },
+    "rejected": {
+      "total": 6,
+      "byFamily": {
+        "principal-engineer": 1,
+        "staff-engineer-spaceframe": 1,
+        "senior-software-engineer": 2,
+        "senior-infrastructure-engineer": 1,
+        "software-engineer": 1
+      }
+    },
+    "advanced": {
+      "total": 1,
+      "byFamily": {
+        "staff-software-engineer": 1
+      }
+    },
+    "reevaluation": {
+      "thresholds": {
+        "rejectionTotal": 7,
+        "rejectionPerFamily": 3
+      },
+      "sinceLastReview": {
+        "rejectionTotal": 6,
+        "rejectionByFamily": {
+          "principal-engineer": 1,
+          "staff-engineer-spaceframe": 1,
+          "senior-software-engineer": 2,
+          "senior-infrastructure-engineer": 1,
+          "software-engineer": 1
+        }
+      },
+      "due": false,
+      "dueReasons": []
+    }
+  }
 }

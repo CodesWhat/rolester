@@ -25,3 +25,10 @@ When the user asks to optimize, review, or improve their LinkedIn profile, or to
 make it read for the roles they're targeting, run `optimize-linkedin`. It produces
 a read-only before→after diff first (the default), and only writes edits back when
 `profile_apply` is enabled, confirm-first per field.
+
+When the user asks how risky, stable, or healthy a company is (layoffs, finances,
+morale, "is this a safe place to land"), or to factor company risk into a role, run
+`company-health`. It scores a role-scoped `healthy|watch|risky` rating with
+provenance, persists it to the tracker, and feeds the fit score only where it
+cross-cuts a stated candidate need. Cost-gated: auto-fires at the interview stage by
+default; the rating is an internal signal and never enters an outbound artifact.

@@ -2,7 +2,7 @@
 
 ## No Warranty
 
-Rolester is provided **"as is"** under the Business Source License 1.1 (BUSL-1.1), without warranty of any
+Rolester is provided **"as is"** under the MIT License, without warranty of any
 kind, express or implied, including but not limited to warranties of
 merchantability, fitness for a particular purpose, and non-infringement. In no
 event shall the authors or copyright holders be liable for any claim, damages,

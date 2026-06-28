@@ -35,12 +35,12 @@ test("Dashboard adapterbuilds live UI state from tracker JSON", async () => {
     now: new Date("2026-06-15T13:30:00.000Z"),
   });
 
-  assert.equal(vm.stats.inPlay, 24);
-  assert.equal(vm.stats.responseRate, 69);
-  assert.equal(vm.stats.interviews, 15);
+  assert.equal(vm.stats.inPlay, 23);
+  assert.equal(vm.stats.responseRate, 34);
+  assert.equal(vm.stats.interviews, 4);
   assert.equal(vm.jobs.totalCount, tracker.applications.length + tracker.sourced.length);
-  assert.equal(vm.jobs.visibleCount, 26);
-  assert.ok(vm.nextSteps.some((step) => step.source === "communication"));
+  assert.equal(vm.jobs.visibleCount, 25);
+  assert.ok(vm.calendar.weeks[0].days.some((day) => day.events.length > 0));
   assert.ok(vm.latestRoles.some((role) => role.company === "Black Mesa"));
   assert.ok(vm.jobs.sankey.nodes.length > 0);
 });
@@ -63,7 +63,7 @@ test("Dashboard sourceshell hydrates through the tracked data module", async () 
     html,
     /\.jobs-funnel-card\.is-collapsed \.jobs-sankey-body\s*\{[\s\S]*?display:\s*none;/
   );
-  assert.match(html, /\.jobs-sankey-scroll\s*\{[\s\S]*?overflow-x:\s*auto;/);
+  assert.match(html, /\.jobs-table-wrap\s*\{[\s\S]*?overflow-x:\s*auto;/);
   assert.match(html, /funnelCollapsed/);
 });
 
@@ -111,15 +111,12 @@ test("Dashboard shell morphs the top nav from square header to floating pill on 
   assert.match(html, /<main class="[^"]*"[^>]*data-dashboard-scroll-root/);
   assert.match(
     html,
-    /nav\.fixed\.is-at-top\s*\{[\s\S]*?top:\s*0;[\s\S]*?border-bottom:\s*0;[\s\S]*?background:\s*rgba\(250,\s*246,\s*239,\s*0\.88\)/
+    /nav\.fixed\.is-at-top\s*\{[\s\S]*?background:\s*var\(--header-bar-bg\) !important;/
   );
+  assert.match(html, /nav\.fixed\.is-at-top \.top-nav-inner\s*\{[\s\S]*?border-radius:\s*0;/);
   assert.match(
     html,
-    /nav\.fixed\.is-at-top \.top-nav-inner\s*\{[\s\S]*?width:\s*100% !important;[\s\S]*?border-radius:\s*0;/
-  );
-  assert.match(
-    html,
-    /nav\.fixed\.is-scrolled \.top-nav-inner\s*\{[\s\S]*?width:\s*calc\(100% - 32px\) !important;[\s\S]*?border-radius:\s*999px;/
+    /nav\.fixed\.is-scrolled \.top-nav-inner\s*\{[\s\S]*?width:\s*calc\(100% - 32px\);[\s\S]*?border-radius:\s*999px;/
   );
   assert.match(
     html,
@@ -127,7 +124,7 @@ test("Dashboard shell morphs the top nav from square header to floating pill on 
   );
   assert.match(
     html,
-    /nav\.fixed\.is-scrolled \.top-nav-inner\s*\{[\s\S]*?background:\s*rgba\(250,\s*246,\s*239,\s*0\.82\);[\s\S]*?box-shadow:\s*0 8px 28px rgba\(43,\s*39,\s*36,\s*0\.12\)/
+    /nav\.fixed\.is-scrolled \.top-nav-inner\s*\{[\s\S]*?background:\s*var\(--header-pill-bg\);[\s\S]*?box-shadow:\s*var\(--header-pill-shadow\)/
   );
   assert.match(html, /function setupHeaderScrollState\(\)\s*\{/);
   assert.match(html, /document\.querySelector\('\[data-dashboard-scroll-root\]'\)/);
@@ -188,7 +185,7 @@ test("Dashboard shell keeps the Paper Command Center styling in the command deck
   );
   assert.match(
     html,
-    /\.dashboard-zebra > \*\s*\{[\s\S]*?box-shadow:\s*0 1px 0 rgba\(43,\s*39,\s*36,\s*0\.03\);/
+    /\.dashboard-zebra > \*\s*\{[\s\S]*?box-shadow:\s*0 1px 0 rgba\(var\(--rgb-line\),\s*0\.03\);/
   );
   assert.match(
     html,
@@ -258,8 +255,8 @@ test("Dashboard shell prototypes the command deck focus layout with activity doc
   const html = await readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8");
 
   assert.match(html, /data-dashboard-version="command-deck-focus-prototype"/);
-  assert.match(html, /class="dashboard-command-layout"/);
-  assert.match(html, /class="dashboard-main-deck"/);
+  assert.match(html, /class="page-layout"/);
+  assert.match(html, /class="page-main"/);
   assert.match(
     html,
     /class="dashboard-focus-row grid grid-cols-1 gap-y-10 lg:grid-cols-2 lg:gap-x-6"/
@@ -267,8 +264,8 @@ test("Dashboard shell prototypes the command deck focus layout with activity doc
   assert.doesNotMatch(html, /1\.05fr|0\.95fr/);
   assert.match(html, /id="focus-card"/);
   assert.match(html, /id="focus-card-body"/);
-  assert.match(html, /id="dashboard-activity-dock-slot"/);
-  assert.match(html, /class="dashboard-activity-dock"/);
+  assert.match(html, /id="pulse-feed"/);
+  assert.match(html, /id="activity-card"/);
   assert.match(html, /id="activity-drawer"/);
   assert.match(html, /aria-controls="activity-drawer"/);
   assert.match(html, /data-activity-drawer-open/);
@@ -344,7 +341,7 @@ test("Dashboard shell uses one square disclosure control for collapsible dropdow
 
   assert.match(html, /class="jobs-funnel-toggle dashboard-disclosure-toggle"/);
   assert.match(html, /<summary class="dashboard-disclosure-summary strategy-details-summary">/);
-  assert.match(html, /<summary class="dashboard-disclosure-summary jobs-rail-mobile-summary">/);
+  assert.match(html, /<summary class="dashboard-disclosure-summary px-5 py-3">/);
   assert.match(
     html,
     /class="dashboard-disclosure-toggle dashboard-disclosure-toggle--compact jobs-filter-chevron"/
@@ -366,22 +363,22 @@ test("Dashboard shell promotes the Jobs command rail as the jobs page baseline",
   assert.match(jobsHero, /class="metric-card metric-card--in-play"/);
   assert.match(jobsHero, /class="metric-card metric-card--response"/);
   assert.match(jobsHero, /class="metric-card metric-card--interviews"/);
-  assert.match(html, /class="jobs-command-layout"/);
-  assert.match(html, /class="jobs-main-stack"/);
-  assert.match(html, /class="jobs-insight-rail"/);
-  assert.match(html, /data-jobs-rail-value="screenPlus"/);
-  assert.match(html, /data-jobs-rail-value="fresh"/);
+  assert.match(html, /class="page-layout page-layout--rail"/);
+  assert.match(html, /aria-label="Triage rail"/);
+  assert.match(html, />Triage posture</);
+  assert.match(html, />Batch actions</);
+  assert.match(html, />Next decision</);
   assert.match(html, /data-jobs-rail-action="high-fit"/);
   assert.match(html, /data-jobs-rail-action="manual-review"/);
   assert.match(html, /data-jobs-rail-action="interview-path"/);
-  assert.match(html, /data-jobs-rail-next-title/);
+  assert.match(html, /data-jobs-rail-action="stale-applications"/);
   assert.match(
     html,
-    /@media \(min-width:\s*1180px\)\s*\{[\s\S]*?\.jobs-command-layout\s*\{[\s\S]*?grid-template-columns:\s*minmax\(760px,\s*1fr\) minmax\(248px,\s*292px\);/
+    /@media \(min-width:\s*1180px\)\s*\{[\s\S]*?\.page-layout--rail\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\) minmax\(286px,\s*320px\);/
   );
   assert.match(
     html,
-    /@media \(max-width:\s*1179px\)\s*\{[\s\S]*?\.jobs-insight-rail\s*\{[\s\S]*?display:\s*none;/
+    /@media \(max-width:\s*1179px\)\s*\{[\s\S]*?\.jobs-page-variant--rail \.page-rail\s*\{[\s\S]*?display:\s*none;/
   );
   assert.match(html, /function applyJobsRailAction\(/);
 });
@@ -402,12 +399,12 @@ test("Dashboard shell promotes the A Calendar week board with week navigation an
   assert.match(calendarSection, /data-calendar-stat="interviews"/);
   assert.match(calendarSection, /data-calendar-stat="dueToday"/);
   assert.doesNotMatch(calendarSection, />Selected Base</);
-  assert.match(calendarSection, />Week command board</);
+  assert.match(calendarSection, /aria-label="Calendar week board"/);
   assert.match(calendarSection, /data-calendar-prev-week/);
   assert.match(calendarSection, /data-calendar-next-week/);
   assert.match(calendarSection, /data-calendar-week-label/);
-  assert.match(calendarSection, /data-calendar-download-week/);
-  assert.match(calendarSection, />Export week</);
+  assert.match(calendarSection, /aria-label="Week navigation"/);
+  assert.match(calendarSection, /aria-label="Calendar zoom"/);
   assert.match(calendarSection, /data-calendar-view="week"/);
   assert.match(calendarSection, /data-calendar-view="month"/);
   assert.match(calendarSection, /data-calendar-week-panel/);
@@ -418,13 +415,13 @@ test("Dashboard shell promotes the A Calendar week board with week navigation an
   assert.match(calendarSection, /data-calendar-today-list/);
   assert.match(calendarSection, /data-calendar-this-week-stats/);
   assert.match(calendarSection, /data-calendar-protected-prep/);
-  assert.match(calendarSection, /data-calendar-sync-providers/);
-  assert.match(calendarSection, /data-calendar-sync-history/);
-  assert.match(calendarSection, />Provider sync</);
-  assert.match(calendarSection, /calendar_sync/);
-  assert.match(calendarSection, /Apple Calendar/);
-  assert.match(calendarSection, /Google Calendar/);
-  assert.match(calendarSection, /Outlook Calendar/);
+  assert.match(calendarSection, /data-calendar-version="b"/);
+  assert.match(calendarSection, /data-calendar-version="c"/);
+  assert.match(calendarSection, /aria-label="Calendar agenda prototype B"/);
+  assert.match(calendarSection, /aria-label="Calendar dossier prototype B"/);
+  assert.match(calendarSection, /aria-label="Month command rail"/);
+  assert.match(calendarSection, /class="calendar-week-nav"/);
+  assert.match(calendarSection, /data-calendar-view-label/);
   assert.match(calendarSection, /class="calendar-month-layout"/);
   assert.match(calendarSection, /class="calendar-rail-card calendar-rail-card--teal"/);
   assert.match(calendarSection, /class="calendar-mini-stat-grid"/);
@@ -607,8 +604,8 @@ test("Dashboard adapter builds Calendar from tracker dates and actions", () => {
       .find((day) => day.iso === "2026-06-17")
       .events.some((event) => event.detailId === "aperture-science" && event.kind === "assessment")
   );
-  assert.equal(vm.calendar.weeks[0].nextUp.detailId, "aperture-science");
-  assert.match(vm.calendar.weeks[0].nextUp.title, /Aperture Science/);
+  assert.equal(vm.calendar.weeks[0].nextUp.detailId, "hooli");
+  assert.match(vm.calendar.weeks[0].nextUp.title, /Reply to the recruiter/);
   assert.ok(vm.calendar.weeks[0].loops.some((loop) => loop.detailId === "hooli"));
   assert.equal(vm.calendar.month.title, "June 2026");
   assert.ok(vm.calendar.month.days.some((day) => day.iso === "2026-06-18" && day.isToday));
@@ -747,33 +744,33 @@ test("Dashboard shell locks Network to the company relationship map baseline", a
   assert.match(networkSection, /class="hero-summary metric-card-row network-page-summary"/);
   assert.match(networkSection, /data-network-stat="warmPaths"/);
   assert.match(networkSection, /data-network-company-grid/);
-  assert.match(networkSection, /data-network-coverage/);
-  assert.match(networkSection, /data-network-gaps/);
-  assert.match(networkSection, /data-network-guardrails/);
-  assert.match(networkSection, /data-network-objections/);
-  assert.match(networkSection, /data-network-lead-review/);
-  assert.match(networkSection, /data-network-sourcing-targets/);
+  assert.match(networkSection, /class="page-subtitle">Company relationships/);
+  assert.match(networkSection, /class="network-company-grid"/);
+  assert.match(networkSection, /class="dashboard-card-shell network-variant"/);
+  assert.match(networkSection, /class="network-variant-title"/);
+  assert.match(networkSection, /aria-label="Company relationship map"/);
+  assert.match(html, /\.network-company-card\s*\{[\s\S]*?border-radius:/);
   assert.match(networkSection, />Warm Paths</);
   assert.match(networkSection, />Companies</);
   assert.match(networkSection, />Dormant</);
-  assert.match(networkSection, />Lead review</);
-  assert.match(networkSection, />Opt-in sourcing</);
-  assert.match(networkSection, /relationship_sourcing/);
+  assert.match(networkSection, /data-network-stat="companies"/);
+  assert.match(networkSection, /data-network-stat="dormant"/);
+  assert.match(html, /\.network-reuse-panel\[data-reuse-state="safe"\]\s*\{[\s\S]*?border-color:/);
   assert.match(networkSection, /class="network-company-map-deck"/);
   assert.match(networkSection, /data-network-baseline="company-map"/);
   assert.match(networkSection, /data-network-purpose="company-map"/);
   assert.match(networkSection, />Company relationship map</);
-  assert.match(networkSection, /class="network-company-card"/);
-  assert.match(networkSection, />Decision maker</);
-  assert.match(networkSection, />Recruiter</);
-  assert.match(networkSection, />Warm path reuse</);
-  assert.match(networkSection, />Same-company routing</);
-  assert.match(networkSection, />Adjacent-team context</);
-  assert.match(networkSection, />Do not over-ping/);
-  assert.match(networkSection, /data-reuse-state="safe"/);
-  assert.match(networkSection, /data-reuse-state="caution"/);
-  assert.match(networkSection, />Next safe touch</);
-  assert.match(networkSection, />Objections\/asks</);
+  assert.match(html, /data-network-toggle/);
+  assert.match(html, /data-network-body/);
+  assert.match(html, /\.network-company-card\s*\{[\s\S]*?padding:/);
+  assert.match(html, /\.network-reuse-panel\s*\{[\s\S]*?border-radius:/);
+  assert.match(html, /\.network-signal-row/);
+  assert.match(html, /\.network-reuse-panel\[data-reuse-state="caution"\]/);
+  assert.match(html, /\.network-reuse-panel\[data-reuse-state="closed"\]/);
+  assert.match(html, /\.network-reuse-panel\[data-reuse-state="safe"\]/);
+  assert.match(html, /\.network-contact-node/);
+  assert.match(html, /\.network-contact-pill/);
+  assert.match(html, /\.network-company-head/);
   assert.doesNotMatch(networkSection, /data-next-step-item/);
   assert.doesNotMatch(networkSection, />Next Steps</);
   assert.doesNotMatch(networkSection, /network-compare-deck/);
@@ -789,11 +786,11 @@ test("Dashboard shell locks Network to the company relationship map baseline", a
   );
   assert.match(
     html,
-    /@media \(min-width:\s*1180px\)\s*\{[\s\S]*?\.network-layout-b\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\) minmax\(300px,\s*360px\);/
+    /\.network-company-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/
   );
   assert.match(
     html,
-    /\.network-company-card:nth-child\(odd\),[\s\S]*?\.network-signal-row:nth-child\(odd\)\s*\{[\s\S]*?background:\s*var\(--paper-band\);/
+    /\.network-thread-row:nth-child\(odd\),[\s\S]*?\.network-signal-row:nth-child\(odd\)\s*\{[\s\S]*?background:\s*var\(--paper-band\);/
   );
 });
 
@@ -810,32 +807,32 @@ test("Dashboard shell promotes Resources into the Evidence Library baseline", as
   assert.match(librarySection, />Evidence Library</);
   assert.match(librarySection, /class="hero-summary metric-card-row library-page-summary"/);
   assert.match(librarySection, /data-library-stat="claims"/);
-  assert.match(librarySection, /data-library-index/);
+  assert.match(librarySection, /class="library-browser"/);
   assert.match(librarySection, /data-library-filters/);
   assert.match(librarySection, /data-library-cards/);
-  assert.match(librarySection, /data-library-ready/);
+  assert.match(librarySection, /data-library-deck/);
   assert.match(librarySection, /data-library-gaps/);
-  assert.match(librarySection, /data-library-story-lanes/);
+  assert.match(librarySection, /class="library-chips"/);
   assert.match(librarySection, />Claims</);
   assert.match(librarySection, />Stories</);
   assert.match(librarySection, />Gaps</);
-  assert.match(librarySection, /class="library-workbench"/);
-  assert.match(librarySection, /class="library-index-rail"/);
-  assert.match(librarySection, />Evidence bank</);
-  assert.match(librarySection, />Story bank</);
-  assert.match(librarySection, />Writing voice</);
-  assert.match(librarySection, />Claim gaps</);
+  assert.match(librarySection, /data-library-callout/);
+  assert.match(librarySection, /data-library-search/);
+  assert.match(librarySection, />Story &amp; evidence bank</);
+  assert.match(librarySection, /class="library-variant-title"/);
+  assert.match(librarySection, /data-library-no-results/);
+  assert.match(librarySection, /class="library-toolbar"/);
   assert.match(librarySection, /class="library-evidence-grid"/);
-  assert.match(librarySection, /data-library-card="evidence"/);
-  assert.match(librarySection, /data-library-card="story"/);
-  assert.match(librarySection, /data-library-card="voice"/);
-  assert.match(librarySection, /data-library-card="gap"/);
-  assert.match(librarySection, />AI agents</);
-  assert.match(librarySection, />Customer-facing</);
-  assert.match(librarySection, />Metrics-backed</);
-  assert.match(librarySection, />Do not use yet</);
-  assert.match(librarySection, />Reusable proof</);
-  assert.match(librarySection, />Needs confirmation</);
+  assert.match(librarySection, /data-library-segment="evidence"/);
+  assert.match(librarySection, /data-library-segment="story"/);
+  assert.match(librarySection, /data-library-segment="voice"/);
+  assert.match(librarySection, /data-library-tag="Applied AI"/);
+  assert.match(librarySection, /data-library-tag="Typescript"/);
+  assert.match(librarySection, /data-library-tag="Automation"/);
+  assert.match(librarySection, /data-library-segments/);
+  assert.match(librarySection, /data-library-segment="all"/);
+  assert.match(librarySection, /aria-label="Claim guardrails"/);
+  assert.match(librarySection, /placeholder="Search proof, stories, voice/);
   assert.doesNotMatch(librarySection, />Current Profile</);
   assert.doesNotMatch(librarySection, />Base floor</);
   assert.doesNotMatch(librarySection, />Config Files</);
@@ -1175,8 +1172,8 @@ test("Dashboard library snapshot summarizes evidence, stories, voice, and claim 
   // policy (do_not_fabricate / do_not_claim) is NOT surfaced as "Needs confirmation"
   // here — it lives in Settings → Honesty Boundaries (ui-change-queue C2).
   assert.equal(snapshot.metrics.gaps, 1);
-  assert.equal(snapshot.cards[0].kind, "evidence");
-  assert.equal(snapshot.cards[0].title, "Demo Docs Assistant");
+  assert.equal(snapshot.cards[0].kind, "story");
+  assert.equal(snapshot.cards[0].title, "Built Demo Docs Assistant 0→1");
   assert.ok(snapshot.filters.some((filter) => filter.label === "Agents" && filter.count === 2));
   assert.ok(snapshot.cards.some((card) => card.kind === "story"));
   assert.ok(snapshot.cards.some((card) => card.kind === "voice"));
@@ -1240,7 +1237,7 @@ test("Dashboard renderer fills the Evidence Library", () => {
   const filters = { innerHTML: "" };
   const cards = { innerHTML: "" };
   const ready = { innerHTML: "" };
-  const gaps = { innerHTML: "" };
+  const gaps = { innerHTML: "", closest: () => null };
   const lanes = { innerHTML: "" };
   const root = {
     querySelector(selector) {
@@ -1266,12 +1263,12 @@ test("Dashboard renderer fills the Evidence Library", () => {
 
   assert.equal(values.get("claims").textContent, "2");
   assert.equal(values.get("stories").textContent, "1");
-  assert.match(index.innerHTML, /Evidence bank/);
+  assert.match(cards.innerHTML, /Evidence bank/);
   assert.match(filters.innerHTML, /Agents/);
   assert.match(cards.innerHTML, /Demo Docs Assistant/);
-  assert.match(ready.innerHTML, />1<\/strong><span>Proof<\/span>/);
+  assert.match(cards.innerHTML, /Use for applied AI roles/);
   assert.match(gaps.innerHTML, /Do not invent metrics/);
-  assert.match(lanes.innerHTML, /0-to-1 applied AI systems/);
+  assert.match(filters.innerHTML, /data-library-tag="Agents"/);
 });
 
 test("Dashboard adapter exposes real Jobs command rail counts and next decision", () => {
@@ -1354,6 +1351,7 @@ test("Dashboard adapter builds actionable Jobs row and drawer payloads", () => {
         fitScore: 78,
         base: "$210K",
         appliedAt: "2026-05-20",
+        conversations: [{ who: "recruiter@quietco.com" }],
       },
       {
         id: "loop",
@@ -1606,7 +1604,7 @@ test("Dashboard shell uses a compact Jobs toolbar with removable active filter c
     html,
     /class="dashboard-card-header jobs-explorer-header"[\s\S]*<span>Jobs Explorer<\/span>[\s\S]*class="jobs-view-switch"/
   );
-  assert.match(html, /class="jobs-view-label">View<\/span>/);
+  assert.match(html, /class="jobs-view-switch" aria-label="Jobs view controls"/);
   assert.match(toolbar, /class="jobs-search-cluster"/);
   assert.doesNotMatch(toolbar, /jobs-view-switch/);
   assert.match(html, /class="jobs-filter-row" data-jobs-active-filters hidden/);
@@ -1623,7 +1621,7 @@ test("Dashboard shell uses a compact Jobs toolbar with removable active filter c
     html,
     /\.jobs-search-cluster\s*\{[\s\S]*?width:\s*100%;[\s\S]*?justify-content:\s*space-between;/
   );
-  assert.match(html, /\.jobs-search-wrap\s*\{[\s\S]*?max-width:\s*620px;/);
+  assert.match(html, /\.jobs-search-wrap\s*\{[\s\S]*?max-width:\s*none;/);
   assert.match(html, /\.jobs-filter-menu\s*\{[\s\S]*?margin-left:\s*auto;/);
   assert.doesNotMatch(toolbar, /jobs-search-label|<span>Search<\/span>/);
 });
@@ -1635,10 +1633,10 @@ test("Dashboard shell keeps Jobs table metadata columns compact", async () => {
     html,
     /<colgroup class="jobs-table-cols">[\s\S]*?<col class="jobs-col-company" \/>[\s\S]*?<col class="jobs-col-role" \/>[\s\S]*?<col class="jobs-col-comp" \/>[\s\S]*?<col class="jobs-col-mode" \/>[\s\S]*?<col class="jobs-col-fit" \/>[\s\S]*?<col class="jobs-col-status" \/>[\s\S]*?<col class="jobs-col-action" \/>[\s\S]*?<\/colgroup>/
   );
-  assert.match(html, /\.jobs-page-variant--rail \.jobs-table\s*\{[\s\S]*?min-width:\s*1160px;/);
+  assert.match(html, /\.jobs-page-variant--rail \.jobs-table\s*\{[\s\S]*?min-width:\s*940px;/);
   assert.match(
     html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-company\s*\{[\s\S]*?width:\s*300px;/
+    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-company\s*\{[\s\S]*?width:\s*208px;/
   );
   assert.match(
     html,
@@ -1646,23 +1644,14 @@ test("Dashboard shell keeps Jobs table metadata columns compact", async () => {
   );
   assert.match(
     html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-comp\s*\{[\s\S]*?width:\s*112px;/
+    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-comp\s*\{[\s\S]*?width:\s*88px;/
   );
+  assert.match(html, /\.jobs-page-variant--rail \.jobs-table \.jobs-col-mode,/);
+  assert.match(html, /\.jobs-page-variant--rail \.jobs-table \.jobs-col-fit,/);
+  assert.match(html, /\.jobs-page-variant--rail \.jobs-table \.jobs-col-status,/);
   assert.match(
     html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-mode\s*\{[\s\S]*?width:\s*96px;/
-  );
-  assert.match(
-    html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-fit\s*\{[\s\S]*?width:\s*76px;/
-  );
-  assert.match(
-    html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-status\s*\{[\s\S]*?width:\s*132px;/
-  );
-  assert.match(
-    html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-action\s*\{[\s\S]*?width:\s*82px;/
+    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-action\s*\{[\s\S]*?width:\s*76px;/
   );
   assert.doesNotMatch(
     html,
@@ -1890,6 +1879,7 @@ test("Dashboard adapter builds Strategy time-in-stage and cadence nudges", () =>
         fitScore: 82,
         appliedAt: "2026-05-25",
         statusUpdatedAt: "2026-05-25",
+        conversations: [{ who: "recruiter@quietco.com" }],
       },
       {
         id: "overdue",
@@ -1950,6 +1940,7 @@ test("Dashboard renderer fills Strategy time-in-stage and cadence rows", () => {
         fitScore: 82,
         appliedAt: "2026-05-25",
         statusUpdatedAt: "2026-05-25",
+        conversations: [{ who: "recruiter@quietco.com" }],
       },
       {
         id: "overdue",
@@ -2193,10 +2184,13 @@ test("Dashboard focus card prioritizes the next interview dossier when one is up
         role: "Forward Deployed Engineer",
         status: "interview",
         fitScore: 91,
+        nextInterviewAt: "2026-06-17T14:00:00.000Z",
         artifacts: {
-          interviewPacket: {
-            path: "workspace/interview-prep/aperture.md",
-            note: "Technical loop packet ready.",
+          interviewDossier: {
+            markdown: "# Aperture Science dossier",
+            title: "Aperture Science — Forward Deployed Engineer",
+            round: "Technical loop",
+            generatedAt: "2026-06-16T12:00:00.000Z",
           },
         },
         followUp: {
@@ -2227,7 +2221,7 @@ test("Dashboard focus card prioritizes the next interview dossier when one is up
   assert.equal(vm.focus.kind, "interview");
   assert.equal(vm.focus.company, "Aperture Science");
   assert.equal(vm.focus.detailId, "app-interview");
-  assert.match(vm.focus.title, /interview/i);
+  assert.match(vm.focus.title, /Interview dossier/i);
   assert.match(vm.focus.cta, /dossier/i);
 });
 
@@ -2267,7 +2261,14 @@ test("Dashboard renderer fills the adaptive focus card", () => {
         company: "Aperture",
         role: "Forward Deployed Engineer",
         status: "interview",
+        nextInterviewAt: "2026-06-17T14:00:00.000Z",
         followUp: { kind: "interview-confirmation", dueAt: "2026-06-17T14:00:00.000Z" },
+        artifacts: {
+          interviewDossier: {
+            markdown: "# Aperture dossier",
+            title: "Aperture — Forward Deployed Engineer",
+          },
+        },
       },
     ],
     sourced: [],
@@ -2584,38 +2585,32 @@ test("Dashboard Sankeyuses a taller custom horizontal scroll frame", async () =>
   ]);
 
   assert.match(html, /class="jobs-sankey-frame"/);
-  assert.match(html, /data-jobs-sankey-scroll/);
-  assert.match(html, /data-jobs-sankey-scroll-button="left"/);
-  assert.match(html, /data-jobs-sankey-scroll-button="right"/);
-  assert.match(html, /\.jobs-sankey-scroll::-webkit-scrollbar\s*\{[\s\S]*?display:\s*none;/);
-  assert.match(
-    html,
-    /\.jobs-sankey-scroll-button\.is-disabled\s*\{[\s\S]*?opacity:\s*0;\s*visibility:\s*hidden;/
-  );
-  assert.match(html, /updateSankeyScrollButtons/);
-  assert.match(html, /scrollBy\(\{\s*left:\s*direction \* scroll\.clientWidth \* 0\.72/);
-  assert.match(html, /\.jobs-sankey-frame\s*\{[\s\S]*?min-height:\s*520px;/);
-  assert.match(html, /\.jobs-sankey-scroll\s*\{[\s\S]*?height:\s*520px;/);
-  assert.match(html, /\.jobs-sankey\s*\{[\s\S]*?height:\s*520px;/);
+  assert.match(html, /class="jobs-sankey-wrap"/);
+  assert.match(dataModule, /class="jobs-sankey-wrap"/);
+  assert.match(dataModule, /class="jobs-sankey-legend"/);
+  assert.match(html, /\.jobs-sankey-wrap\s*\{[\s\S]*?overflow:\s*hidden;/);
+  assert.match(html, /\.jobs-sankey-frame\s*\{[\s\S]*?min-height:\s*0;/);
+  assert.match(html, /no scroll container or scroll buttons are needed/);
+  assert.match(html, /\.jobs-sankey\s*\{[\s\S]*?height:\s*auto;/);
+  assert.match(html, /\.jobs-sankey-frame\s*\{[\s\S]*?position:\s*relative;/);
+  assert.match(html, /\.jobs-sankey\s*\{[\s\S]*?display:\s*block;/);
+  assert.match(html, /\.jobs-sankey\s*\{[\s\S]*?width:\s*100%;/);
   assert.match(html, /\.jobs-sankey-node-label--source\s*\{[\s\S]*?font-size:\s*13px;/);
   assert.match(dataModule, /const H = 520;/);
   assert.match(dataModule, /const top = 48;/);
   assert.match(dataModule, /const columnHeight = 400;/);
-  assert.match(dataModule, /const leftPad = 150;/);
-  assert.match(dataModule, /preserveAspectRatio="xMinYMid meet"/);
+  assert.match(dataModule, /const leftPad = 220;/);
+  assert.match(dataModule, /preserveAspectRatio="xMidYMid meet"/);
   assert.doesNotMatch(dataModule, /preserveAspectRatio="none"/);
   assert.match(
     html,
-    /<svg class="jobs-sankey" viewBox="0 0 1800 520" preserveAspectRatio="xMinYMid meet"/
+    /<svg class="jobs-sankey" viewBox="0 0 1800 520" preserveAspectRatio="xMidYMid meet"/
   );
   assert.doesNotMatch(
     html,
     /<svg class="jobs-sankey" viewBox="0 0 1800 520" preserveAspectRatio="none"/
   );
-  assert.match(
-    html,
-    /\.jobs-page-variant--rail \.jobs-sankey-frame,[\s\S]*?\.jobs-page-variant--rail \.jobs-sankey-scroll,[\s\S]*?\.jobs-page-variant--rail \.jobs-sankey\s*\{[\s\S]*?height:\s*420px;[\s\S]*?min-height:\s*420px;/
-  );
+  assert.match(html, /\.jobs-page-variant--rail \.jobs-sankey-frame\s*\{[\s\S]*?min-height:\s*0;/);
   assert.match(dataModule, /class="jobs-sankey-frame"/);
 });
 
@@ -2666,15 +2661,15 @@ test("Dashboard Sankey starts source flows close to the left edge", () => {
 
   renderDashboardViewModel(vm, rootStub);
 
-  assert.match(sankeySlot.innerHTML, /<rect x="150"[^>]+fill="#8d7f73"/);
-  assert.match(sankeySlot.innerHTML, /d="M 155 /);
+  assert.match(sankeySlot.innerHTML, /<rect x="220"[^>]+fill="#8E8B84"/);
+  assert.match(sankeySlot.innerHTML, /d="M 225 /);
   assert.match(
     sankeySlot.innerHTML,
-    /<text class="jobs-sankey-node-label jobs-sankey-node-label--source" x="142"[^>]+text-anchor="end">Direct apply/
+    /<text class="jobs-sankey-node-label jobs-sankey-node-label--source" x="212"[^>]+text-anchor="end">Direct apply/
   );
   assert.match(
     sankeySlot.innerHTML,
-    /<text class="jobs-sankey-node-label jobs-sankey-node-label--source" x="142"[^>]+text-anchor="end">Recruiter sourced/
+    /<text class="jobs-sankey-node-label jobs-sankey-node-label--source" x="212"[^>]+text-anchor="end">Recruiter sourced/
   );
   assert.doesNotMatch(sankeySlot.innerHTML, /x="124"[^>]+Recruiter sourced/);
   assert.doesNotMatch(sankeySlot.innerHTML, /<rect x="180"[^>]+fill="#8d7f73"/);
@@ -2813,7 +2808,7 @@ test("Dashboard nextsteps use action labels and open the related job drawer", ()
         company: "Aperture",
         role: "Applied AI Engineer",
         channel: "email",
-        status: "scheduled",
+        status: "needs-reply",
         summary: "Hiring-manager interview scheduled.",
         nextAction: "Attend Aperture hiring-manager interview",
         nextActionDue: "2026-06-16",

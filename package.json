@@ -1,6 +1,6 @@
 {
   "name": "rolester",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -33,6 +33,7 @@
     "templates",
     ".agents/skills/apply-job/SKILL.md",
     ".agents/skills/calendar-sync/SKILL.md",
+    ".agents/skills/company-health/SKILL.md",
     ".agents/skills/configure/SKILL.md",
     ".agents/skills/discover-companies/SKILL.md",
     ".agents/skills/email-comms/SKILL.md",
@@ -90,6 +91,9 @@
     "evaluate": "node src/cli/evaluate.mjs",
     "tracker": "node src/cli/tracker.mjs",
     "tracker:dev": "node src/cli/tracker-dev.mjs",
+    "build:demo": "node scripts/build-demo.mjs",
+    "deploy:demo": "node scripts/deploy-demo.mjs",
+    "deploy:web": "node scripts/deploy-web.mjs",
     "gate": "node src/cli/gate.mjs",
     "learnings": "node src/cli/learnings.mjs",
     "activity": "node src/cli/activity.mjs",
@@ -121,7 +125,7 @@
     "codex",
     "automation"
   ],
-  "license": "BUSL-1.1",
+  "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
     "lefthook": "^2.1.9",

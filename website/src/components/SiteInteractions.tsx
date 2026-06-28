@@ -5,13 +5,15 @@ import { useEffect } from "react";
 /**
  * All client-side interactions for the landing page, ported verbatim from the
  * approved static mockup:
- *  1. Staggered reveal-on-scroll via IntersectionObserver
- *  2. Squiggle underline draw-in on first visibility
- *  3. Soft nav-link active state by section
- *  4. Header condensing into a floating pill on scroll
+ *  1. Squiggle underline draw-in on first visibility
+ *  2. Soft nav-link active state by section
+ *  3. Header condensing into a floating pill on scroll
  *
- * Each block guards on reduced-motion / missing IntersectionObserver so the
- * page degrades to "everything visible" rather than "everything hidden".
+ * Reveal-on-scroll is armed here, AFTER hydration, so the inline bootstrap in
+ * layout.tsx never adds `visible` to a React-rendered .reveal node before React
+ * hydrates (that pre-hydration mutation caused a hydration mismatch). The inline
+ * script only sets the `js` gate + a post-load failsafe for the blocked-bundle
+ * case. Each block here guards on reduced-motion / missing IntersectionObserver.
  */
 export default function SiteInteractions() {
   useEffect(() => {
@@ -21,27 +23,32 @@ export default function SiteInteractions() {
     const hasIO = "IntersectionObserver" in window;
     const cleanups: Array<() => void> = [];
 
-    // ── 1. Staggered reveal on scroll ──────────────────
-    const revealEls = document.querySelectorAll<HTMLElement>(".reveal");
+    // ── 0. Reveal-on-scroll (armed post-hydration) ──────
+    // The flag tells layout.tsx's inline failsafe the bundle loaded, so it won't
+    // blanket-reveal. Adding `visible` here (after hydration) is mutation-safe.
+    (
+      window as unknown as { __rolesterRevealArmed?: boolean }
+    ).__rolesterRevealArmed = true;
+    const reveals = document.querySelectorAll<HTMLElement>(".reveal");
     if (!hasIO || reduceMotion) {
-      revealEls.forEach((el) => el.classList.add("visible"));
+      reveals.forEach((el) => el.classList.add("visible"));
     } else {
-      const observer = new IntersectionObserver(
+      const revealObs = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.classList.add("visible");
-              observer.unobserve(entry.target);
+              revealObs.unobserve(entry.target);
             }
           });
         },
         { threshold: 0.12, rootMargin: "0px 0px -40px 0px" },
       );
-      revealEls.forEach((el) => observer.observe(el));
-      cleanups.push(() => observer.disconnect());
+      reveals.forEach((el) => revealObs.observe(el));
+      cleanups.push(() => revealObs.disconnect());
     }
 
-    // ── 2. Squiggle underline draw-in on first visibility ──
+    // ── 1. Squiggle underline draw-in on first visibility ──
     const word = document.getElementById("underline-sidekick");
     if (word) {
       if (!hasIO || reduceMotion) {
@@ -61,7 +68,7 @@ export default function SiteInteractions() {
       }
     }
 
-    // ── 3. Soft nav link active state ────────────────────
+    // ── 2. Soft nav link active state ────────────────────
     const sections = document.querySelectorAll<HTMLElement>("section[id]");
     const navLinks =
       document.querySelectorAll<HTMLAnchorElement>('.nav-links a[href^="#"]');
@@ -84,7 +91,7 @@ export default function SiteInteractions() {
       cleanups.push(() => sectionObs.disconnect());
     }
 
-    // ── 4. Header condenses into a floating pill on scroll ──
+    // ── 3. Header condenses into a floating pill on scroll ──
     const nav = document.querySelector("nav");
     if (nav) {
       const THRESHOLD = 40;

@@ -288,6 +288,13 @@ const SCHEDULING_CONV_RE = /\b(?:reschedul|schedul|logistic|booking|invite|confi
 // the "screen" stage, not an interview round.
 const INTERVIEW_ROUND_RE =
   /\b(?:interview|panel|technical|assessment|onsite|on-site|loop|final|deep[\s-]?dive)\w*/i;
+// Non-evaluative touchpoints that are real history but are NOT interview rounds: a
+// referral intro, an offer/negotiation call, an internal debrief, a reference check.
+// They must never inflate round DEPTH (the funnel's ordinal axis) — only
+// candidate-facing evaluative rounds (screens + interviews) count. Without this, an
+// accepted role's referral + offer + negotiation + debrief beats would read as extra
+// "rounds" (e.g. a 4-round loop showing as a 9th-round outlier).
+const NON_ROUND_CONV_RE = /\b(?:referral|offer|negotiat|debrief|reference)\w*/i;
 
 // The deepest stage an application has actually reached, derived from BOTH the
 // status string and the conversation history. The status string alone tops out
@@ -358,6 +365,7 @@ function roundCount(app) {
     const text = `${conv?.kind || ""} ${conv?.title || ""}`;
     if (/\b(?:reject|declin|withdraw)\w*/i.test(text)) continue;
     if (SCHEDULING_CONV_RE.test(text)) continue;
+    if (NON_ROUND_CONV_RE.test(text)) continue; // referral/offer/negotiation/debrief ≠ a round
     rounds += 1;
   }
   return rounds;
@@ -2804,7 +2812,45 @@ function buildStrategyReviewTrigger(bucket, reviewSignal = {}) {
   };
 }
 
-function buildStrategyLearning(applications, now, reviewState) {
+// Builds a compact view-model from tracker.json#analytics.reevaluation (the
+// persisted block written by `npm run analytics -- --write`). Fully defensive:
+// returns null when the block is absent, incomplete, or has no usable threshold,
+// so callers can short-circuit rendering safely on older trackers.
+function buildReevaluationProgress(reevaluationData) {
+  if (!reevaluationData || typeof reevaluationData !== "object") return null;
+  const { thresholds, sinceLastReview, due } = reevaluationData;
+  if (!thresholds || !sinceLastReview) return null;
+  const totalCurrent = Number(sinceLastReview.rejectionTotal) || 0;
+  const totalThreshold = Number(thresholds.rejectionTotal) || 0;
+  if (!totalThreshold) return null;
+  const familyThreshold = Number(thresholds.rejectionPerFamily) || 0;
+  const byFamily =
+    sinceLastReview.rejectionByFamily && typeof sinceLastReview.rejectionByFamily === "object"
+      ? sinceLastReview.rejectionByFamily
+      : {};
+  const familyLines = [];
+  if (familyThreshold > 0) {
+    for (const [family, rawCount] of Object.entries(byFamily)) {
+      const n = Number(rawCount) || 0;
+      if (n >= Math.ceil(familyThreshold / 2)) {
+        familyLines.push({
+          family,
+          count: n,
+          threshold: familyThreshold,
+          over: n >= familyThreshold,
+        });
+      }
+    }
+    familyLines.sort((a, b) => b.count - a.count);
+  }
+  const isDue = Boolean(due);
+  const label = isDue
+    ? `${totalCurrent}/${totalThreshold} rejections — review due`
+    : `${totalCurrent}/${totalThreshold} rejections since last review`;
+  return { totalCurrent, totalThreshold, due: isDue, familyLines, label };
+}
+
+function buildStrategyLearning(applications, now, reviewState, reevaluationData) {
   const history = strategyLearningBuckets(applications, now);
   const current = history[0] || { applied: 0, advanced: 0, interviews: 0, rejected: 0 };
   const reviewSignal = strategyReviewSignal(applications, reviewState, now);
@@ -2814,6 +2860,7 @@ function buildStrategyLearning(applications, now, reviewState) {
     history,
     signals: buildStrategyLearningSignals(applications, now),
     reviewTrigger: buildStrategyReviewTrigger(current, reviewSignal),
+    reevaluation: buildReevaluationProgress(reevaluationData),
   };
 }
 
@@ -2946,7 +2993,12 @@ function buildStrategyInsights(trackerData, { now = new Date() } = {}) {
   const stale = buildStrategyStaleRows(applications, communications, now);
   const stageAges = buildStrategyStageRows(applications, now);
   const cadence = buildStrategyCadenceRows(applications, communications, now);
-  const learning = buildStrategyLearning(applications, now, trackerData?.strategyReview);
+  const learning = buildStrategyLearning(
+    applications,
+    now,
+    trackerData?.strategyReview,
+    trackerData?.analytics?.reevaluation
+  );
   const topSource = sources[0] || {
     label: "No source yet",
     rate: "0%",
@@ -3099,9 +3151,15 @@ function logoThemeSuffix() {
 
 // One avatar surface: a real logo masking an initials chip, or just the chip.
 // `wrapperClass` carries the size/shape/color utilities for the call site.
-function avatarMarkup(domain, name, initialsText, wrapperClass) {
-  const base = buildLogoUrl(domain, name);
+// `logoSrc` is an OPTIONAL explicit image path (e.g. a bundled demo-corp logo); when
+// present it wins over the logo.dev lookup. Real workspaces never set it, so this stays
+// domain-neutral — it's just "use the logo the data already carries, else resolve one."
+function avatarMarkup(domain, name, initialsText, wrapperClass, logoSrc) {
   const safeInitials = esc(initialsText);
+  if (logoSrc) {
+    return `<span class="${wrapperClass} avatar-has-logo"><img class="avatar-logo-img" src="${esc(logoSrc)}" alt="" loading="lazy" onerror="this.remove()"><span class="avatar-logo-initials">${safeInitials}</span></span>`;
+  }
+  const base = buildLogoUrl(domain, name);
   if (!base) {
     return `<span class="${wrapperClass}">${safeInitials}</span>`;
   }
@@ -3729,6 +3787,73 @@ function buildInterviewBlock(record = {}) {
   return { line, chips, detail };
 }
 
+// Company-health view-model. Reads the persisted `companyHealth` object the
+// company-health skill wrote to the tracker row (never recomputed client-side —
+// persist-then-render, like compEstimate/benefits). Returns null when absent so the
+// drawer section + card pill collapse cleanly.
+const HEALTH_RATING_LABEL = { healthy: "Healthy", watch: "Watch", risky: "Risky" };
+const HEALTH_PROV_LABEL = {
+  "built-from-data": "Built from data",
+  "needs-more-info": "Needs more info",
+  stale: "Stale",
+};
+const HEALTH_DIM_ORDER = [
+  ["layoffRisk", "Layoffs"],
+  ["hiringMomentum", "Hiring"],
+  ["financial", "Financial"],
+  ["sentiment", "Sentiment"],
+  ["leadership", "Leadership"],
+];
+
+function buildHealthBlock(ch) {
+  if (!ch || typeof ch !== "object" || !ch.rating) return null;
+  const dims = HEALTH_DIM_ORDER.map(([key, label]) => {
+    const dim = ch.dimensions?.[key];
+    if (!dim?.level) return null;
+    return {
+      label,
+      level: dim.level,
+      note: dim.note || "",
+      functionHit: !!dim.functionHit,
+      trend: dim.trend || "",
+    };
+  }).filter(Boolean);
+  const signals = (ch.signals || [])
+    .filter((sig) => sig && (sig.summary || sig.source))
+    .map((sig) => ({
+      source: sig.source || "",
+      date: sig.date || "",
+      summary: sig.summary || "",
+      url: sig.url || "",
+    }));
+  const ratingLabel = ch.forFunction
+    ? `${HEALTH_RATING_LABEL[ch.rating] || ch.rating} for ${ch.forFunction}`
+    : HEALTH_RATING_LABEL[ch.rating] || ch.rating;
+  return {
+    rating: ch.rating,
+    ratingLabel,
+    forFunction: ch.forFunction || "",
+    asOf: ch.asOf || "",
+    provenance: ch.provenance || "",
+    provenanceLabel: HEALTH_PROV_LABEL[ch.provenance] || "",
+    rationale: ch.rationale || "",
+    crossCut: Array.isArray(ch.crossCut) ? ch.crossCut : [],
+    dimensions: dims,
+    signals,
+  };
+}
+
+// Card pill — only the actionable states (watch/risky) badge the glanceable card;
+// healthy isn't badged there (it shows in the drawer). The visible label stays short
+// ("Risky"/"Watch") so the dense card reads at a glance; the role-scoped detail rides
+// in the title tooltip (and in full in the drawer).
+function buildHealthBadge(ch) {
+  if (!ch?.rating || ch.rating === "healthy") return null;
+  const word = ch.rating === "risky" ? "Risky" : "Watch";
+  const scope = ch.forFunction ? `${word} for ${ch.forFunction}` : word;
+  return { rating: ch.rating, label: word, title: `Company health: ${scope} — internal signal` };
+}
+
 function jobDetailFromRow(row, sourceRecord = {}, communications = [], now = new Date()) {
   const compView = compRangeView(row, sourceRecord);
   const artifacts = sourceRecord.artifacts || {};
@@ -3881,6 +4006,9 @@ function jobDetailFromRow(row, sourceRecord = {}, communications = [], now = new
     emails: emailList,
     artifacts: artifactList,
     benefits: (sourceRecord.benefits || []).map((key) => BENEFIT_EMOJI[key]).filter(Boolean),
+    // Role-scoped company-health rating (internal signal). Null when the row carries
+    // no companyHealth, so the drawer section hides.
+    companyHealth: buildHealthBlock(sourceRecord.companyHealth),
     // Typed topic blocks (drawer sections). Each is null/empty for rows that don't
     // carry that topic so the section hides; nothing here ever lands on a card.
     interview: buildInterviewBlock(sourceRecord),
@@ -3950,8 +4078,10 @@ function applicationJobRow(app, index, communications = [], now = new Date()) {
     appliedLabel: formatDateShort(app.appliedAt, "Tracked"),
     initials: initials(app.company),
     domain: app.domain || app.companyDomain || "",
+    logo: app.logo || "",
     link: app.link || app.url || "",
     warn: app.warn || "",
+    healthBadge: buildHealthBadge(app.companyHealth),
     avatarClass: AVATAR_CLASSES[index % AVATAR_CLASSES.length],
     terminal,
     // For a rejected/withdrawn app that advanced before dying, the stage it reached
@@ -4030,8 +4160,10 @@ function sourcedJobRow(role, index, now = new Date()) {
     appliedLabel: "Sourced",
     initials: initials(role.company),
     domain: role.domain || role.companyDomain || "",
+    logo: role.logo || "",
     link: role.link || role.url || "",
     warn: role.warn || "",
+    healthBadge: buildHealthBadge(role.companyHealth),
     avatarClass: AVATAR_CLASSES[(index + 3) % AVATAR_CLASSES.length],
     terminal,
     note: role.note || role.fitBucket || "",
@@ -4169,9 +4301,12 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
   const linkMap = new Map();
   const sourceRows = new Map(Object.keys(SANKEY_SOURCE_META).map((key) => [key, []]));
   const furthestOrders = [];
-  // Decay links keyed `awaiting->${decayId}` — only pre-interview (0-round) apps drain
-  // into Going stale / Ghosted, so the band always flows forward out of Awaiting.
-  const decayGroups = new Map();
+  // Decay band: only pre-interview (0-round) apps that went quiet drain forward as a
+  // progression — Awaiting → Going stale, then the fully-ghosted subset continues
+  // Going stale → Ghosted. A ghosted app was stale first, so it passes THROUGH the
+  // stale node rather than branching straight off Awaiting.
+  const decayStaleRows = []; // quiet 14–30d, still merely stale — terminates at the stale node
+  const decayGhostedRows = []; // quiet 30d+, fully ghosted — continues stale → ghosted
   // Rejections that happened AFTER >= 1 real round, keyed `round-${n}`, so a role lost
   // after its 1st round drops round-1 → Rejected. These drop forward into the single
   // bottom-right Rejected sink, alongside the bulk of pre-response form-rejections.
@@ -4179,6 +4314,9 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
   // Withdrawals that happened AFTER >= 1 real round — same structure as advancedRejectGroups
   // but route to the Withdrawn sink (muted, not red).
   const advancedWithdrawGroups = new Map();
+  // Accepted offers — the happy terminus, keyed by the round depth the accepted role
+  // reached so it flows round-N → Accepted 🎉 (a green celebratory sink, not a sink for losses).
+  const acceptedGroups = new Map();
   let awaiting = 0;
   let stale = 0;
   let ghosted = 0;
@@ -4259,20 +4397,26 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
     }
     if (rounds >= 1) {
       furthestOrders.push(rounds);
+      if (row.stage === "accepted") {
+        if (!acceptedGroups.has(rounds)) acceptedGroups.set(rounds, []);
+        acceptedGroups.get(rounds).push(row);
+      }
     } else {
       awaiting += 1;
     }
     // Decay overlay: a quiet PRE-interview app (0 rounds, still Awaiting) drains forward
-    // into Going stale / Ghosted. An app that already reached a round and went quiet
-    // stays counted at its round node (its card carries the stale flag) — routing it back
-    // into the col-1.5 decay sinks would draw an ugly backward band, so we don't.
+    // through Going stale, and on to Ghosted if it has fully ghosted. An app that already
+    // reached a round and went quiet stays counted at its round node (its card carries the
+    // stale flag) — routing it back into the col-1.5 decay sink would draw an ugly backward
+    // band, so we don't.
     if ((row.ghosted || row.stale) && rounds < 1) {
-      const decayId = row.ghosted ? "ghosted" : "stale";
-      if (row.ghosted) ghosted += 1;
-      else stale += 1;
-      const key = `awaiting->${decayId}`;
-      if (!decayGroups.has(key)) decayGroups.set(key, { from: "awaiting", to: decayId, rows: [] });
-      decayGroups.get(key).rows.push(row);
+      if (row.ghosted) {
+        ghosted += 1;
+        decayGhostedRows.push(row);
+      } else {
+        stale += 1;
+        decayStaleRows.push(row);
+      }
     }
   }
 
@@ -4296,6 +4440,26 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
   const maxRound = furthestOrders.reduce((max, value) => Math.max(max, value), 0);
   for (let n = 1; n <= maxRound; n += 1) {
     ensureNode(sankeyRoundMeta(n, 2 + (n - 1), reachedFor(n)));
+  }
+  // Accepted 🎉 — the celebratory terminus. An accepted offer flows out of the last round
+  // it reached into a single green sink, set just past the deepest accepted round so the
+  // win reads instantly and apart from the live chain. Green (not the red loss sink).
+  const acceptedCount = [...acceptedGroups.values()].reduce((sum, rows) => sum + rows.length, 0);
+  if (acceptedCount > 0) {
+    let acceptedRound = 0;
+    for (const round of acceptedGroups.keys()) acceptedRound = Math.max(acceptedRound, round);
+    ensureNode({
+      id: "accepted",
+      label: "Accepted 🎉",
+      color: "#2F9E55",
+      count: acceptedCount,
+      col: 2 + (acceptedRound - 1) + 0.7,
+      order: 98,
+      filter: "accepted",
+    });
+    for (const [round, rows] of acceptedGroups) {
+      addLink(`round-${round}`, "accepted", rows.length, "#2F9E55", "accepted", examplesOf(rows));
+    }
   }
   // Rejected is a single terminal sink, bottom-pinned (see the layout pass). It sits
   // HALF a column past the furthest point any rejected app actually reached — NOT way
@@ -4340,15 +4504,20 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
 
   // Decay is rendered as a fading grey, not a colour — a quiet app is signal
   // draining away, so it desaturates and goes translucent as it decays. Going
-  // stale sits halfway between Awaiting (col 1) and the Screen column (col 2) at
-  // a visible grey; Ghosted lands in the Screen column itself, faded almost to
-  // nothing. The legend + hover tooltip identify the unlabelled ghosted exit.
-  if (stale > 0)
+  // stale sits halfway between Awaiting (col 1) and the first round (col 2) at a
+  // visible grey; Ghosted is a labelled dead-exit pinned to the TOP of its own
+  // column (2.25), so the faded band peels UP off Going stale and leaks away —
+  // the mirror of Rejected, which sinks to the bottom.
+  // "Going stale" is the cumulative quiet state: every ghosted app was stale on the way,
+  // so the node counts ALL pre-response quiet apps (stale + ghosted). The merely-stale
+  // ones terminate here; the ghosted subset flows one hop further to Ghosted.
+  const quiet = stale + ghosted;
+  if (quiet > 0)
     ensureNode({
       id: "stale",
       label: "Going stale",
       color: DECAY_STALE_COLOR,
-      count: stale,
+      count: quiet,
       col: 1.5,
       order: 1.5,
       filter: "stale",
@@ -4359,10 +4528,9 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
       label: "Ghosted",
       color: DECAY_GHOSTED_COLOR,
       count: ghosted,
-      col: 2,
-      order: 98,
+      col: 2.25,
+      order: 0,
       filter: "ghosted",
-      hideLabel: true,
     });
 
   for (const [bucket, bucketRows] of sourceRows) {
@@ -4422,11 +4590,27 @@ function buildJobsSankey(rows, { showGhosted = false, hideStale = false } = {}) 
     );
   }
 
-  // Decay overlay links — from each stage node into the decay sinks, fading grey.
-  for (const group of decayGroups.values()) {
-    const color = group.to === "ghosted" ? DECAY_GHOSTED_COLOR : DECAY_STALE_COLOR;
-    addLink(group.from, group.to, group.rows.length, color, group.to, examplesOf(group.rows));
-  }
+  // Decay overlay links — the quiet band flows FORWARD as a progression: Awaiting →
+  // Going stale carries every pre-response quiet app, then the fully-ghosted subset
+  // continues Going stale → Ghosted. (addLink no-ops on count <= 0, so an all-stale or
+  // all-ghosted pipeline just drops the empty hop.)
+  const decayAllRows = decayStaleRows.concat(decayGhostedRows);
+  addLink(
+    "awaiting",
+    "stale",
+    decayAllRows.length,
+    DECAY_STALE_COLOR,
+    "stale",
+    examplesOf(decayAllRows)
+  );
+  addLink(
+    "stale",
+    "ghosted",
+    decayGhostedRows.length,
+    DECAY_GHOSTED_COLOR,
+    "ghosted",
+    examplesOf(decayGhostedRows)
+  );
 
   const nodes = [...nodeMap.values()].sort((a, b) => a.col - b.col || a.order - b.order);
   const links = [...linkMap.values()].sort((a, b) => {
@@ -5003,7 +5187,7 @@ function renderJobRow(row) {
     <tr class="${row.terminal ? "rejected-row " : ""}hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="openDrawer('${esc(jsArg(row.drawerId))}')">
       <td class="px-6 py-4">
         <div class="flex items-center gap-3">
-          ${avatarMarkup(row.domain, row.company, row.initials, `w-8 h-8 rounded ${esc(row.avatarClass)} flex items-center justify-center font-black text-[10px]`)}
+          ${avatarMarkup(row.domain, row.company, row.initials, `w-8 h-8 rounded ${esc(row.avatarClass)} flex items-center justify-center font-black text-[10px]`, row.logo)}
           <div>
             <div class="font-bold ${muted ? "text-outline" : "text-primary"}">${esc(row.company)}</div>
             <div class="text-[11px] text-outline">${esc(row.location || "Location TBD")}</div>
@@ -5123,6 +5307,12 @@ function renderJobsSankey(sankey) {
       // flat from Heard back (which also sits low), the per-round cuts drop in from the
       // chain above. Bottom-anchoring keeps that heavy band out of the live chain.
       y = top + columnHeight - usedHeight;
+    } else if (nodes.some((node) => node.id === "ghosted")) {
+      // Ghosted is the decay dead-exit, pinned to the TOP of its own column so the faded
+      // band peels UP off Going stale and leaks away — the mirror of Rejected sinking to
+      // the bottom. Top-anchoring guarantees the band always reads as a rising exit,
+      // whatever height Going stale lands at.
+      y = top;
     }
     for (let index = 0; index < nodes.length; index += 1) {
       const node = nodes[index];
@@ -5185,12 +5375,14 @@ function renderJobsSankey(sankey) {
       const isLast = node.col === maxCol;
       const isRound = typeof node.id === "string" && node.id.startsWith("round-");
       const isRejected = node.id === "rejected";
+      const isAccepted = node.id === "accepted";
       // Round nodes (1st → 4th round) always label ABOVE the line so the red rejection
-      // threads dropping below the chain never tangle with the names. Rejected labels to
-      // its RIGHT like a sink even though it now sits mid-chart (col 2.5) — it's
-      // bottom-pinned, so an above/below label would crash into the live chain.
-      const sideRight = (isLast || isRejected) && !isRound;
-      const labelAbove = node.id === "awaiting" || node.id === "stale" || isRound;
+      // threads dropping below the chain never tangle with the names. Rejected and the
+      // Accepted 🎉 terminus label to their RIGHT like sinks even when they sit mid-chart
+      // — they're pinned off the live chain, so an above/below label would crash into it.
+      const sideRight = (isLast || isRejected || isAccepted) && !isRound;
+      const labelAbove =
+        node.id === "awaiting" || node.id === "stale" || node.id === "ghosted" || isRound;
       const labelX = isFirst ? node.x - 8 : sideRight ? node.x + nodeW + 14 : node.x + nodeW / 2;
       const anchor = isFirst ? "end" : sideRight ? "start" : "middle";
       // Two-line label: name on top, (count) stacked underneath. Offset the block
@@ -5235,25 +5427,15 @@ function renderJobsSankey(sankey) {
         `<span class="jobs-sankey-legend-item" data-sankey-legend-id="${esc(node.id)}"><i style="background:${esc(node.color)}"></i>${esc(node.label)}</span>`
     )
     .join("");
+  // The funnel SVG always scales to fit the frame (preserveAspectRatio meet), so it
+  // never overflows — no horizontal scroll affordance is needed even at full depth.
   return `
     <div class="jobs-sankey-wrap">
       <div class="jobs-sankey-frame">
-        <button class="jobs-sankey-scroll-button jobs-sankey-scroll-button-left" type="button" data-jobs-sankey-scroll-button="left" aria-label="Scroll funnel left" title="Scroll funnel left">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-        </button>
-        <div class="jobs-sankey-scroll" data-jobs-sankey-scroll tabindex="0" aria-label="Jobs funnel horizontal scroll">
-          <svg class="jobs-sankey" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMid meet" role="img" aria-label="Jobs Sankey funnel">
-            <g class="jobs-sankey-links">${paths}</g>
-            <g class="jobs-sankey-nodes">${nodeMarkup}</g>
-          </svg>
-        </div>
-        <button class="jobs-sankey-scroll-button jobs-sankey-scroll-button-right" type="button" data-jobs-sankey-scroll-button="right" aria-label="Scroll funnel right" title="Scroll funnel right">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        </button>
+        <svg class="jobs-sankey" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Jobs Sankey funnel">
+          <g class="jobs-sankey-links">${paths}</g>
+          <g class="jobs-sankey-nodes">${nodeMarkup}</g>
+        </svg>
       </div>
       <div class="jobs-sankey-legend">${legend}</div>
     </div>`;
@@ -5367,7 +5549,7 @@ function renderJobsExplorerRow(row) {
     <tr data-jobs-row data-detail-id="${esc(row.drawerId)}" data-stage="${esc(row.stage)}" data-source-kind="${esc(row.source)}" data-source-bucket="${esc(row.sourceBucket)}" data-channel="${esc(String(row.channel || "").toLowerCase())}" data-source-label="${esc(sourceLabel.toLowerCase())}" data-terminal="${row.terminal ? "1" : "0"}" data-rounds-reached="${row.roundsReached || 0}" data-needs-review="${row.needsReview ? "1" : "0"}" ${jobActionAttrs(row)} data-search="${esc(row.searchText)}" data-company="${esc(row.company.toLowerCase())}" data-role="${esc(row.role.toLowerCase())}" data-location="${esc(locationLabel.toLowerCase())}" data-mode="${esc(row.mode || modeLabel.toLowerCase())}" data-fit="${esc(row.fit)}" data-base="${esc(row.compMidpointK || row.baseK)}" data-applied="${esc(row.appliedAt || row.appliedLabel)}" data-tip="${tooltipPayload(row)}">
       <td>
         <div class="jobs-company-cell">
-          ${avatarMarkup(row.domain, row.company, row.initials, `jobs-avatar ${esc(row.avatarClass)}`)}
+          ${avatarMarkup(row.domain, row.company, row.initials, `jobs-avatar ${esc(row.avatarClass)}`, row.logo)}
           <span class="jobs-company-copy">
             <strong class="${muted ? "is-muted" : ""}">${esc(row.company)}</strong>
             <small>${esc(sourceLabel)}</small>
@@ -5432,7 +5614,7 @@ function renderJobsCards(rows) {
               : ""
           }
           <div class="jobs-card-top">
-            ${avatarMarkup(row.domain, row.company, row.initials, `jobs-avatar ${esc(row.avatarClass)}`)}
+            ${avatarMarkup(row.domain, row.company, row.initials, `jobs-avatar ${esc(row.avatarClass)}`, row.logo)}
             <span class="jobs-stage-pill jobs-stage-has-icon" style="--jobs-stage-color:${esc(stageTone)}" aria-label="${esc(statusHint)}">${inlineIcon(statusPillIcon(row), "jobs-stage-icon-svg")}<span>${esc(statusLabel)}</span></span>
           </div>
           <div class="jobs-card-copy">
@@ -5448,6 +5630,11 @@ function renderJobsCards(rows) {
               <small>Fit</small>
             </span>
           </div>
+          ${
+            row.healthBadge
+              ? `<div class="jobs-card-health"><span class="jobs-health-pill" data-health="${esc(row.healthBadge.rating)}" title="${esc(row.healthBadge.title)}">${inlineIcon("alert", "jobs-health-icon-svg")}<span>${esc(row.healthBadge.label)}</span></span></div>`
+              : ""
+          }
           ${
             row.statusNote || row.note
               ? `<p class="jobs-card-note">${esc(row.statusNote || firstSentence(row.note))}</p>`
@@ -5934,7 +6121,25 @@ function renderStrategyLearningSignals(rows) {
     .join("");
 }
 
-function renderStrategyReviewTrigger(trigger = {}) {
+// Renders a compact one-line reevaluation progress footer inside the review
+// panel. Uses inline styles that match the shell's existing CSS token set
+// (--rgb-line, --ink-soft, #e0a93b warning amber) so no new CSS is needed.
+// Returns "" when reevaluation is null/absent — callers can safely concat it.
+function renderReevaluationProgress(reevaluation) {
+  if (!reevaluation) return "";
+  const { label, due, familyLines = [] } = reevaluation;
+  const labelColor = due ? "#e0a93b" : "var(--ink-soft)";
+  const chips = familyLines
+    .slice(0, 3)
+    .map(
+      (f) =>
+        `<span style="font-size:11px;font-weight:750;color:${f.over ? "#e0a93b" : "var(--ink-soft)"};white-space:nowrap">${esc(f.family)} ${esc(String(f.count))}/${esc(String(f.threshold))}</span>`
+    )
+    .join("");
+  return `<div style="grid-column:1/-1;border-top:1px solid rgba(var(--rgb-line),0.08);padding-top:8px;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px"><span style="font-size:12px;font-weight:650;color:${labelColor}">${esc(label)}</span>${chips}</div>`;
+}
+
+function renderStrategyReviewTrigger(trigger = {}, reevaluation) {
   const action = trigger.ctaAction || "jobs";
   const ctaLabel = trigger.ctaLabel || "Review details";
   return `
@@ -5944,7 +6149,7 @@ function renderStrategyReviewTrigger(trigger = {}) {
         <b>${esc(trigger.title || "Learning signal still forming")}</b>
         <p>${esc(trigger.summary || "Keep collecting comparable outcomes before retuning gates.")}</p>
       </div>
-      <a class="strategy-review-cta" href="#${esc(action)}">${esc(ctaLabel)}</a>
+      <a class="strategy-review-cta" href="#${esc(action)}">${esc(ctaLabel)}</a>${renderReevaluationProgress(reevaluation)}
     </div>`;
 }
 
@@ -5996,7 +6201,11 @@ function renderStrategyInsights(root, strategy) {
   const signals = root.querySelector("[data-strategy-learning-signals]");
   if (signals) signals.innerHTML = renderStrategyLearningSignals(strategy.learning?.signals);
   const trigger = root.querySelector("[data-strategy-review-trigger]");
-  if (trigger) trigger.innerHTML = renderStrategyReviewTrigger(strategy.learning?.reviewTrigger);
+  if (trigger)
+    trigger.innerHTML = renderStrategyReviewTrigger(
+      strategy.learning?.reviewTrigger,
+      strategy.learning?.reevaluation
+    );
   const recommendation = root.querySelector("[data-strategy-recommendation]");
   if (recommendation)
     recommendation.innerHTML = renderStrategyRecommendation(strategy.recommendation);

@@ -604,6 +604,99 @@ section {
 .sidekick-copy .section-sub {
   max-width: none;
 }
+
+/* ─── LIVE DEMO EMBED (replaces the sidekick mascot, drydock-style) ─── */
+.sidekick-demo {
+  position: relative;
+}
+.demo-frame {
+  display: block;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #1a1614;
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(43, 39, 36, 0.1);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+.demo-frame:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 44px rgba(43, 39, 36, 0.2);
+}
+.demo-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #221d1a;
+}
+.demo-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.demo-dot-red {
+  background: #ff5f56;
+}
+.demo-dot-yellow {
+  background: #ffbd2e;
+}
+.demo-dot-green {
+  background: #27c93f;
+}
+.demo-chrome-url {
+  margin-left: 10px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  color: #b9aa9a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Preview screen: a looping screen-recording of the real dashboard; click opens the live demo. */
+.demo-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1240 / 738;
+  background: var(--cream);
+  overflow: hidden;
+}
+.demo-gif {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+.demo-screen-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 18px;
+  background: linear-gradient(to top, rgba(26, 22, 20, 0.3), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.demo-screen:hover .demo-screen-overlay,
+.demo-screen:focus-visible .demo-screen-overlay {
+  opacity: 1;
+}
+.demo-expand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(43, 39, 36, 0.22);
+}
 .gate-pullquote {
   margin-top: 32px;
   padding: 24px 28px;
@@ -874,10 +967,19 @@ section {
   border-radius: 8px;
   box-shadow: inset 0 0 0 1px rgba(43, 39, 36, 0.1);
 }
+/* Inline code chips: force a real monospace face and kill ligatures so command
+   hyphens (-g, @anthropic-ai) render as plain hyphens, not long dashes. */
+code {
+  font-family: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
 .terminal-sticker {
   background: #1a1614;
   color: #e0d4c4;
   font-family: var(--font-mono), monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
   font-size: 0.9rem;
   padding: 28px 32px;
   border-radius: var(--radius-lg);
@@ -1036,37 +1138,153 @@ section {
 /* ─── FOOTER ─── */
 footer {
   border-top: 1px solid rgba(43, 39, 36, 0.1);
-  padding: 40px 0;
+  padding: 64px 0 40px;
 }
 .footer-inner {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 48px;
+}
+.footer-top {
+  display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  justify-content: space-between;
+  gap: 48px;
+}
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 320px;
 }
 .footer-logo {
   display: flex;
   align-items: center;
   gap: 10px;
   font-family: var(--font-display), serif;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 600;
 }
 .footer-logo img {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  opacity: 0.85;
+  opacity: 0.9;
 }
-.footer-note {
-  font-size: 0.82rem;
+.footer-blurb {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: -8px;
+}
+.footer-social a {
+  display: inline-flex;
+  padding: 8px;
+  border-radius: var(--radius-pill);
+  color: var(--ink-soft);
+  transition: var(--transition);
+}
+.footer-social a:hover {
+  background: var(--paper);
+  color: var(--coral);
+}
+.footer-social svg {
+  width: 20px;
+  height: 20px;
+}
+.footer-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px 64px;
+}
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.footer-col-h {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+.footer-col a {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: var(--transition);
+}
+.footer-col a:hover {
+  color: var(--coral);
+}
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid rgba(43, 39, 36, 0.08);
+  padding-top: 28px;
+}
+.footer-legal {
+  margin: 0;
+  font-size: 0.8rem;
   color: var(--ink-soft);
 }
-.footer-tagline {
-  font-size: 0.82rem;
+.footer-legal a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.footer-legal a:hover {
+  color: var(--coral);
+}
+.footer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  border: 1px solid rgba(43, 39, 36, 0.12);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(6px);
+  text-decoration: none;
+  transition: var(--transition);
+}
+.footer-pill:hover {
+  border-color: rgba(43, 39, 36, 0.22);
+  background: rgba(255, 255, 255, 0.85);
+}
+.footer-pill img {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+}
+.footer-pill span {
+  font-size: 0.78rem;
   color: var(--ink-soft);
-  font-style: italic;
+}
+.footer-pill strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+.footer-pill svg {
+  width: 14px;
+  height: 14px;
+  color: var(--ink-soft);
+  transition: var(--transition);
+}
+.footer-pill:hover svg {
+  transform: translate(2px, -2px);
 }
 
 /* ─── Responsive ─── */
@@ -1127,8 +1345,9 @@ footer {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .reveal {
-    opacity: 1;
-    transform: none;
+  html .reveal,
+  html.js .reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

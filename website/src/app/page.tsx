@@ -1,3 +1,4 @@
+import DemoEmbed from "@/components/DemoEmbed";
 import SiteInteractions from "@/components/SiteInteractions";
 
 export default function Home() {
@@ -24,6 +25,9 @@ export default function Home() {
             </li>
             <li>
               <a href="#what-you-get">What you get</a>
+            </li>
+            <li>
+              <a href="/docs">Docs</a>
             </li>
             <li>
               <a href="#get" className="nav-cta">
@@ -65,7 +69,7 @@ export default function Home() {
             </p>
             <div className="hero-actions reveal reveal-delay-3">
               <a href="#get" className="btn-primary">
-                Get started — it&apos;s yours, and it&apos;s free
+                Get started — free &amp; open source
                 <svg
                   width="16"
                   height="16"
@@ -204,14 +208,8 @@ export default function Home() {
         <div className="wrap">
           <div className="sidekick reveal">
             <div className="sidekick-grid">
-              <div className="sidekick-rat">
-                <img
-                  className="sidekick-rat-img"
-                  src="/logo.png"
-                  alt="Rolester rat mascot"
-                  width={180}
-                  height={180}
-                />
+              <div className="sidekick-demo">
+                <DemoEmbed />
               </div>
               <div className="sidekick-copy">
                 <div className="section-label">Meet your sidekick</div>
@@ -465,10 +463,10 @@ export default function Home() {
                 </div>
                 <h3>Your stuff stays yours.</h3>
                 <p>
-                  Rolester runs entirely on your machine. Your résumé, comp
-                  numbers, evidence bank, and full pipeline never leave your
-                  laptop. No cloud sync, no account, no telemetry — not even by
-                  accident.
+                  Run Rolester on your own machine and your résumé, comp
+                  numbers, evidence bank, and full pipeline stay on your laptop.
+                  No account to create, no telemetry, nothing syncing in the
+                  background.
                 </p>
                 <div className="privacy-chips" role="list">
                   <span className="privacy-chip" role="listitem">
@@ -481,7 +479,7 @@ export default function Home() {
                     >
                       <circle cx="5.5" cy="5.5" r="5.5" />
                     </svg>
-                    no cloud
+                    runs locally
                   </span>
                   <span className="privacy-chip" role="listitem">
                     <svg
@@ -537,17 +535,17 @@ export default function Home() {
             <div className="privacy-copy reveal reveal-delay-2">
               <div className="section-label">Privacy as warmth</div>
               <h2 className="section-h2" id="privacy-h2">
-                Local-first isn&apos;t a feature. It&apos;s respect.
+                Self-host it, and your data stays your own.
               </h2>
               <p className="section-sub">
                 Job searches are personal. Your comp floor, your reasons for
-                leaving, your backup options — none of that belongs in a cloud
-                database. Rolester keeps it on your machine, full stop.
+                leaving, your backup options — run Rolester yourself and all of
+                it stays on your machine, full stop.
               </p>
               <p className="section-sub" style={{ marginTop: "16px" }}>
-                No signup, no freemium tier that quietly uploads your data, no
-                API key that routes your résumé through someone else&apos;s
-                server. What you put in stays in.
+                No signup, no telemetry, nothing phoned home. The self-host
+                version runs on your machine and uses the AI CLI you already
+                have. What you put in stays in.
               </p>
             </div>
           </div>
@@ -689,7 +687,7 @@ export default function Home() {
             <div className="checklist-copy reveal">
               <div className="section-label">What you get</div>
               <h2 className="section-h2" id="checklist-h2">
-                The whole loop. Nothing sold separately.
+                The whole loop, end to end.
               </h2>
               <p className="section-sub">
                 Every capability ships together. Config-driven, not code-driven —
@@ -735,9 +733,8 @@ export default function Home() {
                   Clone it. Run it. Own it.
                 </h2>
                 <p className="section-sub">
-                  Free to self-host, source-available (BUSL-1.1). No install
-                  wizard, no account, no cloud. Clone the repo and one command
-                  does the rest.
+                  Free to self-host, open source (MIT). No install wizard, no
+                  setup — clone the repo and one command does the rest.
                 </p>
                 <div style={{ marginTop: "28px" }}>
                   <div
@@ -941,8 +938,8 @@ export default function Home() {
               Ready when you are.
             </h2>
             <p className="final-sub">
-              Free. Local. Honest. One command to get going. Your data never
-              leaves your machine.
+              Free. Local. Honest. One command to get going. Run it yourself and
+              your data stays put.
             </p>
             <div className="final-actions">
               <a href="#get" className="btn-primary">
@@ -959,16 +956,127 @@ export default function Home() {
       {/* ─── FOOTER ────────────────────────────────── */}
       <footer>
         <div className="wrap footer-inner">
-          <div className="footer-logo">
-            <img src="/logo.png" alt="Rolester logo" width={28} height={28} />
-            Rolester
+          <div className="footer-top">
+            {/* Brand */}
+            <div className="footer-brand reveal">
+              <div className="footer-logo">
+                <img src="/logo.png" alt="Rolester logo" width={28} height={28} />
+                Rolester
+              </div>
+              <p className="footer-blurb">
+                An agentic, local-first job-search workspace. Find, vet, tailor,
+                track, and prep for roles — from your own data, on your own
+                machine.
+              </p>
+              <div className="footer-social">
+                <a
+                  href="https://github.com/CodesWhat/rolester"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.333-1.754-1.333-1.754-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23a11.5 11.5 0 0 1 3-.405c1.02.005 2.045.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.435.375.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                  </svg>
+                </a>
+                <a href="/docs" aria-label="Documentation">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+            {/* Link columns */}
+            <div className="footer-cols">
+              <div className="footer-col reveal reveal-delay-1">
+                <p className="footer-col-h">Product</p>
+                <a href="/docs">Documentation</a>
+                <a
+                  href="https://demo.rolester.codeswhat.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Live demo
+                </a>
+                <a href="#how-it-works">How it works</a>
+              </div>
+              <div className="footer-col reveal reveal-delay-2">
+                <p className="footer-col-h">Project</p>
+                <a
+                  href="https://github.com/CodesWhat/rolester"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub
+                </a>
+                <a
+                  href="https://github.com/CodesWhat/rolester/releases"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Releases
+                </a>
+                <a
+                  href="https://github.com/CodesWhat/rolester/blob/main/LICENSE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  License
+                </a>
+              </div>
+            </div>
           </div>
-          <span className="footer-tagline">
-            Find, vet, and advance the right roles.
-          </span>
-          <span className="footer-note">
-            Free. Local-first. No account. No telemetry.
-          </span>
+          {/* Legal + CodesWhat sign-off */}
+          <div className="footer-bottom reveal reveal-delay-3">
+            <p className="footer-legal">
+              © {new Date().getFullYear()} CodesWhat. Released under the{" "}
+              <a
+                href="https://github.com/CodesWhat/rolester/blob/main/LICENSE"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                MIT License
+              </a>
+              .
+            </p>
+            <a
+              className="footer-pill"
+              href="https://github.com/CodesWhat"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/codeswhat-logo.png"
+                alt="CodesWhat"
+                width={26}
+                height={26}
+              />
+              <span>
+                A <strong>CodesWhat</strong> project
+              </span>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 7h10v10" />
+                <path d="M7 17 17 7" />
+              </svg>
+            </a>
+          </div>
         </div>
       </footer>
 

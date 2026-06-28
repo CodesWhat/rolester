@@ -6,6 +6,9 @@ node_modules/
 .turbo/
 website/.next/
 website/out/
+
+# build:demo static bundle (rebuilt per deploy so dates stay evergreen)
+dist/
 website/next-env.d.ts
 *.tsbuildinfo
 .vercel/

@@ -139,12 +139,22 @@ following as one logical write, in order, every time:
    doesn't reset on a no-op poll.)
 2. **Verify:** `node src/cli/tracker.mjs --verify` (and `npm run verify:tracker`
    when domain integrity could be affected).
-3. **Re-render:** `node src/cli/tracker.mjs` so the D module + shell publish and
+3. **Refresh analytics** *(outcome-changing writes only):* `npm run analytics -- --write`
+   re-computes `tracker.json#analytics` (rejection/advance counts, reevaluation
+   thresholds, `due`/`dueReasons`) and persists the result with `stamp:false` — it
+   does **not** move the freshness pill. Run this step whenever the write touches
+   **outcome state**: status transitions, new applications, rejections, advances
+   (`track-outcomes`, `apply-job`, `sync-status`, `reevaluate-strategy`,
+   `search-jobs`/`relationship-sourcing` when they add rows). Skip it for pure
+   comms/scheduling writes (`email-comms`, `schedule-meeting`, `calendar-sync`,
+   `interview-prep` dossier saves) — those don't alter the analytics block. Must
+   run **before** re-render so the dashboard picks up the fresh block.
+4. **Re-render:** `node src/cli/tracker.mjs` so the D module + shell publish and
    the open dev-server page hot-reloads. This re-render IS the hand-off to the
    dashboard — there is no separate "dashboard agent"; the SSE live-reload closes
    the loop automatically. Never end a tracker-mutating skill without it (every
    write path, including early-exit / CUT branches).
-4. **Log one Activity Pulse event** (`npm run activity -- append …`) for any
+5. **Log one Activity Pulse event** (`npm run activity -- append …`) for any
    tracker-visible change, so the timeline and the pill agree. Include
    `--skill <skill-id>` and `--operation <resource:verb>` (e.g.
    `--skill track-outcomes --operation application:status-advance`) so the feed
@@ -260,6 +270,30 @@ whenever an interview is the featured item — so the featured interview always 
 dossier to open. With no packet yet, the preview shows a "prep this interview"
 prompt.
 
+### Company logos
+
+The company chip on every Jobs row resolves its avatar in one fixed order
+(`avatarMarkup` in `dashboard-data.js`), and skills only ever touch the first rung:
+
+1. **`applications[].logo`** (and `sourced[].logo`) — an explicit image path or URL.
+   If set, it wins. This is the **standard field a skill writes** when it has a real
+   logo in hand: the user asked you to fetch the employer's logo, or you captured one
+   while applying. Write the path/URL here and the dashboard picks it up — no other
+   wiring. A relative path resolves against the generated `workspace/tracker.html`
+   (the demo seed uses `../assets/logos/<slug>.png`); a full `https://` URL also works.
+2. **logo.dev lookup** — only when `settings.logoToken` is set (a PRIVATE, opt-in
+   publishable token; off by default). Keys on a clean employer domain, else the
+   company name. This is the zero-upkeep path for real searches that opt in.
+3. **Monogram initials** — the fallback when `logo` is empty and logo.dev is off (or
+   its image 404s, via the `<img onerror>`). Always-correct, never blocks rendering.
+
+So the rule for skills: **if you have/fetch a real logo, write `app.logo`; otherwise
+leave it empty** and the dashboard falls back to logo.dev-if-wired, else a monogram.
+Stay domain-neutral (see Domain-Neutral Rule) — never hardcode a real employer's logo
+in code. The only bundled logos are the fictional-corp demo seed (`assets/logos/`,
+mapped in `demo-logos.mjs`), normalized to a uniform 256×256 white-padded square PNG;
+`stripDemo()` drops them the moment real data arrives.
+
 ### Round Vocabulary (hard — the canonical interview ladder)
 
 Interview rounds are named by **type**, never numbered. The dashboard derives an
@@ -327,6 +361,7 @@ chat.
 | An in-platform message sync request (LinkedIn / Wellfound DMs) | `ingest-messages` | `communications[]` |
 | A company name / "tell me about X" / a company homepage URL | `research-company` | `workspace/research/<slug>.md` |
 | A wishlist of employers to target / "find companies like X to add" | `discover-companies` | `config/sourced-scan.json` `tracked_companies[]` (confirm-first) |
+| "is X a safe bet" / company risk, layoffs, financial health, morale — scoped to the role | `company-health` | `companyHealth` (role-scoped rating) on the tracker row |
 | A standalone fact / preference / constraint (comp, location, an exclusion) | `configure` / `ingest-profile` | `candidate/` config, confirm-first |
 | Anything else with no obvious owner (a note, a stray link, a screenshot) | capture as a dated note | `workspace/intake/<slug>-<date>.md`, linked to the nearest application or company |
 
@@ -361,6 +396,15 @@ Rules for intake:
   `research-company`.
 - If the user asks "what's market comp for", "benchmark my comp/salary", "is my
   ask competitive", or "what should I be asking for": use `research-comp`.
+- If the user asks how risky, stable, or healthy a company is — layoffs,
+  financials, morale, "is this a safe place to land" — or to factor company risk
+  into a role: use `company-health`. It web-searches role-scoped layoff,
+  hiring-momentum, financial, sentiment, and leadership signals, scores a
+  `healthy|watch|risky` rating with provenance, persists it to the tracker, and
+  feeds the fit score only where it cross-cuts a stated candidate need (otherwise
+  it stands alone as its own signal). Cost-gated: auto-fires at the interview stage
+  by default (`modes.yml#company_health`), and runs manually anytime. The rating is
+  an INTERNAL signal only — it never enters an outbound artifact.
 - If the user says "find more job boards", "discover new sources", "what boards
   should I be on", or `search-jobs` has gone dry: use `research-boards`.
 - If the user says "find new companies", "what companies should I be targeting",
@@ -513,12 +557,12 @@ Canonical gate files (all under `candidate/`, gitignored/private):
 
 | File | Governs | Read by |
 | --- | --- | --- |
-| `targeting.yml` | `role_buckets`, `keep_signals`, `cut_signals`, `excluded_companies`, `degree_policy`, `fit_bands`, OE bucket | evaluate-job, search-jobs, setup-searches, discover-companies, tailor-application, track-outcomes, reevaluate-strategy, interview-prep, optimize-linkedin |
+| `targeting.yml` | `role_buckets`, `keep_signals`, `cut_signals`, `excluded_companies`, `degree_policy`, `fit_bands`, `priorities`/`must_haves` (candidate needs — drive the company-health cross-cut), OE bucket | evaluate-job, search-jobs, setup-searches, discover-companies, tailor-application, track-outcomes, reevaluate-strategy, interview-prep, optimize-linkedin, company-health |
 | `profile.yml` | `domain`, `toolchain`, `location.*`, `compensation.*` (minimum/target/expected base, OE range, relo; **`current_base` is private**) | nearly all skills |
 | `honesty.yml` | `education` policy, `tools.confirmed` / `tools.do_not_claim`, `claims.do_not_fabricate` | tailor-application, apply-job, email-comms, interview-prep, evaluate-job, optimize-linkedin |
 | `application-limits.yml` | per-company caps/cooldowns, reevaluation thresholds | apply-job (step-zero), evaluate-job (ACTION), search-jobs (deprioritize), track-outcomes (thresholds) |
 | `form-defaults.yml` | `auto_submit`, applicant facts, `expected_base` | apply-job |
-| `modes.yml` | optional `usage_mode`, `application_mode`, and `agent_voice`; absent means `standard` / `balanced` / `standard` | search-jobs, evaluate-job, research-company, research-comp, research-boards, interview-prep, configure, doctor, email-comms, reevaluate-strategy |
+| `modes.yml` | optional `usage_mode`, `application_mode`, `agent_voice`, and `company_health` (firing policy); absent means `standard` / `balanced` / `standard` / defaults | search-jobs, evaluate-job, research-company, research-comp, research-boards, interview-prep, configure, doctor, email-comms, reevaluate-strategy, company-health |
 | `writing-style.md` (+ `workspace/writing-samples/`) | voice/calibration | tailor-application, email-comms, interview-prep |
 | `research-prefs.yml` | `research_axes`, `staleness_days`, `max_searches_per_company`; works if absent (field-agnostic defaults apply) | research-company |
 | `stories.yml` | STAR+R behavioural story bank; read by interview-prep (`npm run stories -- match/list/check`), written via `npm run stories -- add` | interview-prep |
@@ -777,6 +821,7 @@ event at the end of that action** — the same "the writer records it" disciplin
   | `ingest-mail` / `ingest-messages` | `message` | world | one event per inbound thread captured into `communications[]` |
   | `research-company` / `research-comp` / `research-boards` | `research` | agent | after `npm run research -- record --write` |
   | `discover-companies` | `research` | agent | after companies are added to `config/sourced-scan.json` — one summary event ("N companies added to track") |
+  | `company-health` | `research` | agent | after a role-scoped rating is persisted to `companyHealth` — title "Company health: &lt;Company&gt; — &lt;rating&gt;" |
   | `interview-prep` | `interview` | agent | after a packet / debrief is captured to `conversations[]` |
   | `reevaluate-strategy` | `system` | agent | after a strategy retune is recorded |
   | `optimize-linkedin` | `system` | agent | after a profile pass — title "LinkedIn profile pass", summary names surfaces reviewed / fields applied (or "suggest-only") |
@@ -1139,6 +1184,7 @@ runtime *this phase parallelizes cleanly*.
 | `research-comp` | market-data gathering | one subagent per source/search, parallel |
 | `research-boards` | per-board legitimacy screen | one subagent per candidate board, parallel |
 | `discover-companies` | per-company resolve + legitimacy screen | one subagent per candidate company, parallel |
+| `company-health` | per-dimension role-scoped research | one subagent per dimension (≈6), parallel |
 | `search-jobs` | hand top roles to `evaluate-job` | one subagent per role (cap ≈5), parallel |
 | `reevaluate-strategy` | read-only analysis (funnel/reject/win) | analysis fans out; the write stays inline |
 | `ingest-mail` / `ingest-messages` | body-pull for matched threads | batched subagents (browser pulls stay sequential) |

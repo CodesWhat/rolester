@@ -42,9 +42,20 @@ function parseArgs(argv) {
 
 const opts = parseArgs(process.argv.slice(2));
 
-if (opts.help || opts.positional.length === 0) {
+if (opts.help) {
   printHelp();
-  process.exit(opts.help ? 0 : 1);
+  process.exit(0);
+}
+
+// Default verb to "refresh" when flags are present but no positional verb was given,
+// so `npm run analytics -- --write` works without an explicit "refresh" positional.
+if (opts.positional.length === 0 && process.argv.length > 2) {
+  opts.positional.push("refresh");
+}
+
+if (opts.positional.length === 0) {
+  printHelp();
+  process.exit(1);
 }
 
 const [verb] = opts.positional;

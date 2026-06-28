@@ -199,23 +199,23 @@ The helper creates `candidate/learnings/` and the family file on first `--write`
 
 ## STEP 6 — Check reevaluation thresholds
 
-Run:
+The analytics block in `tracker.json#analytics.reevaluation` already applies the threshold comparison — it is refreshed by `npm run analytics -- --write` as part of the Tracker Write Contract (STEP 3/4). STEP 6 reads; it does not recompute.
 
-```
-npm run analyze:outcomes -- --summary
-```
+Read `tracker.json#analytics.reevaluation`:
 
-Read `byStatus` (total rejected count) and `byRoleFamily` (per-family rejected counts) from the output.
+- `reevaluation.due` — `true` if any rejection threshold is crossed since the last recorded strategy review.
+- `reevaluation.dueReasons` — human-readable strings explaining which thresholds fired (e.g. `"total 8>=7"`, `"family:fde 3>=3"`).
+- `reevaluation.sinceLastReview.rejectionTotal` — rejection delta since the last strategy review (not all-time total).
+- `reevaluation.sinceLastReview.rejectionByFamily` — per-family rejection delta since the last strategy review.
+- `reevaluation.thresholds` — the resolved threshold values (`rejectionTotal`, `rejectionPerFamily`) in effect when the block was last computed.
 
-`analyze-outcomes.mjs` loads `candidate/targeting.yml` and passes it to `classifyRoleFamily`, so `byRoleFamily` reflects the candidate's own families (`role_families` → `role_buckets` → built-in tech fallback only when no config). The slugs match what STEP 5 derives; no manual cross-reference is needed.
+Also read `tracker.json#analytics.advanced.byFamily` — a cluster of advances or offers concentrated in one family or channel is a signal to double-down on that targeting even when no rejection threshold fired.
 
-Compare against thresholds, read from `candidate/targeting.yml#reevaluation.rejection_total` / `reevaluation.rejection_per_family` (defaults `rejection_total: 7`, `rejection_per_family: 3` when absent). The CLI emits the counts; the threshold comparison is an agent behavior (the read-only CLI does not branch on config). Read the threshold values from the YAML and compare against the `--summary` counts:
+If `reevaluation.due` is `true`, hand off to `reevaluate-strategy` and report:
+1. The `dueReasons` strings (which thresholds fired).
+2. The `sinceLastReview` counts (delta totals and per-family breakdown).
 
-- Total rejections ≥ `rejection_total` → trigger reject-pattern review.
-- Rejections in one role family ≥ `rejection_per_family` → trigger family-level reject-pattern review.
-- A cluster of advances or offers in one family or channel → trigger double-down review.
-
-If any threshold is tripped, hand off to `reevaluate-strategy` and report which threshold was crossed and the counts.
+If `reevaluation.due` is `false` but `advanced.byFamily` shows a strong concentration of advances in one family, note it and hand off to `reevaluate-strategy` for a double-down review.
 
 ## STEP 7 — Write back mid-flow gate changes
 
@@ -249,6 +249,6 @@ Include the role family and threshold status in the commit body if a reevaluatio
 - **Never write `current_base` into any tracker field, note, conversations entry, or learning file.** Use `expected_base`, `target_base`, or `minimum_base` only (the `learnings` helper enforces this).
 - Notes must be factual. No superlatives, no invented lessons, no editorializing.
 - Use `email-comms` for drafting follow-ups or replies. This skill records the outcome; it does not draft outbound text.
-- Do not check reevaluation thresholds from prose in AGENTS.md — always run `npm run analyze:outcomes -- --summary` and read the actual counts.
+- Do not check reevaluation thresholds from prose in AGENTS.md — always read `tracker.json#analytics.reevaluation` (refreshed by `npm run analytics -- --write` in the write contract). The block applies the threshold comparison; the agent reads `reevaluation.due` and `reevaluation.dueReasons`, it does not recompute.
 - Role-family taxonomy is driven by `candidate/targeting.yml` (`role_families` or `role_buckets`); `classifyRoleFamily` in `outcome-analysis.mjs` accepts a `targeting` arg and prefers candidate-supplied families over the built-in tech slugs, which apply only when no candidate config is present. `analyze-outcomes.mjs` wires targeting through, so non-tech candidates get correct family files.
-- Reevaluation threshold fields (`reevaluation.rejection_total`, `reevaluation.rejection_per_family`) live in `candidate/targeting.yml` (schema'd). The read-only CLI emits the raw counts; comparing them against the thresholds is an agent behavior — read the threshold values from the YAML and branch on them. Do not expect the CLI to apply thresholds for you.
+- Reevaluation threshold fields (`reevaluation.rejection_total`, `reevaluation.rejection_per_family`) live in `candidate/targeting.yml` (schema'd) and are resolved into `tracker.json#analytics.reevaluation.thresholds` by `buildReevaluationAnalytics()`. The threshold comparison is done by the analytics block — do not manually read the YAML values and branch on them in STEP 6. Read the block, trust `reevaluation.due`.

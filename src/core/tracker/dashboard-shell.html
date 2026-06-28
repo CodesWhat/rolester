@@ -4,6 +4,10 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Rolester · Application Tracker</title>
+<link rel="icon" href="../../assets/favicon.ico" sizes="any"/>
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32x32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16x16.png"/>
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script id="tailwind-config">
 tailwind.config = {
@@ -771,68 +775,15 @@ tailwind.config = {
   }
   .jobs-sankey-frame {
     position: relative;
-    min-height: 520px;
-  }
-  .jobs-sankey-scroll {
-    height: 520px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-  }
-  .jobs-sankey-scroll::-webkit-scrollbar {
-    display: none;
-  }
-  .jobs-sankey {
-    display: block;
-    width: 1800px;
-    min-width: 1800px;
-    height: 520px;
     min-height: 0;
   }
-  .jobs-sankey-scroll-button {
-    position: absolute;
-    top: 50%;
-    z-index: 4;
-    display: inline-flex;
-    width: 40px;
-    height: 56px;
-    align-items: center;
-    justify-content: center;
-    border: 0;
-    border-radius: var(--row-radius);
-    background: rgba(255, 255, 255, 0.88);
-    box-shadow: 0 10px 24px rgba(var(--rgb-line), 0.14);
-    color: var(--cool-ink);
-    cursor: pointer;
-    transform: translateY(-50%);
-    transition: opacity 0.16s ease, background 0.16s ease, transform 0.16s ease;
-  }
-  .jobs-sankey-scroll-button:hover,
-  .jobs-sankey-scroll-button:focus-visible {
-    background: #ffffff;
-    transform: translateY(-50%) scale(1.02);
-  }
-  .jobs-sankey-scroll-button:focus-visible {
-    outline: 2px solid #2170e4;
-    outline-offset: 2px;
-  }
-  .jobs-sankey-scroll-button.is-disabled {
-    opacity: 0;
-    visibility: hidden;
-    cursor: default;
-    pointer-events: none;
-  }
-  .jobs-sankey-scroll-button svg {
-    width: 20px;
-    height: 20px;
-  }
-  .jobs-sankey-scroll-button-left {
-    left: 12px;
-  }
-  .jobs-sankey-scroll-button-right {
-    right: 12px;
+  /* The funnel SVG always scales to fit the frame width (preserveAspectRatio meet), so
+     it never overflows — no scroll container or scroll buttons are needed. */
+  .jobs-sankey {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
   }
   .jobs-sankey-heading {
     fill: #76777d;
@@ -2096,15 +2047,12 @@ tailwind.config = {
   .jobs-page-variant--rail .jobs-table td {
     overflow: hidden;
   }
-  .jobs-page-variant--rail .jobs-sankey-frame,
-  .jobs-page-variant--rail .jobs-sankey-scroll,
-  .jobs-page-variant--rail .jobs-sankey {
-    height: 420px;
-    min-height: 420px;
+  .jobs-page-variant--rail .jobs-sankey-frame {
+    min-height: 0;
   }
   .jobs-page-variant--rail .jobs-sankey {
-    width: 1450px;
-    min-width: 1450px;
+    width: 100%;
+    height: auto;
   }
   @media (max-width: 1179px) {
     .jobs-page-variant--rail .page-rail {
@@ -2667,6 +2615,25 @@ tailwind.config = {
       width: 100%;
     }
   }
+  /* Dark mode: the recommendation banner and review panel use hardcoded LIGHT
+     tints (peach / mint) that composite to a muddy taupe / blue-grey over the
+     dark surface, and the learning bar tracks sit a hair off the card colour so
+     they barely read. Re-tint all three to dark-native equivalents. */
+  [data-theme="dark"] .strategy-recommendation {
+    border-color: rgba(255, 110, 87, 0.32);
+    background: rgba(255, 110, 87, 0.12);
+  }
+  [data-theme="dark"] .strategy-review-panel {
+    border-color: rgba(70, 196, 177, 0.32);
+    background: rgba(70, 196, 177, 0.12);
+  }
+  [data-theme="dark"] .strategy-review-panel[data-ready="false"] {
+    border-color: rgba(var(--rgb-line), 0.12);
+    background: rgba(var(--rgb-line), 0.05);
+  }
+  [data-theme="dark"] [data-strategy-trend-list] .bg-surface-container-high {
+    background-color: var(--paper-edge-strong) !important;
+  }
   .dashboard-card-row {
     align-items: stretch;
   }
@@ -3187,6 +3154,83 @@ tailwind.config = {
   .comp-state-badge[data-state="posted"] { background: #e8f0ff; color: #0058be; }
   .comp-state-badge[data-state="needs-info"] { background: #fcefd9; color: #9a6b16; }
   #drawer-comp-section.is-needs-info .comp-track { opacity: 0.4; }
+
+  /* Company-health drawer section + card pill. Text/badge only — no left-accent strip
+     (global UI rule). Light literals here; dark re-tints live in the [data-theme="dark"]
+     override block. */
+  .health-prov-badge {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: var(--paper-band, #f3eee5);
+    color: var(--ink-soft, #5b5e63);
+    white-space: nowrap;
+  }
+  .health-prov-badge[data-prov="stale"] { background: #f0ece4; color: #8a8077; }
+  .health-rating-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.4;
+    background: #eef0f2;
+    color: #5b5e63;
+  }
+  .health-rating-pill[data-health="healthy"] { background: #e7f0ea; color: #2f6f57; }
+  .health-rating-pill[data-health="watch"]   { background: #fbf0d8; color: #8a6313; }
+  .health-rating-pill[data-health="risky"]   { background: #fce8e4; color: #b23b27; }
+  .health-dim-row {
+    display: grid;
+    grid-template-columns: 78px minmax(46px, auto) 1fr;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .health-dim-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft, #6b6157);
+  }
+  .health-dim-level {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: capitalize;
+    color: #5b5e63;
+  }
+  .health-dim-level[data-level="good"]            { color: #2f6f57; }
+  .health-dim-level[data-level="mixed"]           { color: #8a6313; }
+  .health-dim-level[data-level="poor"]            { color: #b23b27; }
+  .health-dim-level[data-level="needs-more-info"] { color: var(--ink-soft, #8a8077); }
+  .health-dim-note {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--ink, #2b2724);
+  }
+  .health-signal-link { color: var(--coral, #d8492c); }
+  .jobs-card-health { margin-top: 2px; }
+  .jobs-health-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+  .jobs-health-pill[data-health="watch"] { background: #fbf0d8; color: #8a6313; }
+  .jobs-health-pill[data-health="risky"] { background: #fce8e4; color: #b23b27; }
+  .jobs-health-icon-svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  #drawer-comp-section.is-needs-info .comp-track { opacity: 0.4; }
   #drawer-comp-section.is-needs-info .comp-label-pin:not(.is-ask):not(#label-floor) strong {
     color: #9aa0a6;
   }
@@ -3485,6 +3529,13 @@ tailwind.config = {
     border-radius: inherit;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.36), transparent 42%);
     pointer-events: none;
+  }
+  /* Dark mode: that white diagonal sheen lands on a dark surface and reads as a
+     harsh light-top-left → dark-bottom-right gradient, so drop it entirely. */
+  [data-theme="dark"] .dashboard-card-shell::before,
+  [data-theme="dark"] .surface-card::before,
+  [data-theme="dark"] .jobs-rail-mobile::before {
+    display: none;
   }
   .dashboard-card-header {
     position: relative;
@@ -3862,8 +3913,7 @@ tailwind.config = {
   .jobs-search:focus,
   .jobs-filter-popover select:focus,
   .jobs-filter-popover input:focus,
-  .jobs-funnel-toggle:focus-visible,
-  .jobs-sankey-scroll-button:focus-visible {
+  .jobs-funnel-toggle:focus-visible {
     outline: 2px solid var(--coral);
     outline-offset: 2px;
   }
@@ -3963,17 +4013,6 @@ tailwind.config = {
     color: var(--ink-soft);
     fill: var(--ink-soft);
   }
-  .jobs-sankey-scroll-button {
-    border: 1px solid rgba(var(--rgb-line), 0.1);
-    border-radius: var(--row-radius);
-    background: rgba(var(--rgb-surface), 0.92);
-    color: var(--ink);
-    box-shadow: 0 10px 24px rgba(var(--rgb-line), 0.12);
-  }
-  .jobs-sankey-scroll-button:hover {
-    background: var(--paper-surface);
-    color: var(--coral);
-  }
   .pulse-connector {
     background: var(--paper-edge);
   }
@@ -4029,7 +4068,26 @@ tailwind.config = {
     border-color: var(--paper-edge) !important;
     background: var(--paper-surface) !important;
     color: var(--ink);
-    box-shadow: -18px 0 50px rgba(var(--rgb-line), 0.16);
+  }
+  /* Every slide-in drawer is position:fixed/right:0/full-height on EVERY page and
+     carries Tailwind's shadow-2xl in markup PLUS (for three of them) a custom
+     -18px left shadow. Parked off-screen at translate-x-full, either shadow bleeds
+     ~40-68px back onto the page's right edge as a phantom gradient. Kill ALL drawer
+     shadows by default (!important beats the shadow-2xl utility); only cast one
+     while the drawer is actually open (translate-x-0). */
+  #detail-drawer,
+  #actions-drawer,
+  #activity-drawer,
+  #library-drawer,
+  #settings-drawer {
+    box-shadow: none !important;
+  }
+  #detail-drawer.translate-x-0,
+  #actions-drawer.translate-x-0,
+  #activity-drawer.translate-x-0,
+  #library-drawer.translate-x-0,
+  #settings-drawer.translate-x-0 {
+    box-shadow: -18px 0 50px rgba(var(--rgb-line), 0.16) !important;
   }
   #detail-drawer .border-outline-variant,
   #actions-drawer .border-outline-variant,
@@ -5959,6 +6017,20 @@ tailwind.config = {
   [data-theme="dark"] .drawer-action-kicker > span:last-child {
     color: var(--ink-soft);
   }
+
+  /* Company-health: dark re-tints (the light literals above composite muddy over dark
+     surfaces — same B10b pattern as the strategy panels). */
+  [data-theme="dark"] .health-rating-pill { background: var(--paper-edge-strong); color: var(--ink-soft); }
+  [data-theme="dark"] .health-rating-pill[data-health="healthy"] { background: rgba(70, 196, 177, 0.16); color: #6fd3c2; }
+  [data-theme="dark"] .health-rating-pill[data-health="watch"]   { background: rgba(224, 169, 59, 0.16); color: #e6b955; }
+  [data-theme="dark"] .health-rating-pill[data-health="risky"]   { background: rgba(255, 110, 87, 0.16); color: #ff8b76; }
+  [data-theme="dark"] .health-prov-badge[data-prov="stale"] { background: var(--paper-edge); color: var(--ink-soft); }
+  [data-theme="dark"] .health-dim-level[data-level="good"]  { color: #6fd3c2; }
+  [data-theme="dark"] .health-dim-level[data-level="mixed"] { color: #e6b955; }
+  [data-theme="dark"] .health-dim-level[data-level="poor"]  { color: #ff8b76; }
+  [data-theme="dark"] .jobs-health-pill[data-health="watch"] { background: rgba(224, 169, 59, 0.16); color: #e6b955; }
+  [data-theme="dark"] .jobs-health-pill[data-health="risky"] { background: rgba(255, 110, 87, 0.16); color: #ff8b76; }
+  [data-theme="dark"] .health-signal-link { color: var(--coral); }
 </style>
 </head>
 <body class="bg-background text-on-surface font-body-md overflow-hidden" data-dashboard-version="command-deck-focus-prototype">
@@ -6283,30 +6355,18 @@ tailwind.config = {
         <div class="jobs-sankey-body" id="jobs-sankey-slot">
           <div class="jobs-sankey-wrap">
             <div class="jobs-sankey-frame">
-              <button class="jobs-sankey-scroll-button jobs-sankey-scroll-button-left" type="button" data-jobs-sankey-scroll-button="left" aria-label="Scroll funnel left" title="Scroll funnel left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-              </button>
-              <div class="jobs-sankey-scroll" data-jobs-sankey-scroll tabindex="0" aria-label="Jobs funnel horizontal scroll">
-                <svg class="jobs-sankey" viewBox="0 0 1800 520" preserveAspectRatio="xMinYMid meet" role="img" aria-label="Jobs Sankey funnel">
-                  <path class="jobs-sankey-link jobs-sankey-filter is-active" d="M 155 180 C 335 180, 320 180, 500 180" fill="none" stroke="#e8553d" stroke-width="64" data-jobs-stage-filter="all" />
-                  <path class="jobs-sankey-link jobs-sankey-filter" d="M 505 225 C 660 225, 660 245, 815 245" fill="none" stroke="#2b2724" stroke-width="28" data-jobs-stage-filter="interview" />
-                  <g class="jobs-sankey-node jobs-sankey-filter is-active" data-jobs-stage-filter="all">
-                    <rect x="150" y="128" width="5" height="104" rx="2" fill="#e8553d" />
-                    <text class="jobs-sankey-node-label jobs-sankey-node-label--source" x="142" y="184" text-anchor="end">Direct apply <tspan>26</tspan></text>
-                  </g>
-                  <g class="jobs-sankey-node jobs-sankey-filter" data-jobs-stage-filter="interview">
-                    <rect x="815" y="230" width="5" height="30" rx="2" fill="#2b2724" />
-                    <text class="jobs-sankey-node-label" x="834" y="250">Interview <tspan>4</tspan></text>
-                  </g>
-                </svg>
-              </div>
-              <button class="jobs-sankey-scroll-button jobs-sankey-scroll-button-right" type="button" data-jobs-sankey-scroll-button="right" aria-label="Scroll funnel right" title="Scroll funnel right">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
-              </button>
+              <svg class="jobs-sankey" viewBox="0 0 1800 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Jobs Sankey funnel">
+                <path class="jobs-sankey-link jobs-sankey-filter is-active" d="M 155 180 C 335 180, 320 180, 500 180" fill="none" stroke="#e8553d" stroke-width="64" data-jobs-stage-filter="all" />
+                <path class="jobs-sankey-link jobs-sankey-filter" d="M 505 225 C 660 225, 660 245, 815 245" fill="none" stroke="#2b2724" stroke-width="28" data-jobs-stage-filter="interview" />
+                <g class="jobs-sankey-node jobs-sankey-filter is-active" data-jobs-stage-filter="all">
+                  <rect x="150" y="128" width="5" height="104" rx="2" fill="#e8553d" />
+                  <text class="jobs-sankey-node-label jobs-sankey-node-label--source" x="142" y="184" text-anchor="end">Direct apply <tspan>26</tspan></text>
+                </g>
+                <g class="jobs-sankey-node jobs-sankey-filter" data-jobs-stage-filter="interview">
+                  <rect x="815" y="230" width="5" height="30" rx="2" fill="#2b2724" />
+                  <text class="jobs-sankey-node-label" x="834" y="250">Interview <tspan>4</tspan></text>
+                </g>
+              </svg>
             </div>
             <div class="jobs-sankey-legend">
               <span class="jobs-sankey-legend-item"><i style="background:#e8553d"></i>Direct apply</span>
@@ -7421,6 +7481,24 @@ tailwind.config = {
       <div class="flex flex-wrap gap-2" id="drawer-benefits"></div>
     </div>
 
+    <!-- Company health (role-scoped risk signal — internal only, never outbound) -->
+    <div class="p-6 border-b border-outline-variant" id="drawer-health-section" hidden>
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <h4 class="font-label-caps text-label-caps text-outline uppercase">Company health</h4>
+        <span id="health-prov-badge" class="health-prov-badge" data-prov="" hidden></span>
+      </div>
+      <div class="flex items-center flex-wrap gap-2 mb-3">
+        <span id="health-rating-pill" class="health-rating-pill" data-health=""></span>
+        <span id="health-asof" class="text-[11px] text-on-surface-variant"></span>
+      </div>
+      <p id="health-rationale" class="text-[12px] leading-snug text-on-surface mb-3" hidden></p>
+      <div class="space-y-2 mb-1" id="health-dims"></div>
+      <details id="health-evidence" class="health-evidence mt-3" hidden>
+        <summary class="text-[11px] text-outline font-bold uppercase tracking-wide cursor-pointer">Evidence</summary>
+        <ul class="space-y-2 mt-2" id="health-signals"></ul>
+      </details>
+    </div>
+
     <!-- Artifacts (read-only) -->
     <div class="p-6" id="drawer-artifacts-section">
       <h4 class="font-label-caps text-label-caps text-outline uppercase mb-4">Artifacts <span class="text-outline normal-case font-normal text-[11px]">(read-only)</span></h4>
@@ -8464,6 +8542,7 @@ function openDrawer(id) {
   // typed topic sections (interview / comp band / role fit / learnings) — each hides
   // when its data is absent, so the drawer never shows an empty labeled block.
   renderDrawerTopics(d);
+  renderCompanyHealth(d);
 
   // fit reasons
   const matchedEl = document.getElementById('drawer-matched');
@@ -8710,6 +8789,83 @@ function renderDrawerTopics(d) {
     learnEl.appendChild(li);
   });
   learnSection.hidden = !learnings.length;
+}
+
+// Company health — role-scoped risk rating + per-dimension rows + evidence. Reads the
+// persisted view-model (d.companyHealth); textContent for all agent-authored values; the
+// whole section hides when the row carries no rating. Internal signal — display only.
+function renderCompanyHealth(d) {
+  const section = document.getElementById('drawer-health-section');
+  const ch = d.companyHealth || null;
+  if (!ch) { section.hidden = true; return; }
+  section.hidden = false;
+
+  const pill = document.getElementById('health-rating-pill');
+  pill.textContent = ch.ratingLabel || ch.rating;
+  pill.dataset.health = ch.rating;
+
+  const prov = document.getElementById('health-prov-badge');
+  prov.textContent = ch.provenanceLabel || '';
+  prov.dataset.prov = ch.provenance || '';
+  prov.hidden = !ch.provenanceLabel;
+
+  const asof = document.getElementById('health-asof');
+  asof.textContent = ch.asOf ? 'as of ' + ch.asOf : '';
+
+  const rationale = document.getElementById('health-rationale');
+  if (ch.rationale) { rationale.textContent = ch.rationale; rationale.hidden = false; }
+  else { rationale.textContent = ''; rationale.hidden = true; }
+
+  const dims = document.getElementById('health-dims');
+  dims.innerHTML = '';
+  (ch.dimensions || []).forEach((dim) => {
+    if (!dim || !dim.level) return;
+    const row = document.createElement('div');
+    row.className = 'health-dim-row';
+    const label = document.createElement('span');
+    label.className = 'health-dim-label';
+    label.textContent = dim.label;
+    const level = document.createElement('span');
+    level.className = 'health-dim-level';
+    level.dataset.level = dim.level;
+    level.textContent = dim.level;
+    const note = document.createElement('span');
+    note.className = 'health-dim-note';
+    note.textContent = dim.note || '';
+    row.appendChild(label);
+    row.appendChild(level);
+    row.appendChild(note);
+    dims.appendChild(row);
+  });
+
+  const evidence = document.getElementById('health-evidence');
+  const signals = document.getElementById('health-signals');
+  signals.innerHTML = '';
+  (ch.signals || []).forEach((sig) => {
+    if (!sig || (!sig.summary && !sig.source)) return;
+    const li = document.createElement('li');
+    li.className = 'health-signal flex flex-col gap-0.5';
+    const summary = document.createElement('span');
+    summary.className = 'text-[12px] text-on-surface leading-snug';
+    summary.textContent = sig.summary || sig.source || '';
+    li.appendChild(summary);
+    const meta = document.createElement('span');
+    meta.className = 'text-[11px] text-on-surface-variant';
+    meta.textContent = [sig.source, sig.date].filter(Boolean).join(' · ');
+    li.appendChild(meta);
+    // Only honor http(s) source links (never javascript:/data: from research data).
+    if (sig.url && /^https?:\/\//i.test(sig.url)) {
+      const a = document.createElement('a');
+      a.href = sig.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.className = 'health-signal-link text-[11px] underline';
+      a.textContent = 'source';
+      li.appendChild(a);
+    }
+    signals.appendChild(li);
+  });
+  evidence.hidden = !((ch.signals || []).length);
 }
 
 function renderCompBar(d) {
@@ -9344,20 +9500,6 @@ function setupJobsExplorer() {
     if (tooltip) tooltip.style.display = 'none';
   }
 
-  function updateSankeyScrollButtons() {
-    const scroll = funnel.querySelector('[data-jobs-sankey-scroll]');
-    if (!scroll) return;
-    const maxScroll = Math.max(0, scroll.scrollWidth - scroll.clientWidth);
-    const hasOverflow = maxScroll > 2;
-    funnel.querySelectorAll('[data-jobs-sankey-scroll-button]').forEach((button) => {
-      const direction = button.dataset.jobsSankeyScrollButton === 'right' ? 1 : -1;
-      const atEdge = direction < 0 ? scroll.scrollLeft <= 2 : scroll.scrollLeft >= maxScroll - 2;
-      const disabled = !hasOverflow || atEdge;
-      button.classList.toggle('is-disabled', disabled);
-      button.disabled = disabled;
-    });
-  }
-
   function render() {
     const rowList = rows();
     const cardList = cards();
@@ -9409,7 +9551,6 @@ function setupJobsExplorer() {
     funnel.querySelectorAll('.jobs-sankey-filter[data-jobs-stage-filter]').forEach((button) => {
       button.classList.toggle('is-active', button.dataset.jobsStageFilter === state.stage);
     });
-    updateSankeyScrollButtons();
     funnel.classList.toggle('is-collapsed', state.funnelCollapsed);
     if (showGhostedToggle) showGhostedToggle.checked = state.showGhosted;
     if (hideStaleToggle) hideStaleToggle.checked = state.hideStale;
@@ -9654,16 +9795,6 @@ function setupJobsExplorer() {
         return;
       }
 
-      const scrollButton = event.target.closest('[data-jobs-sankey-scroll-button]');
-      if (scrollButton) {
-        const scroll = funnel.querySelector('[data-jobs-sankey-scroll]');
-        if (!scroll) return;
-        const direction = scrollButton.dataset.jobsSankeyScrollButton === 'right' ? 1 : -1;
-        scroll.scrollBy({ left: direction * scroll.clientWidth * 0.72, behavior: 'smooth' });
-        window.setTimeout(updateSankeyScrollButtons, 180);
-        return;
-      }
-
       const button = event.target.closest('[data-jobs-stage-filter]');
       if (!button) return;
       state.stage = button.dataset.jobsStageFilter || 'all';
@@ -9689,9 +9820,6 @@ function setupJobsExplorer() {
       hideTooltip();
       clearSankeyFocus();
     });
-
-    funnel.querySelector('[data-jobs-sankey-scroll]')?.addEventListener('scroll', updateSankeyScrollButtons, { passive: true });
-    window.addEventListener('resize', updateSankeyScrollButtons);
 
     document.addEventListener('mousemove', (event) => {
       if (funnel.contains(event.target)) return;
