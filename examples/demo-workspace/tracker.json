@@ -123,7 +123,54 @@
         "note": "Respond to the E Corp offer — weigh against the Cyberdyne onsite + Massive panel this week."
       },
       "warn": "E Corp wants an answer soon; two live loops (Cyberdyne, Massive) aren't done yet.",
-      "logo": "../assets/logos/e-corp.png"
+      "logo": "../assets/logos/e-corp.png",
+      "companyHealth": {
+        "rating": "healthy",
+        "forFunction": "applied AI engineering",
+        "asOf": "2026-06-25",
+        "provenance": "built-from-data",
+        "crossCut": [],
+        "fitDelta": 0,
+        "dimensions": {
+          "layoffRisk": {
+            "level": "good",
+            "note": "No layoffs on record; Platform Intelligence is a named growth bet.",
+            "functionHit": false
+          },
+          "hiringMomentum": {
+            "level": "good",
+            "note": "Actively scaling the org behind this role — multiple open reqs."
+          },
+          "financial": {
+            "level": "good",
+            "note": "Profitable; raised full-year guidance last quarter."
+          },
+          "sentiment": {
+            "level": "good",
+            "note": "Glassdoor 4.1 and rising; strong engineering reviews.",
+            "trend": "up"
+          },
+          "leadership": {
+            "level": "good",
+            "note": "Stable; the hiring director has been in seat four years."
+          }
+        },
+        "rationale": "Healthy across the board, and your exact function is a stated growth priority — the safest landing of the live options. Nothing here dents the fit; it reinforces taking the offer seriously.",
+        "signals": [
+          {
+            "source": "Q1 earnings",
+            "date": "2026-05-05",
+            "summary": "Revenue up; raised full-year guidance, AI platform called out as a growth driver.",
+            "url": "https://example.com/e-corp-q1"
+          },
+          {
+            "source": "Glassdoor",
+            "date": "2026-06-08",
+            "summary": "4.1 rating, trending up; recurring 'strong eng culture' theme.",
+            "url": "https://glassdoor.com"
+          }
+        ]
+      }
     },
     {
       "id": "demo-app-2",
@@ -416,7 +463,62 @@
         "bonus"
       ],
       "interviewAt": "2026-06-28T16:00:00.000Z",
-      "logo": "../assets/logos/cyberdyne.png"
+      "logo": "../assets/logos/cyberdyne.png",
+      "companyHealth": {
+        "rating": "risky",
+        "forFunction": "ML engineering",
+        "asOf": "2026-06-25",
+        "provenance": "built-from-data",
+        "crossCut": [
+          "stability"
+        ],
+        "fitDelta": -5,
+        "dimensions": {
+          "layoffRisk": {
+            "level": "poor",
+            "note": "Cut ~12% of the autonomy org six weeks ago — ML-platform roles adjacent to this team were named.",
+            "functionHit": true
+          },
+          "hiringMomentum": {
+            "level": "mixed",
+            "note": "Backfilling rather than expanding; two reqs pulled in Q2."
+          },
+          "financial": {
+            "level": "mixed",
+            "note": "Burned through the last raise; a bridge round is rumored at a flat valuation."
+          },
+          "sentiment": {
+            "level": "poor",
+            "note": "Glassdoor sliding 3.6 → 3.1 over twelve months; recurring leadership-churn complaints.",
+            "trend": "down"
+          },
+          "leadership": {
+            "level": "poor",
+            "note": "Third VP of Engineering in two years; the hiring manager joined four months ago."
+          }
+        },
+        "rationale": "Strong product, but a fresh RIF hit the exact org you'd join and the funding picture is thin. The role is real and senior — it's just a riskier landing than the offer in hand. Push on team stability and runway in the onsite.",
+        "signals": [
+          {
+            "source": "layoffs.fyi",
+            "date": "2026-05-12",
+            "summary": "Cyberdyne cut ~12% (~340 roles); autonomy + ML platform teams named.",
+            "url": "https://layoffs.fyi"
+          },
+          {
+            "source": "TechCrunch",
+            "date": "2026-05-28",
+            "summary": "Reported to be raising a bridge round at a flat valuation.",
+            "url": "https://techcrunch.com"
+          },
+          {
+            "source": "Glassdoor",
+            "date": "2026-06-06",
+            "summary": "Rating down to 3.1; 'leadership churn' and 'reorg fatigue' recur.",
+            "url": "https://glassdoor.com"
+          }
+        ]
+      }
     },
     {
       "id": "demo-app-6",
@@ -611,7 +713,54 @@
       ],
       "warn": "Staff Eng scope skews platform/infra; less FDE/customer-facing than the primary target family.",
       "interviewAt": "2026-07-01T16:00:00.000Z",
-      "logo": "../assets/logos/massive-dynamic.png"
+      "logo": "../assets/logos/massive-dynamic.png",
+      "companyHealth": {
+        "rating": "watch",
+        "forFunction": "platform engineering",
+        "asOf": "2026-06-24",
+        "provenance": "built-from-data",
+        "crossCut": [],
+        "fitDelta": 0,
+        "dimensions": {
+          "layoffRisk": {
+            "level": "good",
+            "note": "No RIFs on record; the platform org you'd join is growing.",
+            "functionHit": false
+          },
+          "hiringMomentum": {
+            "level": "good",
+            "note": "Eight open reqs on the platform team this quarter."
+          },
+          "financial": {
+            "level": "mixed",
+            "note": "Profitable core line, but a flagship launch slipped two quarters."
+          },
+          "sentiment": {
+            "level": "mixed",
+            "note": "Glassdoor steady at 3.8; some pace-of-change grumbling.",
+            "trend": "flat"
+          },
+          "leadership": {
+            "level": "good",
+            "note": "Stable engineering leadership; your panel includes the function lead."
+          }
+        },
+        "rationale": "Healthy on the signals that matter to your role — your function is growing and there's no layoff risk. The one yellow flag (a slipped flagship) doesn't touch the team you'd join, so it's a watch, not a worry. Didn't move your fit.",
+        "signals": [
+          {
+            "source": "Company blog",
+            "date": "2026-05-20",
+            "summary": "Platform-team expansion announced; multiple senior roles opened.",
+            "url": "https://example.com/massive-blog"
+          },
+          {
+            "source": "Glassdoor",
+            "date": "2026-06-10",
+            "summary": "Steady 3.8; 'good people, fast pace' recurs.",
+            "url": "https://glassdoor.com"
+          }
+        ]
+      }
     },
     {
       "id": "demo-app-10",
