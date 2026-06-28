@@ -49,7 +49,7 @@ test("hero badge beats render as separate lines", async () => {
 test("root layout suppresses the intentional early html class hydration delta", async () => {
   const layout = await readFile("website/src/app/layout.tsx", "utf8");
 
-  assert.match(layout, /document\.documentElement\.classList\.add\('js'\)/);
+  assert.match(layout, /documentElement;[\s\S]*?\.classList\.add\('js'\)/);
   assert.match(layout, /<html[\s\S]*suppressHydrationWarning/);
 });
 
