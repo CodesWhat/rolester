@@ -2615,6 +2615,25 @@ tailwind.config = {
       width: 100%;
     }
   }
+  /* Dark mode: the recommendation banner and review panel use hardcoded LIGHT
+     tints (peach / mint) that composite to a muddy taupe / blue-grey over the
+     dark surface, and the learning bar tracks sit a hair off the card colour so
+     they barely read. Re-tint all three to dark-native equivalents. */
+  [data-theme="dark"] .strategy-recommendation {
+    border-color: rgba(255, 110, 87, 0.32);
+    background: rgba(255, 110, 87, 0.12);
+  }
+  [data-theme="dark"] .strategy-review-panel {
+    border-color: rgba(70, 196, 177, 0.32);
+    background: rgba(70, 196, 177, 0.12);
+  }
+  [data-theme="dark"] .strategy-review-panel[data-ready="false"] {
+    border-color: rgba(var(--rgb-line), 0.12);
+    background: rgba(var(--rgb-line), 0.05);
+  }
+  [data-theme="dark"] [data-strategy-trend-list] .bg-surface-container-high {
+    background-color: var(--paper-edge-strong) !important;
+  }
   .dashboard-card-row {
     align-items: stretch;
   }
@@ -3434,6 +3453,13 @@ tailwind.config = {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.36), transparent 42%);
     pointer-events: none;
   }
+  /* Dark mode: that white diagonal sheen lands on a dark surface and reads as a
+     harsh light-top-left → dark-bottom-right gradient, so drop it entirely. */
+  [data-theme="dark"] .dashboard-card-shell::before,
+  [data-theme="dark"] .surface-card::before,
+  [data-theme="dark"] .jobs-rail-mobile::before {
+    display: none;
+  }
   .dashboard-card-header {
     position: relative;
     z-index: 1;
@@ -3965,7 +3991,26 @@ tailwind.config = {
     border-color: var(--paper-edge) !important;
     background: var(--paper-surface) !important;
     color: var(--ink);
-    box-shadow: -18px 0 50px rgba(var(--rgb-line), 0.16);
+  }
+  /* Every slide-in drawer is position:fixed/right:0/full-height on EVERY page and
+     carries Tailwind's shadow-2xl in markup PLUS (for three of them) a custom
+     -18px left shadow. Parked off-screen at translate-x-full, either shadow bleeds
+     ~40-68px back onto the page's right edge as a phantom gradient. Kill ALL drawer
+     shadows by default (!important beats the shadow-2xl utility); only cast one
+     while the drawer is actually open (translate-x-0). */
+  #detail-drawer,
+  #actions-drawer,
+  #activity-drawer,
+  #library-drawer,
+  #settings-drawer {
+    box-shadow: none !important;
+  }
+  #detail-drawer.translate-x-0,
+  #actions-drawer.translate-x-0,
+  #activity-drawer.translate-x-0,
+  #library-drawer.translate-x-0,
+  #settings-drawer.translate-x-0 {
+    box-shadow: -18px 0 50px rgba(var(--rgb-line), 0.16) !important;
   }
   #detail-drawer .border-outline-variant,
   #actions-drawer .border-outline-variant,
