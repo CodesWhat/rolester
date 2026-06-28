@@ -62,15 +62,17 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// Inline bootstrap script: sets the `js` class on <html> AND immediately arms
-// the reveal IntersectionObserver. Both live in the same script so they share
-// fate — if the script runs, the gate opens AND the revealer is armed. If the
-// bundle is blocked (ad-blocker, CSP, network failure) but this inline script
-// still executes, content is revealed correctly. Falls back to making all
-// .reveal elements visible immediately when IntersectionObserver is unavailable
-// or the user prefers reduced motion.
+// Inline bootstrap script: sets the `js` class on <html> before paint (the gate
+// that hides .reveal content so it can animate in) and installs a POST-LOAD
+// failsafe. It deliberately does NOT add the `visible` class itself — the reveal
+// IntersectionObserver runs after hydration in SiteInteractions, so the inline
+// script never mutates a React-rendered .reveal node before React hydrates (which
+// is what caused the hydration mismatch). The failsafe only fires if the app
+// bundle never armed the observer (blocked by an ad-blocker / CSP / network), and
+// it runs after `load` — well after hydration — so it's mutation-safe. Reduced
+// motion is handled purely in CSS (see the prefers-reduced-motion block).
 const REVEAL_BOOTSTRAP =
-  "(function(){var d=document,de=d.documentElement;de.classList.add('js');var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;function all(){var e=d.querySelectorAll('.reveal');for(var i=0;i<e.length;i++)e[i].classList.add('visible');}function arm(){if(reduce||!('IntersectionObserver' in window)){all();return;}var io=new IntersectionObserver(function(en){for(var i=0;i<en.length;i++){if(en[i].isIntersecting){en[i].target.classList.add('visible');io.unobserve(en[i].target);}}},{threshold:0.12,rootMargin:'0px 0px -40px 0px'});var e=d.querySelectorAll('.reveal');for(var i=0;i<e.length;i++)io.observe(e[i]);}if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',arm);}else{arm();}})();";
+  "(function(){var d=document,de=d.documentElement;de.classList.add('js');function revealAll(){var e=d.querySelectorAll('.reveal');for(var i=0;i<e.length;i++)e[i].classList.add('visible');}function failsafe(){if(!window.__rolesterRevealArmed)revealAll();}function schedule(){setTimeout(failsafe,1200);}if(d.readyState==='complete'){schedule();}else{window.addEventListener('load',schedule);}})();";
 
 export default function RootLayout({
   children,

@@ -9,9 +9,11 @@ import { useEffect } from "react";
  *  2. Soft nav-link active state by section
  *  3. Header condensing into a floating pill on scroll
  *
- * Reveal-on-scroll is handled by the inline bootstrap script in layout.tsx so
- * the gate and revealer share fate even when the JS bundle is blocked. Each
- * block here guards on reduced-motion / missing IntersectionObserver.
+ * Reveal-on-scroll is armed here, AFTER hydration, so the inline bootstrap in
+ * layout.tsx never adds `visible` to a React-rendered .reveal node before React
+ * hydrates (that pre-hydration mutation caused a hydration mismatch). The inline
+ * script only sets the `js` gate + a post-load failsafe for the blocked-bundle
+ * case. Each block here guards on reduced-motion / missing IntersectionObserver.
  */
 export default function SiteInteractions() {
   useEffect(() => {
@@ -20,6 +22,31 @@ export default function SiteInteractions() {
     ).matches;
     const hasIO = "IntersectionObserver" in window;
     const cleanups: Array<() => void> = [];
+
+    // ── 0. Reveal-on-scroll (armed post-hydration) ──────
+    // The flag tells layout.tsx's inline failsafe the bundle loaded, so it won't
+    // blanket-reveal. Adding `visible` here (after hydration) is mutation-safe.
+    (
+      window as unknown as { __rolesterRevealArmed?: boolean }
+    ).__rolesterRevealArmed = true;
+    const reveals = document.querySelectorAll<HTMLElement>(".reveal");
+    if (!hasIO || reduceMotion) {
+      reveals.forEach((el) => el.classList.add("visible"));
+    } else {
+      const revealObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              revealObs.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.12, rootMargin: "0px 0px -40px 0px" },
+      );
+      reveals.forEach((el) => revealObs.observe(el));
+      cleanups.push(() => revealObs.disconnect());
+    }
 
     // ── 1. Squiggle underline draw-in on first visibility ──
     const word = document.getElementById("underline-sidekick");

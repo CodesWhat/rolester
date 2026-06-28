@@ -1345,8 +1345,9 @@ footer {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .reveal {
-    opacity: 1;
-    transform: none;
+  html .reveal,
+  html.js .reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
