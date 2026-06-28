@@ -33,6 +33,7 @@
     "templates",
     ".agents/skills/apply-job/SKILL.md",
     ".agents/skills/calendar-sync/SKILL.md",
+    ".agents/skills/company-health/SKILL.md",
     ".agents/skills/configure/SKILL.md",
     ".agents/skills/discover-companies/SKILL.md",
     ".agents/skills/email-comms/SKILL.md",

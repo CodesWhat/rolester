@@ -22,6 +22,35 @@
       "enum": ["exec-summary", "standard", "technical", "verbose"],
       "default": "standard",
       "description": "Controls how the agent talks to the user (not outbound artifact tone). exec-summary=1-3 lines lead with decision; standard=scannable bullets/short lines takeaway-first (DEFAULT); technical=more depth/jargon, still structured; verbose=full detail with headers/bullets. Semantics defined in AGENTS.md#mode-switches."
+    },
+    "company_health": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Controls when the company-health skill fires its (cost-bearing) role-scoped risk research. Absent = the defaults below. Never changes honesty/privacy gates; the rating is an internal signal only.",
+      "properties": {
+        "auto": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-fire the research on a stage transition (subject to fire_at_stage). false = manual-only."
+        },
+        "fire_at_stage": {
+          "type": "string",
+          "enum": ["applied", "interview", "offer"],
+          "default": "interview",
+          "description": "Earliest stage that triggers an automatic run. interview (default) keeps the researched set tiny and high-value; applied is broad and costly; offer is the latest/cheapest."
+        },
+        "manual_always": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow on-demand runs at any stage when the user explicitly asks (e.g. before applying to a dream company)."
+        },
+        "recheck_days": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 14,
+          "description": "Re-research a cached rating once it is older than this many days (or on a major stage transition); fresher ratings are reused without spending searches."
+        }
+      }
     }
   }
 }

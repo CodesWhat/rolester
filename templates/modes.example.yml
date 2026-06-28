@@ -23,3 +23,17 @@
 usage_mode: "standard"
 application_mode: "balanced"
 agent_voice: "standard"
+
+# company_health gates the (cost-bearing) company-health skill — role-scoped
+# layoff/financial/sentiment risk research. Absent = the defaults shown here.
+#   auto          - auto-fire on a stage transition (false = manual-only)
+#   fire_at_stage - earliest stage that auto-fires: applied | interview | offer
+#                   (interview keeps the researched set small; applied is broad+costly)
+#   manual_always - allow on-demand runs at any stage when you explicitly ask
+#   recheck_days  - re-research a cached rating once it's older than this many days
+# The rating is an INTERNAL signal only and never enters an outbound artifact.
+company_health:
+  auto: true
+  fire_at_stage: "interview"
+  manual_always: true
+  recheck_days: 14
