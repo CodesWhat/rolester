@@ -967,10 +967,19 @@ section {
   border-radius: 8px;
   box-shadow: inset 0 0 0 1px rgba(43, 39, 36, 0.1);
 }
+/* Inline code chips: force a real monospace face and kill ligatures so command
+   hyphens (-g, @anthropic-ai) render as plain hyphens, not long dashes. */
+code {
+  font-family: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
 .terminal-sticker {
   background: #1a1614;
   color: #e0d4c4;
   font-family: var(--font-mono), monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
   font-size: 0.9rem;
   padding: 28px 32px;
   border-radius: var(--radius-lg);
