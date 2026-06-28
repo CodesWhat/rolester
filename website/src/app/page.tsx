@@ -1,3 +1,4 @@
+import DemoEmbed from "@/components/DemoEmbed";
 import SiteInteractions from "@/components/SiteInteractions";
 
 export default function Home() {
@@ -207,14 +208,8 @@ export default function Home() {
         <div className="wrap">
           <div className="sidekick reveal">
             <div className="sidekick-grid">
-              <div className="sidekick-rat">
-                <img
-                  className="sidekick-rat-img"
-                  src="/logo.png"
-                  alt="Rolester rat mascot"
-                  width={180}
-                  height={180}
-                />
+              <div className="sidekick-demo">
+                <DemoEmbed />
               </div>
               <div className="sidekick-copy">
                 <div className="section-label">Meet your sidekick</div>

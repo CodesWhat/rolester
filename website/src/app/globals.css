@@ -604,6 +604,99 @@ section {
 .sidekick-copy .section-sub {
   max-width: none;
 }
+
+/* ─── LIVE DEMO EMBED (replaces the sidekick mascot, drydock-style) ─── */
+.sidekick-demo {
+  position: relative;
+}
+.demo-frame {
+  display: block;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #1a1614;
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(43, 39, 36, 0.1);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+.demo-frame:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 44px rgba(43, 39, 36, 0.2);
+}
+.demo-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #221d1a;
+}
+.demo-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.demo-dot-red {
+  background: #ff5f56;
+}
+.demo-dot-yellow {
+  background: #ffbd2e;
+}
+.demo-dot-green {
+  background: #27c93f;
+}
+.demo-chrome-url {
+  margin-left: 10px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  color: #b9aa9a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Preview screen: a looping screen-recording of the real dashboard; click opens the live demo. */
+.demo-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1240 / 738;
+  background: var(--cream);
+  overflow: hidden;
+}
+.demo-gif {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+.demo-screen-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 18px;
+  background: linear-gradient(to top, rgba(26, 22, 20, 0.3), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.demo-screen:hover .demo-screen-overlay,
+.demo-screen:focus-visible .demo-screen-overlay {
+  opacity: 1;
+}
+.demo-expand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(43, 39, 36, 0.22);
+}
 .gate-pullquote {
   margin-top: 32px;
   padding: 24px 28px;
