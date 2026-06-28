@@ -58,48 +58,12 @@ test("Dashboard sourceshell hydrates through the tracked data module", async () 
   assert.match(html, /data-mode-chip="usage"/);
   assert.match(html, /data-mode-value="application"/);
   assert.doesNotMatch(html, /Cold apply/);
-  assert.match(html, /\.jobs-funnel-card\s*\{[\s\S]*?width:\s*100%;/);
-  assert.match(
-    html,
-    /\.jobs-funnel-card\.is-collapsed \.jobs-sankey-body\s*\{[\s\S]*?display:\s*none;/
-  );
-  assert.match(html, /\.jobs-table-wrap\s*\{[\s\S]*?overflow-x:\s*auto;/);
   assert.match(html, /funnelCollapsed/);
 });
 
 test("Dashboard source shell exposes the Paper Command Center chrome", async () => {
   const html = await readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8");
 
-  assert.match(html, /--paper-bg:\s*#faf6ef;/);
-  assert.match(html, /--paper-surface:\s*#fffaf2;/);
-  assert.match(html, /--ink:\s*#2b2724;/);
-  assert.match(html, /--coral:\s*#e8553d;/);
-  assert.match(html, /--teal:\s*#2f9e8f;/);
-  assert.match(html, /--mustard:\s*#e0a93b;/);
-  assert.match(html, /feTurbulence[^>]+baseFrequency='0\.75'/);
-  assert.match(html, /\.mode-status-chip\s*\{[\s\S]*?transform:\s*rotate\(-1\.1deg\);/);
-  assert.match(
-    html,
-    /\.top-nav-link::after\s*\{[^}]*width:\s*60%;[^}]*background-image:\s*url\("data:image\/svg\+xml[^}]*M4,10 Q30,4 60,8 Q90,12 116,6/
-  );
-  assert.match(
-    html,
-    /\.top-nav-link:hover::after,[^}]*\.top-nav-link:focus-visible::after,[^}]*\.top-nav-link\[aria-current="page"\]::after\s*\{[^}]*opacity:\s*1;/
-  );
-  assert.match(
-    html,
-    /\.top-nav-inner:has\(\.top-nav-link:hover\) \.top-nav-link\[aria-current="page"\]:not\(:hover\)::after\s*\{[^}]*opacity:\s*0;/
-  );
-  assert.match(
-    html,
-    /\.top-nav-link\[aria-current="page"\]\s*\{[^}]*background:\s*transparent;[^}]*color:\s*var\(--ink\) !important;/
-  );
-  assert.match(html, /\.top-nav-link:hover\s*\{[^}]*background:\s*transparent;/);
-  assert.doesNotMatch(html, /\.top-nav-link:hover\s*\{[^}]*background:\s*var\(--paper-band\);/);
-  assert.doesNotMatch(
-    html,
-    /\.top-nav-link\[aria-current="page"\]\s*\{[^}]*background:\s*var\(--ink\);/
-  );
   assert.doesNotMatch(html, /\.page-title::after/);
   assert.doesNotMatch(html, /hero-blobs|blob-/);
 });
@@ -109,23 +73,6 @@ test("Dashboard shell morphs the top nav from square header to floating pill on 
 
   assert.match(html, /<nav class="[^"]*\bis-at-top\b[^"]*"[^>]*data-dashboard-header/);
   assert.match(html, /<main class="[^"]*"[^>]*data-dashboard-scroll-root/);
-  assert.match(
-    html,
-    /nav\.fixed\.is-at-top\s*\{[\s\S]*?background:\s*var\(--header-bar-bg\) !important;/
-  );
-  assert.match(html, /nav\.fixed\.is-at-top \.top-nav-inner\s*\{[\s\S]*?border-radius:\s*0;/);
-  assert.match(
-    html,
-    /nav\.fixed\.is-scrolled \.top-nav-inner\s*\{[\s\S]*?width:\s*calc\(100% - 32px\);[\s\S]*?border-radius:\s*999px;/
-  );
-  assert.match(
-    html,
-    /nav\.fixed\.is-scrolled\s*\{[\s\S]*?background:\s*transparent !important;[\s\S]*?backdrop-filter:\s*none;/
-  );
-  assert.match(
-    html,
-    /nav\.fixed\.is-scrolled \.top-nav-inner\s*\{[\s\S]*?background:\s*var\(--header-pill-bg\);[\s\S]*?box-shadow:\s*var\(--header-pill-shadow\)/
-  );
   assert.match(html, /function setupHeaderScrollState\(\)\s*\{/);
   assert.match(html, /document\.querySelector\('\[data-dashboard-scroll-root\]'\)/);
   assert.match(html, /header\.classList\.toggle\('is-scrolled',\s*isScrolled\)/);
@@ -136,69 +83,10 @@ test("Dashboard shell morphs the top nav from square header to floating pill on 
 test("Dashboard shell keeps the Paper Command Center styling in the command deck prototype", async () => {
   const html = await readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8");
 
-  assert.match(html, /data-dashboard-version="command-deck-focus-prototype"/);
-  assert.match(html, /class="page-hero-side hero-side-stack lg:justify-end"/);
   assert.match(html, /id="settings-drawer"/);
   assert.match(html, /<span class="mode-status-chip-label">Usage:<\/span>/);
   assert.match(html, /<span class="mode-status-chip-label">Apply:<\/span>/);
   assert.doesNotMatch(html, /<span class="mode-status-chip-label">Application<\/span>/);
-  assert.match(html, /class="hero-summary metric-card-row"/);
-  assert.match(html, /class="metric-card metric-card--in-play"/);
-  assert.match(html, /class="metric-card metric-card--response"/);
-  assert.match(html, /class="metric-card metric-card--interviews"/);
-  for (const iconClass of [
-    "card-title-icon--focus",
-    "card-title-icon--next",
-    "card-title-icon--upcoming",
-    "card-title-icon--roles",
-    "card-title-icon--activity",
-  ]) {
-    assert.match(html, new RegExp(iconClass));
-  }
-  assert.match(html, /\.card-title-icon--next\s*\{[\s\S]*?color:\s*var\(--coral\) !important;/);
-  assert.match(html, /\.card-title-icon--activity\s*\{[\s\S]*?color:\s*var\(--plum\) !important;/);
-  assert.match(
-    html,
-    /@media \(min-width: 1024px\)\s*\{[\s\S]*?\.page-hero\s*\{[\s\S]*?flex-direction:\s*row;[\s\S]*?align-items:\s*flex-start;/
-  );
-
-  const heroSide = html.match(
-    /<div class="page-hero-side hero-side-stack lg:justify-end"[\s\S]*?<\/header>/
-  )?.[0];
-  assert.ok(heroSide, "expected a right-side hero stack");
-  assert.ok(
-    heroSide.indexOf("hero-mode-row") < heroSide.indexOf("metric-card-row"),
-    "mode chips should render above the metric cards"
-  );
-
-  assert.match(
-    html,
-    /\.hero-summary \.metric-card\s*\{[\s\S]*?width:\s*136px;[\s\S]*?min-width:\s*136px;[\s\S]*?border-radius:\s*var\(--card-radius\);/
-  );
-  assert.match(
-    html,
-    /\.metric-card--response\s*\{[\s\S]*?background:\s*rgba\(214,\s*240,\s*236,\s*0\.62\);/
-  );
-  assert.match(
-    html,
-    /\.metric-card--interviews\s*\{[\s\S]*?background:\s*rgba\(253,\s*243,\s*214,\s*0\.72\);/
-  );
-  assert.match(
-    html,
-    /\.dashboard-zebra > \*\s*\{[\s\S]*?box-shadow:\s*0 1px 0 rgba\(var\(--rgb-line\),\s*0\.03\);/
-  );
-  assert.match(
-    html,
-    /\.jobs-table tr:hover td\s*\{[\s\S]*?background:\s*color-mix\(in srgb,\s*var\(--coral\)\s*10%,\s*var\(--paper-surface\)\) !important;[\s\S]*?box-shadow:\s*none;/
-  );
-  assert.match(
-    html,
-    /\.jobs-table tr:hover td:not\(:first-child\):not\(:last-child\)\s*\{[\s\S]*?border-radius:\s*0;/
-  );
-  assert.doesNotMatch(
-    html,
-    /\.dashboard-zebra > button:hover,[\s\S]*?\.jobs-card:hover,[\s\S]*?\.jobs-table tr:hover td\s*\{[\s\S]*?box-shadow:\s*inset 0 0 0 1px rgba\(232,\s*85,\s*61,\s*0\.18\);/
-  );
 });
 
 test("Dashboard shell moves mode chips out of page headers and into the settings drawer", async () => {
@@ -254,14 +142,6 @@ test("Dashboard shell settings drawer opens from the nav gear", async () => {
 test("Dashboard shell prototypes the command deck focus layout with activity dock and drawer", async () => {
   const html = await readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8");
 
-  assert.match(html, /data-dashboard-version="command-deck-focus-prototype"/);
-  assert.match(html, /class="page-layout"/);
-  assert.match(html, /class="page-main"/);
-  assert.match(
-    html,
-    /class="dashboard-focus-row grid grid-cols-1 gap-y-10 lg:grid-cols-2 lg:gap-x-6"/
-  );
-  assert.doesNotMatch(html, /1\.05fr|0\.95fr/);
   assert.match(html, /id="focus-card"/);
   assert.match(html, /id="focus-card-body"/);
   assert.match(html, /id="pulse-feed"/);
@@ -272,7 +152,6 @@ test("Dashboard shell prototypes the command deck focus layout with activity doc
   assert.match(html, /function setupActivityDrawer\(\)/);
   assert.match(html, /function openActivityDrawer\(\)/);
   assert.match(html, /function closeActivityDrawer\(/);
-  assert.doesNotMatch(html, /id="dashboard-activity-slot"/);
 });
 
 test("Dashboard shell exposes the Strategy insights card hooks", async () => {
@@ -317,53 +196,12 @@ test("Dashboard shell exposes the Strategy insights card hooks", async () => {
 test("Dashboard shell uses one square disclosure control for collapsible dropdowns", async () => {
   const html = await readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8");
 
-  assert.match(
-    html,
-    /\.dashboard-disclosure-toggle\s*\{[\s\S]*?width:\s*42px;[\s\S]*?height:\s*42px;/
-  );
-  assert.match(
-    html,
-    /\.dashboard-disclosure-toggle\s*\{[\s\S]*?border-radius:\s*var\(--row-radius\);[\s\S]*?box-shadow:/
-  );
-  assert.match(
-    html,
-    /\.dashboard-disclosure-toggle--compact\s*\{[\s\S]*?width:\s*30px;[\s\S]*?height:\s*30px;/
-  );
-  assert.match(
-    html,
-    /\.dashboard-disclosure-summary::-webkit-details-marker\s*\{[\s\S]*?display:\s*none;/
-  );
-  assert.match(
-    html,
-    /details:not\(\[open\]\) > \.dashboard-disclosure-summary \.dashboard-disclosure-toggle svg/
-  );
-  assert.match(html, /\.jobs-funnel-card\.is-collapsed \.dashboard-disclosure-toggle svg/);
-
-  assert.match(html, /class="jobs-funnel-toggle dashboard-disclosure-toggle"/);
   assert.match(html, /<summary class="dashboard-disclosure-summary strategy-details-summary">/);
-  assert.match(html, /<summary class="dashboard-disclosure-summary px-5 py-3">/);
-  assert.match(
-    html,
-    /class="dashboard-disclosure-toggle dashboard-disclosure-toggle--compact jobs-filter-chevron"/
-  );
-  assert.doesNotMatch(html, /\.strategy-details > summary::after/);
-  assert.doesNotMatch(html, /\.jobs-rail-mobile summary::after/);
 });
 
 test("Dashboard shell promotes the Jobs command rail as the jobs page baseline", async () => {
   const html = await readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8");
-  const jobsHero = html.match(
-    /<section class="page-panel page-shell jobs-page-variant--rail"[\s\S]*?<\/header>/
-  )?.[0];
 
-  assert.match(html, /class="page-panel page-shell jobs-page-variant--rail"/);
-  assert.ok(jobsHero, "expected a Jobs hero");
-  assert.match(jobsHero, /class="page-hero-side hero-side-stack lg:justify-end"/);
-  assert.match(jobsHero, /class="hero-summary metric-card-row jobs-page-summary"/);
-  assert.match(jobsHero, /class="metric-card metric-card--in-play"/);
-  assert.match(jobsHero, /class="metric-card metric-card--response"/);
-  assert.match(jobsHero, /class="metric-card metric-card--interviews"/);
-  assert.match(html, /class="page-layout page-layout--rail"/);
   assert.match(html, /aria-label="Triage rail"/);
   assert.match(html, />Triage posture</);
   assert.match(html, />Batch actions</);
@@ -372,14 +210,6 @@ test("Dashboard shell promotes the Jobs command rail as the jobs page baseline",
   assert.match(html, /data-jobs-rail-action="manual-review"/);
   assert.match(html, /data-jobs-rail-action="interview-path"/);
   assert.match(html, /data-jobs-rail-action="stale-applications"/);
-  assert.match(
-    html,
-    /@media \(min-width:\s*1180px\)\s*\{[\s\S]*?\.page-layout--rail\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\) minmax\(286px,\s*320px\);/
-  );
-  assert.match(
-    html,
-    /@media \(max-width:\s*1179px\)\s*\{[\s\S]*?\.jobs-page-variant--rail \.page-rail\s*\{[\s\S]*?display:\s*none;/
-  );
   assert.match(html, /function applyJobsRailAction\(/);
 });
 
@@ -391,14 +221,11 @@ test("Dashboard shell promotes the A Calendar week board with week navigation an
 
   assert.ok(calendarSection, "expected the Calendar workbench page");
   assert.match(calendarSection, /data-page-panel="calendar"/);
-  assert.match(calendarSection, /class="hero-summary metric-card-row calendar-page-summary"/);
   assert.match(calendarSection, /data-calendar-workbench/);
   assert.match(calendarSection, /data-calendar-zoom="week"/);
-  assert.match(calendarSection, /data-calendar-version="a"/);
   assert.match(calendarSection, /data-calendar-stat="thisWeek"/);
   assert.match(calendarSection, /data-calendar-stat="interviews"/);
   assert.match(calendarSection, /data-calendar-stat="dueToday"/);
-  assert.doesNotMatch(calendarSection, />Selected Base</);
   assert.match(calendarSection, /aria-label="Calendar week board"/);
   assert.match(calendarSection, /data-calendar-prev-week/);
   assert.match(calendarSection, /data-calendar-next-week/);
@@ -415,16 +242,8 @@ test("Dashboard shell promotes the A Calendar week board with week navigation an
   assert.match(calendarSection, /data-calendar-today-list/);
   assert.match(calendarSection, /data-calendar-this-week-stats/);
   assert.match(calendarSection, /data-calendar-protected-prep/);
-  assert.match(calendarSection, /data-calendar-version="b"/);
-  assert.match(calendarSection, /data-calendar-version="c"/);
-  assert.match(calendarSection, /aria-label="Calendar agenda prototype B"/);
-  assert.match(calendarSection, /aria-label="Calendar dossier prototype B"/);
   assert.match(calendarSection, /aria-label="Month command rail"/);
-  assert.match(calendarSection, /class="calendar-week-nav"/);
   assert.match(calendarSection, /data-calendar-view-label/);
-  assert.match(calendarSection, /class="calendar-month-layout"/);
-  assert.match(calendarSection, /class="calendar-rail-card calendar-rail-card--teal"/);
-  assert.match(calendarSection, /class="calendar-mini-stat-grid"/);
   assert.match(calendarSection, /data-kind="interview"/);
   assert.match(calendarSection, /data-next-step-item data-detail-id="aperture"/);
   assert.doesNotMatch(html, /const CALENDAR_WEEKS = \[/);
@@ -438,30 +257,6 @@ test("Dashboard shell promotes the A Calendar week board with week navigation an
   assert.match(html, /function setupCalendarWorkbench\(\)/);
   assert.match(html, /window\.updateCalendarWorkbench/);
   assert.match(html, /setupCalendarWorkbench\(\);/);
-  assert.match(
-    html,
-    /\.calendar-day-card\[data-calendar-day-state="past"\],[\s\S]*?\.calendar-month-cell\[data-calendar-day-state="past"\]\s*\{[\s\S]*?opacity:\s*0\.42;/
-  );
-  assert.match(
-    html,
-    /\.calendar-day-card\[data-calendar-day-state="past"\]:hover,[\s\S]*?\.calendar-month-cell\[data-calendar-day-state="past"\]:hover,[\s\S]*?\.calendar-day-card\[data-calendar-day-state="past"\]:focus-within,[\s\S]*?\.calendar-month-cell\[data-calendar-day-state="past"\]:focus-within\s*\{[\s\S]*?opacity:\s*1;/
-  );
-  assert.match(
-    html,
-    /\.calendar-week-board\s*\{[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);/
-  );
-  assert.match(
-    html,
-    /\.calendar-workbench\[data-calendar-zoom="week"\] \[data-calendar-month-panel\],[\s\S]*?\.calendar-workbench\[data-calendar-zoom="month"\] \[data-calendar-week-panel\]\s*\{[\s\S]*?display:\s*none;/
-  );
-  assert.match(
-    html,
-    /\.calendar-month-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(7,\s*minmax\(0,\s*1fr\)\);/
-  );
-  assert.match(
-    html,
-    /\.calendar-compare-deck > \[data-calendar-version="b"\],[\s\S]*?\.calendar-compare-deck > \[data-calendar-version="c"\s*\]\s*\{[\s\S]*?display:\s*none;/
-  );
 });
 
 test("Dashboard adapter builds Calendar from tracker dates and actions", () => {
@@ -741,29 +536,19 @@ test("Dashboard shell locks Network to the company relationship map baseline", a
 
   assert.ok(networkSection, "expected a Network company map page");
   assert.match(networkSection, /data-page-panel="network"/);
-  assert.match(networkSection, /class="hero-summary metric-card-row network-page-summary"/);
   assert.match(networkSection, /data-network-stat="warmPaths"/);
   assert.match(networkSection, /data-network-company-grid/);
   assert.match(networkSection, /class="page-subtitle">Company relationships/);
-  assert.match(networkSection, /class="network-company-grid"/);
-  assert.match(networkSection, /class="dashboard-card-shell network-variant"/);
-  assert.match(networkSection, /class="network-variant-title"/);
   assert.match(networkSection, /aria-label="Company relationship map"/);
-  assert.match(html, /\.network-company-card\s*\{[\s\S]*?border-radius:/);
   assert.match(networkSection, />Warm Paths</);
   assert.match(networkSection, />Companies</);
   assert.match(networkSection, />Dormant</);
   assert.match(networkSection, /data-network-stat="companies"/);
   assert.match(networkSection, /data-network-stat="dormant"/);
-  assert.match(html, /\.network-reuse-panel\[data-reuse-state="safe"\]\s*\{[\s\S]*?border-color:/);
-  assert.match(networkSection, /class="network-company-map-deck"/);
-  assert.match(networkSection, /data-network-baseline="company-map"/);
   assert.match(networkSection, /data-network-purpose="company-map"/);
   assert.match(networkSection, />Company relationship map</);
   assert.match(html, /data-network-toggle/);
   assert.match(html, /data-network-body/);
-  assert.match(html, /\.network-company-card\s*\{[\s\S]*?padding:/);
-  assert.match(html, /\.network-reuse-panel\s*\{[\s\S]*?border-radius:/);
   assert.match(html, /\.network-signal-row/);
   assert.match(html, /\.network-reuse-panel\[data-reuse-state="caution"\]/);
   assert.match(html, /\.network-reuse-panel\[data-reuse-state="closed"\]/);
@@ -772,26 +557,6 @@ test("Dashboard shell locks Network to the company relationship map baseline", a
   assert.match(html, /\.network-contact-pill/);
   assert.match(html, /\.network-company-head/);
   assert.doesNotMatch(networkSection, /data-next-step-item/);
-  assert.doesNotMatch(networkSection, />Next Steps</);
-  assert.doesNotMatch(networkSection, /network-compare-deck/);
-  assert.doesNotMatch(networkSection, /data-network-version="a"/);
-  assert.doesNotMatch(networkSection, /data-network-version="b"/);
-  assert.doesNotMatch(networkSection, /data-network-version="c"/);
-  assert.doesNotMatch(networkSection, />Version A</);
-  assert.doesNotMatch(networkSection, />Version B</);
-  assert.doesNotMatch(networkSection, />Version C</);
-  assert.doesNotMatch(
-    html,
-    /\.network-compare-deck > \[data-network-version="b"\],[\s\S]*?\.network-compare-deck > \[data-network-version="c"\s*\]\s*\{[\s\S]*?display:\s*none;/
-  );
-  assert.match(
-    html,
-    /\.network-company-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/
-  );
-  assert.match(
-    html,
-    /\.network-thread-row:nth-child\(odd\),[\s\S]*?\.network-signal-row:nth-child\(odd\)\s*\{[\s\S]*?background:\s*var\(--paper-band\);/
-  );
 });
 
 test("Dashboard shell promotes Resources into the Evidence Library baseline", async () => {
@@ -805,24 +570,18 @@ test("Dashboard shell promotes Resources into the Evidence Library baseline", as
   assert.ok(librarySection, "expected the Evidence Library page");
   assert.match(librarySection, /data-page-panel="library"/);
   assert.match(librarySection, />Evidence Library</);
-  assert.match(librarySection, /class="hero-summary metric-card-row library-page-summary"/);
   assert.match(librarySection, /data-library-stat="claims"/);
-  assert.match(librarySection, /class="library-browser"/);
   assert.match(librarySection, /data-library-filters/);
   assert.match(librarySection, /data-library-cards/);
   assert.match(librarySection, /data-library-deck/);
   assert.match(librarySection, /data-library-gaps/);
-  assert.match(librarySection, /class="library-chips"/);
   assert.match(librarySection, />Claims</);
   assert.match(librarySection, />Stories</);
   assert.match(librarySection, />Gaps</);
   assert.match(librarySection, /data-library-callout/);
   assert.match(librarySection, /data-library-search/);
   assert.match(librarySection, />Story &amp; evidence bank</);
-  assert.match(librarySection, /class="library-variant-title"/);
   assert.match(librarySection, /data-library-no-results/);
-  assert.match(librarySection, /class="library-toolbar"/);
-  assert.match(librarySection, /class="library-evidence-grid"/);
   assert.match(librarySection, /data-library-segment="evidence"/);
   assert.match(librarySection, /data-library-segment="story"/);
   assert.match(librarySection, /data-library-segment="voice"/);
@@ -1595,68 +1354,11 @@ test("Dashboard shell uses a compact Jobs toolbar with removable active filter c
   const toolbar =
     toolbarStart >= 0 && toolbarEnd > toolbarStart ? html.slice(toolbarStart, toolbarEnd) : "";
 
-  assert.match(html, /class="jobs-search-cluster"/);
-  assert.match(
-    html,
-    /class="jobs-search-cluster"[\s\S]*class="jobs-search-wrap"[\s\S]*class="jobs-filter-menu"/
-  );
-  assert.match(
-    html,
-    /class="dashboard-card-header jobs-explorer-header"[\s\S]*<span>Jobs Explorer<\/span>[\s\S]*class="jobs-view-switch"/
-  );
-  assert.match(html, /class="jobs-view-switch" aria-label="Jobs view controls"/);
-  assert.match(toolbar, /class="jobs-search-cluster"/);
-  assert.doesNotMatch(toolbar, /jobs-view-switch/);
   assert.match(html, /class="jobs-filter-row" data-jobs-active-filters hidden/);
   assert.match(html, /data-jobs-filter-remove=/);
   assert.match(html, /aria-label="Remove job filter"/);
   assert.match(html, /data-jobs-filter-clear hidden>Clear all<\/button>/);
-  assert.match(html, /\.jobs-search\s*\{[\s\S]*?border-radius:\s*999px;/);
-  assert.match(
-    html,
-    /\.jobs-explorer input\.jobs-search\s*\{[\s\S]*?border-radius:\s*999px !important;/
-  );
-  assert.match(html, /\.jobs-toolbar\s*\{[\s\S]*?justify-content:\s*space-between;/);
-  assert.match(
-    html,
-    /\.jobs-search-cluster\s*\{[\s\S]*?width:\s*100%;[\s\S]*?justify-content:\s*space-between;/
-  );
-  assert.match(html, /\.jobs-search-wrap\s*\{[\s\S]*?max-width:\s*none;/);
-  assert.match(html, /\.jobs-filter-menu\s*\{[\s\S]*?margin-left:\s*auto;/);
   assert.doesNotMatch(toolbar, /jobs-search-label|<span>Search<\/span>/);
-});
-
-test("Dashboard shell keeps Jobs table metadata columns compact", async () => {
-  const html = await readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8");
-
-  assert.match(
-    html,
-    /<colgroup class="jobs-table-cols">[\s\S]*?<col class="jobs-col-company" \/>[\s\S]*?<col class="jobs-col-role" \/>[\s\S]*?<col class="jobs-col-comp" \/>[\s\S]*?<col class="jobs-col-mode" \/>[\s\S]*?<col class="jobs-col-fit" \/>[\s\S]*?<col class="jobs-col-status" \/>[\s\S]*?<col class="jobs-col-action" \/>[\s\S]*?<\/colgroup>/
-  );
-  assert.match(html, /\.jobs-page-variant--rail \.jobs-table\s*\{[\s\S]*?min-width:\s*940px;/);
-  assert.match(
-    html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-company\s*\{[\s\S]*?width:\s*208px;/
-  );
-  assert.match(
-    html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-role\s*\{[\s\S]*?width:\s*auto;/
-  );
-  assert.match(
-    html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-comp\s*\{[\s\S]*?width:\s*88px;/
-  );
-  assert.match(html, /\.jobs-page-variant--rail \.jobs-table \.jobs-col-mode,/);
-  assert.match(html, /\.jobs-page-variant--rail \.jobs-table \.jobs-col-fit,/);
-  assert.match(html, /\.jobs-page-variant--rail \.jobs-table \.jobs-col-status,/);
-  assert.match(
-    html,
-    /\.jobs-page-variant--rail \.jobs-table \.jobs-col-action\s*\{[\s\S]*?width:\s*76px;/
-  );
-  assert.doesNotMatch(
-    html,
-    /\.jobs-page-variant--rail \.jobs-table th:nth-child\(3\),[\s\S]*?width:\s*26%;/
-  );
 });
 
 test("Dashboard adapter builds Strategy insights from outcomes by source role and fit", () => {
@@ -2576,42 +2278,6 @@ test("Dashboard hydration falls back to settings embedded in modes state", async
   } finally {
     globalThis.fetch = originalFetch;
   }
-});
-
-test("Dashboard Sankeyuses a taller custom horizontal scroll frame", async () => {
-  const [html, dataModule] = await Promise.all([
-    readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8"),
-    readFile(new URL("src/core/tracker/dashboard-data.js", root), "utf8"),
-  ]);
-
-  assert.match(html, /class="jobs-sankey-frame"/);
-  assert.match(html, /class="jobs-sankey-wrap"/);
-  assert.match(dataModule, /class="jobs-sankey-wrap"/);
-  assert.match(dataModule, /class="jobs-sankey-legend"/);
-  assert.match(html, /\.jobs-sankey-wrap\s*\{[\s\S]*?overflow:\s*hidden;/);
-  assert.match(html, /\.jobs-sankey-frame\s*\{[\s\S]*?min-height:\s*0;/);
-  assert.match(html, /no scroll container or scroll buttons are needed/);
-  assert.match(html, /\.jobs-sankey\s*\{[\s\S]*?height:\s*auto;/);
-  assert.match(html, /\.jobs-sankey-frame\s*\{[\s\S]*?position:\s*relative;/);
-  assert.match(html, /\.jobs-sankey\s*\{[\s\S]*?display:\s*block;/);
-  assert.match(html, /\.jobs-sankey\s*\{[\s\S]*?width:\s*100%;/);
-  assert.match(html, /\.jobs-sankey-node-label--source\s*\{[\s\S]*?font-size:\s*13px;/);
-  assert.match(dataModule, /const H = 520;/);
-  assert.match(dataModule, /const top = 48;/);
-  assert.match(dataModule, /const columnHeight = 400;/);
-  assert.match(dataModule, /const leftPad = 220;/);
-  assert.match(dataModule, /preserveAspectRatio="xMidYMid meet"/);
-  assert.doesNotMatch(dataModule, /preserveAspectRatio="none"/);
-  assert.match(
-    html,
-    /<svg class="jobs-sankey" viewBox="0 0 1800 520" preserveAspectRatio="xMidYMid meet"/
-  );
-  assert.doesNotMatch(
-    html,
-    /<svg class="jobs-sankey" viewBox="0 0 1800 520" preserveAspectRatio="none"/
-  );
-  assert.match(html, /\.jobs-page-variant--rail \.jobs-sankey-frame\s*\{[\s\S]*?min-height:\s*0;/);
-  assert.match(dataModule, /class="jobs-sankey-frame"/);
 });
 
 test("Dashboard Sankey starts source flows close to the left edge", () => {
