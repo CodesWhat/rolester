@@ -229,6 +229,9 @@ Factor in:
 - Title-bucket alignment from `role_buckets`
 - Location burden (onsite / travel → note caveat)
 - `candidate/learnings/<role-family>.md` — if past outcomes in this family show a filter pattern, adjust the score and note it in caveats
+- `companyHealth.fitDelta` on the tracker row (if present + non-stale) — the role-scoped company-health cross-cut (see below)
+
+**Company-health cross-cut (config-driven, never a hard kill).** If the tracker row carries a non-stale `companyHealth` object (written by `company-health`), apply its `fitDelta` to the score. `fitDelta` is already `0` when the rating didn't cross-cut any stated candidate need, and a small negative (e.g. `-2`..`-5`) when it did — e.g. a layoff in the candidate's own function when they need `stability`. Name the crossing in caveats: `caveats: company-health watch — eng RIF cross-cuts your stability need (-5)`. `companyHealth` alone NEVER triggers a CUT; it only nudges the score, and can drag fit below `fit_floor` *only via the need it intersects* (the floor does the dropping, not the health rating). A `stale` rating (older than `recheck_days`) is informational — surface it but don't apply `fitDelta`; suggest a `company-health` refresh. When no `companyHealth` exists, nothing changes.
 
 Band mapping:
 - score ≥ `high_min` (85) → `high`
