@@ -69,7 +69,7 @@ export default function Home() {
             </p>
             <div className="hero-actions reveal reveal-delay-3">
               <a href="#get" className="btn-primary">
-                Get started — it&apos;s yours, and it&apos;s free
+                Get started — free &amp; open source
                 <svg
                   width="16"
                   height="16"
@@ -463,10 +463,10 @@ export default function Home() {
                 </div>
                 <h3>Your stuff stays yours.</h3>
                 <p>
-                  Rolester runs entirely on your machine. Your résumé, comp
-                  numbers, evidence bank, and full pipeline never leave your
-                  laptop. No cloud sync, no account, no telemetry — not even by
-                  accident.
+                  Run Rolester on your own machine and your résumé, comp
+                  numbers, evidence bank, and full pipeline stay on your laptop.
+                  No account to create, no telemetry, nothing syncing in the
+                  background.
                 </p>
                 <div className="privacy-chips" role="list">
                   <span className="privacy-chip" role="listitem">
@@ -479,7 +479,7 @@ export default function Home() {
                     >
                       <circle cx="5.5" cy="5.5" r="5.5" />
                     </svg>
-                    no cloud
+                    runs locally
                   </span>
                   <span className="privacy-chip" role="listitem">
                     <svg
@@ -535,17 +535,17 @@ export default function Home() {
             <div className="privacy-copy reveal reveal-delay-2">
               <div className="section-label">Privacy as warmth</div>
               <h2 className="section-h2" id="privacy-h2">
-                Local-first isn&apos;t a feature. It&apos;s respect.
+                Self-host it, and your data stays your own.
               </h2>
               <p className="section-sub">
                 Job searches are personal. Your comp floor, your reasons for
-                leaving, your backup options — none of that belongs in a cloud
-                database. Rolester keeps it on your machine, full stop.
+                leaving, your backup options — run Rolester yourself and all of
+                it stays on your machine, full stop.
               </p>
               <p className="section-sub" style={{ marginTop: "16px" }}>
-                No signup, no freemium tier that quietly uploads your data, no
-                API key that routes your résumé through someone else&apos;s
-                server. What you put in stays in.
+                No signup, no telemetry, nothing phoned home. The self-host
+                version runs on your machine and uses the AI CLI you already
+                have. What you put in stays in.
               </p>
             </div>
           </div>
@@ -687,7 +687,7 @@ export default function Home() {
             <div className="checklist-copy reveal">
               <div className="section-label">What you get</div>
               <h2 className="section-h2" id="checklist-h2">
-                The whole loop. Nothing sold separately.
+                The whole loop, end to end.
               </h2>
               <p className="section-sub">
                 Every capability ships together. Config-driven, not code-driven —
@@ -733,9 +733,8 @@ export default function Home() {
                   Clone it. Run it. Own it.
                 </h2>
                 <p className="section-sub">
-                  Free to self-host, open source (MIT). No install
-                  wizard, no account, no cloud. Clone the repo and one command
-                  does the rest.
+                  Free to self-host, open source (MIT). No install wizard, no
+                  setup — clone the repo and one command does the rest.
                 </p>
                 <div style={{ marginTop: "28px" }}>
                   <div
@@ -939,8 +938,8 @@ export default function Home() {
               Ready when you are.
             </h2>
             <p className="final-sub">
-              Free. Local. Honest. One command to get going. Your data never
-              leaves your machine.
+              Free. Local. Honest. One command to get going. Run it yourself and
+              your data stays put.
             </p>
             <div className="final-actions">
               <a href="#get" className="btn-primary">
