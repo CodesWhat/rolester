@@ -13,11 +13,11 @@
 
 | Component | Initial Offer | Riley's Counter | Final Accepted |
 |---|---|---|---|
-| Base salary | $225,000 | $240,000 | $232,000 |
+| Base salary | $222,000 | $240,000 | $232,000 |
 | RSU (annual value, 4-yr vest) | $95,000/yr ($380K total) | Unchanged | $90,000/yr ($360K total)* |
 | Sign-on bonus | $10,000 | $15,000 | $15,000 |
 | Annual bonus target | 12% of base | — | 12% of base |
-| Total Year-1 TC (est.) | ~$362,400 | — | ~$354,840 |
+| Total Year-1 TC (est.) | ~$359,040 | — | ~$354,840 |
 
 *RSU pool was adjusted slightly to fund the higher base; total equity value essentially unchanged over 4-year vest.
 
@@ -42,14 +42,14 @@
 
 ## Negotiation Notes
 
-**Initial offer (2026-06-02):** Morgan presented $225K base + $95K/yr RSU + $10K sign-on verbally on the offer call. Riley thanked her and asked for time to review in writing, then signaled intent to counter on base and sign-on.
+**Initial offer (2026-06-02):** Morgan presented $222K base + $95K/yr RSU + $10K sign-on verbally on the offer call. Riley thanked her and asked for time to review in writing, then signaled intent to counter on base and sign-on.
 
 **Counter (2026-06-05):** Riley submitted in writing:
 > "I'm very excited about this role and the team. Based on the scope of the work and market comparables, I'd like to propose $240K base and $15,000 sign-on, with RSUs as offered. I'm confident these terms reflect the value I'll bring to the Platform Intelligence team."
 
 Morgan confirmed counter went to comp committee and indicated positive signals. Response expected by EOD 2026-06-09.
 
-**Revised offer (2026-06-09):** E Corp came back at $232K base + $90K/yr RSU + $15K sign-on. Morgan explained the base increase was at the limit of the band's discretionary range, and the sign-on was matched in full. Total Year-1 TC moved from ~$362K to ~$355K — net improvement of $7K base/year on a permanent basis, plus the sign-on increase.
+**Revised offer (2026-06-09):** E Corp came back at $232K base + $90K/yr RSU + $15K sign-on. Morgan explained the base increase was at the limit of the band's discretionary range, and the sign-on was matched in full. Total Year-1 TC moved from ~$359K to ~$355K — net improvement of $10K base/year on a permanent basis, plus the sign-on increase.
 
 **Acceptance decision (2026-06-12):** Riley accepted. E Corp's revised terms land above the initial offer and within target range. Remote terms confirmed in writing. Start date 2026-07-07.
 

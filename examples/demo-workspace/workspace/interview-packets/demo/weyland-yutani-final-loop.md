@@ -100,7 +100,7 @@ sign-off in writing.
 
 **Comp readiness:**
 - Band is $215–255K base, posted. Ask $230K — in-band, slightly above midpoint.
-- TC $340K at mid includes equity RSU + 12% bonus. If they anchor low, hold at $220K floor
+- TC $340K at mid includes equity RSU + 12% bonus. If they anchor low, hold at $218K floor
   and ask for signing to close gap.
 - Do NOT accept below $200K base. Floor is $190K absolute.
 - On-call premium is reasonable to request if on-call turns out heavier than 1 wk/quarter.

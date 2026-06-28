@@ -134,7 +134,7 @@ Congratulations — the committee was unanimous and enthusiastic. We'd love to e
 
 Here are the headline terms. The full written offer letter is attached:
 
-- **Base salary:** $225,000
+- **Base salary:** $222,000
 - **RSU:** $380,000 total (4-year vest, 1-year cliff; ~$95,000/year)
 - **Sign-on bonus:** $10,000 (paid in first paycheck)
 - **Annual bonus target:** 12% of base
@@ -161,7 +161,7 @@ Thank you — I'm genuinely excited about this role and the team. The onsite con
 
 I'd like to propose a few adjustments to the terms:
 
-**Base salary:** $240,000 (up from $225,000). Based on the scope of the role, market data for Staff SWE roles in the AI-platform space, and my track record shipping production AI systems, I believe $240K reflects the level of impact I expect to have quickly.
+**Base salary:** $240,000 (up from $222,000). Based on the scope of the role, market data for Staff SWE roles in the AI-platform space, and my track record shipping production AI systems, I believe $240K reflects the level of impact I expect to have quickly.
 
 **Sign-on bonus:** $15,000 (up from $10,000). I have some transition costs (including accelerated vesting I'm leaving behind) that this would help offset.
 
