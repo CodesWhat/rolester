@@ -3787,6 +3787,73 @@ function buildInterviewBlock(record = {}) {
   return { line, chips, detail };
 }
 
+// Company-health view-model. Reads the persisted `companyHealth` object the
+// company-health skill wrote to the tracker row (never recomputed client-side —
+// persist-then-render, like compEstimate/benefits). Returns null when absent so the
+// drawer section + card pill collapse cleanly.
+const HEALTH_RATING_LABEL = { healthy: "Healthy", watch: "Watch", risky: "Risky" };
+const HEALTH_PROV_LABEL = {
+  "built-from-data": "Built from data",
+  "needs-more-info": "Needs more info",
+  stale: "Stale",
+};
+const HEALTH_DIM_ORDER = [
+  ["layoffRisk", "Layoffs"],
+  ["hiringMomentum", "Hiring"],
+  ["financial", "Financial"],
+  ["sentiment", "Sentiment"],
+  ["leadership", "Leadership"],
+];
+
+function buildHealthBlock(ch) {
+  if (!ch || typeof ch !== "object" || !ch.rating) return null;
+  const dims = HEALTH_DIM_ORDER.map(([key, label]) => {
+    const dim = ch.dimensions?.[key];
+    if (!dim?.level) return null;
+    return {
+      label,
+      level: dim.level,
+      note: dim.note || "",
+      functionHit: !!dim.functionHit,
+      trend: dim.trend || "",
+    };
+  }).filter(Boolean);
+  const signals = (ch.signals || [])
+    .filter((sig) => sig && (sig.summary || sig.source))
+    .map((sig) => ({
+      source: sig.source || "",
+      date: sig.date || "",
+      summary: sig.summary || "",
+      url: sig.url || "",
+    }));
+  const ratingLabel = ch.forFunction
+    ? `${HEALTH_RATING_LABEL[ch.rating] || ch.rating} for ${ch.forFunction}`
+    : HEALTH_RATING_LABEL[ch.rating] || ch.rating;
+  return {
+    rating: ch.rating,
+    ratingLabel,
+    forFunction: ch.forFunction || "",
+    asOf: ch.asOf || "",
+    provenance: ch.provenance || "",
+    provenanceLabel: HEALTH_PROV_LABEL[ch.provenance] || "",
+    rationale: ch.rationale || "",
+    crossCut: Array.isArray(ch.crossCut) ? ch.crossCut : [],
+    dimensions: dims,
+    signals,
+  };
+}
+
+// Card pill — only the actionable states (watch/risky) badge the glanceable card;
+// healthy isn't badged there (it shows in the drawer). The visible label stays short
+// ("Risky"/"Watch") so the dense card reads at a glance; the role-scoped detail rides
+// in the title tooltip (and in full in the drawer).
+function buildHealthBadge(ch) {
+  if (!ch?.rating || ch.rating === "healthy") return null;
+  const word = ch.rating === "risky" ? "Risky" : "Watch";
+  const scope = ch.forFunction ? `${word} for ${ch.forFunction}` : word;
+  return { rating: ch.rating, label: word, title: `Company health: ${scope} — internal signal` };
+}
+
 function jobDetailFromRow(row, sourceRecord = {}, communications = [], now = new Date()) {
   const compView = compRangeView(row, sourceRecord);
   const artifacts = sourceRecord.artifacts || {};
@@ -3939,6 +4006,9 @@ function jobDetailFromRow(row, sourceRecord = {}, communications = [], now = new
     emails: emailList,
     artifacts: artifactList,
     benefits: (sourceRecord.benefits || []).map((key) => BENEFIT_EMOJI[key]).filter(Boolean),
+    // Role-scoped company-health rating (internal signal). Null when the row carries
+    // no companyHealth, so the drawer section hides.
+    companyHealth: buildHealthBlock(sourceRecord.companyHealth),
     // Typed topic blocks (drawer sections). Each is null/empty for rows that don't
     // carry that topic so the section hides; nothing here ever lands on a card.
     interview: buildInterviewBlock(sourceRecord),
@@ -4011,6 +4081,7 @@ function applicationJobRow(app, index, communications = [], now = new Date()) {
     logo: app.logo || "",
     link: app.link || app.url || "",
     warn: app.warn || "",
+    healthBadge: buildHealthBadge(app.companyHealth),
     avatarClass: AVATAR_CLASSES[index % AVATAR_CLASSES.length],
     terminal,
     // For a rejected/withdrawn app that advanced before dying, the stage it reached
@@ -4092,6 +4163,7 @@ function sourcedJobRow(role, index, now = new Date()) {
     logo: role.logo || "",
     link: role.link || role.url || "",
     warn: role.warn || "",
+    healthBadge: buildHealthBadge(role.companyHealth),
     avatarClass: AVATAR_CLASSES[(index + 3) % AVATAR_CLASSES.length],
     terminal,
     note: role.note || role.fitBucket || "",
@@ -5558,6 +5630,11 @@ function renderJobsCards(rows) {
               <small>Fit</small>
             </span>
           </div>
+          ${
+            row.healthBadge
+              ? `<div class="jobs-card-health"><span class="jobs-health-pill" data-health="${esc(row.healthBadge.rating)}" title="${esc(row.healthBadge.title)}">${inlineIcon("alert", "jobs-health-icon-svg")}<span>${esc(row.healthBadge.label)}</span></span></div>`
+              : ""
+          }
           ${
             row.statusNote || row.note
               ? `<p class="jobs-card-note">${esc(row.statusNote || firstSentence(row.note))}</p>`
