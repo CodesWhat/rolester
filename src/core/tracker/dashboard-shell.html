@@ -8885,6 +8885,7 @@ function renderCompBar(d) {
     badgeText = 'Built from data';
     if (d.compSampleSize) badgeText += ` · ${d.compSampleSize} comp${d.compSampleSize === 1 ? '' : 's'}`;
     if (d.compConfidence) badgeText += ` · ${d.compConfidence} conf`;
+    if (d.compAsOf) badgeText += ` · as of ${d.compAsOf}`;
   } else if (state === 'posted') {
     badgeText = 'Posted band';
   } else if (state === 'needs-info') {

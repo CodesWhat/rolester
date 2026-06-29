@@ -37,3 +37,11 @@ company_health:
   fire_at_stage: "interview"
   manual_always: true
   recheck_days: 14
+
+# comp_estimate — staleness of the comparables-based comp estimate (compEstimate)
+# persisted on tracker rows. Absent = the default shown here.
+#   recheck_days  - re-estimate a cached compEstimate once its asOf is older than
+#                   this many days (or on a major stage transition); fresher
+#                   estimates are reused as-is.
+comp_estimate:
+  recheck_days: 30
