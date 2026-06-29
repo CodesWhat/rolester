@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3002",
-    "build:docs-content": "(cd ../docs-site && npm run build) && rm -rf public/docs && mkdir -p public/docs && cp -R ../docs-site/out/. public/docs/",
+    "build:docs-content": "(cd ../docs-site && (test -d node_modules || npm ci) && npm run build) && rm -rf public/docs && mkdir -p public/docs && cp -R ../docs-site/out/. public/docs/",
     "prebuild": "npm run build:docs-content",
     "build": "next build",
     "start": "next start"
