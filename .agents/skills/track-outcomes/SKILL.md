@@ -122,6 +122,12 @@ npm run verify:tracker              # domain integrity: status/score/modes/chann
 
 If either reports errors, fix the JSON before proceeding. Do not continue to the next step until BOTH exit clean.
 
+**Refresh the analytics block (required — this is an outcome-changing write).** After both validators pass and BEFORE re-rendering, recompute and persist `tracker.json#analytics` so STEP 6 reads a current reevaluation gate. Skipping this leaves the block one run stale, so a threshold crossed by the rejection you just logged is invisible to STEP 6 and the `reevaluate-strategy` handoff fires late or not at all:
+
+```
+npm run analytics -- --write   # recompute tracker.json#analytics: rejection/advance counts + reevaluation.due/dueReasons
+```
+
 ## STEP 4 — Re-render the dashboard
 
 Run:

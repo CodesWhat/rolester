@@ -19,32 +19,27 @@ Use this skill when the user asks why they're getting filtered, to review their 
 
 **Trigger sources.** This skill is entered either:
 - Explicitly by the user ("why am I getting filtered", "review my strategy", "re-rank prospects", "what should I change").
-- Via handoff from `track-outcomes` STEP 6, which runs `npm run analyze:outcomes -- --summary`, reads `byStatus` (total rejected count) and `byRoleFamily` (per-family rejected counts), compares them against `candidate/targeting.yml#reevaluation.rejection_total` / `reevaluation.rejection_per_family`, and hands off here when any threshold trips — including the tripped threshold name and current counts.
+- Via handoff from `track-outcomes` STEP 6, which reads the persisted reevaluation gate at `tracker.json#analytics.reevaluation` (refreshed by `npm run analytics -- --write` as part of the Tracker Write Contract) and hands off here when `reevaluation.due` is true — passing `reevaluation.dueReasons` (the tripped threshold names and counts).
 
-Read `candidate/targeting.yml` for `reevaluation.rejection_total` and `reevaluation.rejection_per_family` (defaults: 7 total, 3 per family/fit-band if absent).
+**Read the persisted gate; do not recompute the trip.** The threshold comparison is already applied by `buildReevaluationAnalytics()` and stored in `tracker.json#analytics.reevaluation` — thresholds resolved from `candidate/targeting.yml#reevaluation.rejection_total` / `reevaluation.rejection_per_family` (defaults: 7 total, 3 per family if absent). This mirrors `track-outcomes` STEP 6 and the AGENTS.md Tracker Write Contract — read the block, trust `reevaluation.due`.
 
-Pre-flight: `analyze-outcomes.mjs` reads `workspace/tracker.json` (the source of truth) and resolves it relative to the repo root, so it runs from any cwd — no dashboard render is required first. If the file is missing, seed it: `cp templates/tracker.json workspace/tracker.json`.
+Pre-flight: `analytics.mjs` reads `workspace/tracker.json` (the source of truth) and resolves it relative to the repo root, so it runs from any cwd — no dashboard render is required first. If the file is missing, seed it: `cp templates/tracker.json workspace/tracker.json`.
 
-Run: `npm run analyze:outcomes -- --summary`
+Run: `npm run analytics -- refresh --json` (dry-run read; use `-- --write` if you also want to persist the refresh to `tracker.json#analytics`).
 
-The `--summary` output includes these fields (from `buildOutcomeSummary` in `src/core/tracker/outcome-analysis.mjs`):
-- `counts.apps` — total submitted applications.
-- `counts.sourced` — total sourced (not yet submitted) prospects.
+The output (from `buildReevaluationAnalytics` in `src/core/tracker/outcome-analysis.mjs`) includes:
 - `byStatus` — counts keyed by `status` value (e.g. `rejected`, `offer`, `awaiting`, `interview`).
-- `byRoleFamily` — counts keyed by family slug (derived from `role_families` → `role_buckets` → neutral title slug).
-- `byChannel` — counts keyed by channel string (e.g. `referral`, `recruiter`, `board`, `portal`).
-- `byMode` — counts keyed by mode string (e.g. `remote`, `hybrid`, `onsite`).
-- `sourcedFamilies` — family-slug counts for the sourced (not-yet-applied) pipeline.
-- `topSourced` — top-10 sourced prospects by score, each with `co`, `role`, `score`, `channel`, `mode`, `family`.
+- `rejected.total` / `rejected.byFamily` — cumulative rejected counts, total and per family slug (slugs derived from `role_families` → `role_buckets` → neutral title slug).
+- `advanced.total` / `advanced.byFamily` — cumulative interview/offer counts, total and per family slug.
+- `reevaluation.thresholds` — the resolved trip thresholds (total + per family).
+- `reevaluation.sinceLastReview` — rejections accumulated since the last strategy-review stamp (`rejectionTotal` + `rejectionByFamily`). **This delta, not the cumulative total, is what trips the gate** — a strategy review stamps a snapshot, so only NEW rejections since then count.
+- `reevaluation.due` / `reevaluation.dueReasons` — the trip verdict and the human-readable reasons. Trust this; never re-derive the trip from cumulative `rejected.byFamily` totals.
 
-From the summary, count:
-- Total rejections: `byStatus.rejected` (or the matching status value).
-- Rejections per role-family: each key in `byRoleFamily` where those applications have `status === "rejected"` (the full `npm run analyze:outcomes` run in STEP 1 gives the per-status breakdown; `--summary` gives totals).
-- Cluster of advances or offers in one family/channel.
+(`npm run analyze:outcomes` — `buildOutcomeSummary` — is the descriptive funnel breakdown used in STEP 1. Its `byRoleFamily` is total apps per family, NOT rejected-per-family, and it does not compute the trip. Never read the gate from it.)
 
 **Branch:**
-- If none of the threshold conditions are met AND the user did NOT explicitly request a review: report current counts, state "below threshold — no action needed," and exit.
-- If any threshold is met OR user explicitly requested: continue to STEP 1.
+- If `reevaluation.due` is false AND the user did NOT explicitly request a review: report current counts, state "below threshold — no action needed," and exit.
+- If `reevaluation.due` is true OR user explicitly requested: continue to STEP 1.
 
 Also read `candidate/application-limits.yml` now. Identify any per-company caps or cooldowns that could be inflating rejection counts — exclude cap-blocked entries from reject-pattern tallies (a cap block is not a strategy signal).
 
@@ -66,7 +61,7 @@ Run: `npm run analyze:outcomes`
 This produces the full JSON breakdown. Extract the following slices (flag any slice with N < 3 as unreliable / "small-N"):
 
 - **By role-family** (`byRoleFamily`) — counts keyed by the candidate's own family slugs. `classifyRoleFamily` in `outcome-analysis.mjs` derives these from `candidate/targeting.yml#role_families` (explicit `[{name, patterns[]}]`) → `role_buckets` (bucket `name` slugified, `titles` as patterns) → neutral title slug (no config). Do NOT hardcode any domain-specific family names here.
-- **By fit-band** — `buildOutcomeSummary` does NOT emit a `byFitBand` field. Derive fit-band slices manually: read `workspace/tracker.json` and partition rejected applications by `fitScore` using the thresholds from `candidate/targeting.yml#fit_bands` (`high_min` default 85, `med_min` default 65 — bands: high ≥ high_min, med ≥ med_min, stretch < med_min).
+- **By fit-band** — `buildOutcomeSummary` does NOT emit a `byFitBand` field. Partition rejected applications by the **persisted `app.fitBucket`** field (written by `evaluate-job` at evaluation time, so it reflects the `fit_bands` thresholds that were in effect when each role was scored — the same bucket the dashboard shows). Do NOT re-derive bands by re-applying *current* `fit_bands` to `fitScore`: thresholds may have moved since these rows were evaluated, and silently re-bucketing the board is the exact consequential re-score STEP 7 gates as confirm-first. Fall back to `fitScore` + current `fit_bands` (`high_min` default 85, `med_min` default 65 — high ≥ high_min, med ≥ med_min, stretch < med_min) only for the rare row missing `fitBucket`.
 - **By channel** (`byChannel`) — keyed by each application's `channel` value (e.g. `referral`, `recruiter`, `board`, `portal`). Cross-filter to rejected-only for reject-rate; cross-filter to `offer`/`interview` for advance-rate.
 - **By mode** (`byMode`) — keyed by each application's `mode` value (e.g. `remote`, `hybrid`, `onsite`).
 - **By sourced pipeline** (`sourcedFamilies`) — family-slug counts for sourced (not-yet-submitted) prospects; use this to check whether the candidate is feeding the right families into the top of the funnel.

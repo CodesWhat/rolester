@@ -713,9 +713,20 @@ calibration, channel mix, writing-style.
 
 Default triggers (tune in `candidate/` config when present):
 
-- ≈5–8 total rejections, or 3 in one role-family / fit-band → reject-pattern review
+- ≈5–8 rejections **since the last review**, or 3 in one role-family / fit-band → reject-pattern review
 - a cluster of advances/offers in one family or channel → double-down review
 - the user explicitly asks to review or re-rank
+
+**How the trip is evaluated (do not hand-count).** The trip is computed by
+`buildReevaluationAnalytics()` and persisted to `tracker.json#analytics.reevaluation`
+(refreshed by `npm run analytics -- --write` in the Tracker Write Contract). It fires on
+the **delta since the last `strategyReview` stamp** (`reevaluation.sinceLastReview`), **not**
+the cumulative total — a completed review re-baselines the count, so already-reviewed
+rejections never re-trip. `track-outcomes` (STEP 6) and `reevaluate-strategy` (STEP 0) read
+`reevaluation.due` / `reevaluation.dueReasons` from the block; they MUST NOT re-derive the
+trip by tallying cumulative `status === "rejected"` rows. The numbers above describe the
+thresholds; the persisted block applies them. If the block looks stale, refresh it
+(`npm run analytics -- --write`) and read again — never fall back to a manual cumulative count.
 
 Treat fit as a prior and outcomes as evidence. On small-N, **recommend** changes
 (re-rank sourced roles, edit `targeting.yml`, re-anchor comp) — do not silently
@@ -730,6 +741,13 @@ gate (`buildStrategyReviewTrigger`) then keeps the nudge quiet until enough NEW 
 accrue past the threshold (default 5) or a slow drip ages past the cooldown (default 21
 days). This stamp is unconditional — a no-change review still counts as a review. The
 marker is mechanical (timestamp + counts); the skill owns the strategy judgement.
+
+**Two distinct gates — don't conflate them.** The dashboard "review ready" nudge
+(`buildStrategyReviewTrigger`) fires on **≥5 newly-resolved outcomes of any kind**
+(advances + rejections) over the rolling 30-day funnel. The `reevaluation.due` trip fires
+on the **rejection-only delta** (`sinceLastReview`) against `targeting.yml` thresholds.
+A nudge can show with few or zero rejections; never read the dashboard pill as
+`reevaluation.due: true`, and never read `reevaluation.due` as the nudge.
 
 ## Learning Memory
 

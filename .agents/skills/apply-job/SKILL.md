@@ -72,7 +72,7 @@ Read `candidate/profile.yml#compensation.minimum_base` (the walk-away floor). If
 
 ## STEP 3 — FIT rating confirmation
 
-Confirm `evaluate-job` emitted a FIT line with a tier (high/med/stretch) and score. If it did not, derive one from the gate output using `candidate/targeting.yml#fit_bands` (default: high ≥ 85, med ≥ 65, stretch < 65).
+Confirm `evaluate-job` emitted a FIT line with a tier (high/med/stretch) and score. If it did not, read the **persisted `app.fitBucket`** from the tracker row (it reflects the bands in effect at evaluation time). Only if both the FIT line and `fitBucket` are absent, derive a tier from the gate-output score using `candidate/targeting.yml#fit_bands` (default: high ≥ 85, med ≥ 65, stretch < 65).
 
 Apply priority logic:
 - `high` → proceed to tailor immediately.

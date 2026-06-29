@@ -68,7 +68,9 @@ fire before spending a single search:
    - the tracked company has reached `fire_at_stage`. Map the coarse stage to the tracker
      status band: `applied` = any live row; `interview` = the row has entered the interview
      band (a real conversation / screen is booked or done — `conversations[]` non-empty or
-     status in the interview/onsite/panel/offer band); `offer` = an offer is in hand.
+     status at the screen band or deeper: `screen`/`interview`/`onsite`/`panel`/`offer` — a
+     recruiter/phone screen counts, since `classifyStage` ranks `screen` at the interview
+     threshold); `offer` = an offer is in hand.
      Default `interview` keeps the set tiny (only companies you actually reached).
 3. **Freshness / decay** → if a `companyHealth` object already exists on the row and its
    `asOf` is newer than `recheck_days` ago, **reuse it** (do not re-research) unless the user
