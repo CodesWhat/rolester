@@ -12,7 +12,7 @@
 An agentic, local-first job-search workspace. It helps one person find, vet, tailor,
 track, and prep for roles — from their own data, on their own machine, driven by their own
 AI agent (you). It isn't a site you log into; it's a set of skills you run locally. No
-cloud, no account, no telemetry. Free to self-host, source-available (BUSL-1.1), zero runtime dependencies.
+cloud, no account, no telemetry. Free to self-host, MIT licensed, zero runtime dependencies.
 
 ## Requirements
 
@@ -56,11 +56,11 @@ This file only gets you to the front door — don't improvise procedures it cove
 
 ## The skills
 
-`apply-job` · `calendar-sync` · `configure` · `email-comms` · `evaluate-job` ·
-`ingest-mail` · `ingest-messages` · `ingest-profile` · `interview-prep` ·
-`optimize-linkedin` · `reevaluate-strategy` · `relationship-sourcing` · `research-boards` ·
-`research-comp` · `research-company` · `schedule-meeting` · `search-jobs` ·
-`setup-searches` · `sync-status` · `tailor-application` · `track-outcomes`
+`apply-job` · `calendar-sync` · `company-health` · `configure` · `discover-companies` ·
+`email-comms` · `evaluate-job` · `ingest-mail` · `ingest-messages` · `ingest-profile` ·
+`interview-prep` · `optimize-linkedin` · `reevaluate-strategy` · `relationship-sourcing` ·
+`research-boards` · `research-comp` · `research-company` · `schedule-meeting` ·
+`search-jobs` · `setup-searches` · `sync-status` · `tailor-application` · `track-outcomes`
 
 ## Rules — read before acting for the user
 
