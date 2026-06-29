@@ -3563,6 +3563,7 @@ function compRangeView(row, sourceRecord = {}) {
       basis: est.basis || "Estimated from comparable roles in your tracker.",
       confidence: est.confidence || "low",
       sampleSize: Number(est.sampleSize) || 0,
+      asOf: est.asOf || "",
     };
   }
 
@@ -3994,6 +3995,7 @@ function jobDetailFromRow(row, sourceRecord = {}, communications = [], now = new
     compConfidence: compView.confidence,
     compHasMarket: compView.hasMarket,
     compSampleSize: compView.sampleSize,
+    compAsOf: compView.asOf || "",
     matched: [
       row.source === "sourced" ? "New sourced role" : `${row.stageLabel} stage`,
       row.location,

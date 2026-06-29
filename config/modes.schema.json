@@ -51,6 +51,19 @@
           "description": "Re-research a cached rating once it is older than this many days (or on a major stage transition); fresher ratings are reused without spending searches."
         }
       }
+    },
+    "comp_estimate": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Controls staleness of the comparables-based comp estimate persisted on tracker rows (compEstimate). Absent = the defaults below.",
+      "properties": {
+        "recheck_days": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 30,
+          "description": "Re-estimate a cached compEstimate once its asOf is older than this many days (or on a major stage transition); fresher estimates are reused as-is."
+        }
+      }
     }
   }
 }
