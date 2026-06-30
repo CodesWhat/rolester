@@ -520,6 +520,26 @@ function buildModeStatus(modes = {}) {
   };
 }
 
+function buildAgentGuidanceStatus(guidance = null) {
+  const data = guidance && typeof guidance === "object" ? guidance : {};
+  const nextSkill = String(data.nextSkill || "").trim();
+  const command = String(data.command || "").trim();
+  const message =
+    String(data.message || "").trim() ||
+    "Run npm run doctor, then ask the agent to follow the Agent guidance block.";
+  const reason =
+    String(data.reason || "").trim() || "The dashboard could not load a specific handoff yet.";
+  return {
+    ...data,
+    title: "Next agent task",
+    nextSkill,
+    command,
+    message,
+    reason,
+    ctaLabel: nextSkill ? `Run ${nextSkill}` : command ? "Run helper" : "Run doctor",
+  };
+}
+
 function stringOrFallback(value, fallback = "Not set") {
   const text = String(value == null ? "" : value).trim();
   return text || fallback;
@@ -4762,7 +4782,14 @@ function buildSourcedRoles(trackerData) {
 
 export function buildDashboardViewModel(
   trackerData,
-  { now = new Date(), activityEvents = [], modes = null, settings = null, library = null } = {}
+  {
+    now = new Date(),
+    activityEvents = [],
+    modes = null,
+    settings = null,
+    library = null,
+    agentGuidance = null,
+  } = {}
 ) {
   activeLogoToken = settings?.logoToken || "";
   activeCandidateName = normalizeName(settings?.profile?.candidate || "");
@@ -4778,6 +4805,7 @@ export function buildDashboardViewModel(
     recency: {
       updatedAt: durableUpdatedAt(trackerData),
     },
+    agentGuidance: buildAgentGuidanceStatus(agentGuidance || modes?.agentGuidance || null),
     modes: buildModeStatus(modes),
     settings: buildSettingsStatus(settings),
     library: buildLibraryStatus(library),
@@ -5698,6 +5726,26 @@ function renderModeStatus(root, modes) {
   }
 }
 
+function renderAgentGuidance(root, guidance) {
+  const card = root.querySelector("[data-agent-guidance]");
+  if (card) {
+    card.hidden = false;
+    card.dataset.nextSkill = guidance.nextSkill || "";
+    card.dataset.command = guidance.command || "";
+  }
+  setText(root, "[data-agent-guidance-title]", guidance.title);
+  setText(root, "[data-agent-guidance-message]", guidance.message);
+  setText(root, "[data-agent-guidance-reason]", guidance.reason);
+  const cta = root.querySelector("[data-agent-guidance-cta]");
+  if (cta) {
+    cta.textContent = guidance.ctaLabel;
+    cta.dataset.agentGuidanceAction = guidance.nextSkill || guidance.command || "doctor";
+    cta.title = guidance.nextSkill
+      ? `Ask your agent to run ${guidance.nextSkill}.`
+      : guidance.command || "Run npm run doctor.";
+  }
+}
+
 function renderSettingsList(items, emptyLabel = "Not set") {
   const values = listOrEmpty(items);
   if (values.length === 0) {
@@ -6538,6 +6586,7 @@ export function renderDashboardViewModel(viewModel, root = document) {
   }
 
   renderModeStatus(root, viewModel.modes);
+  renderAgentGuidance(root, viewModel.agentGuidance);
   renderSettingsStatus(root, viewModel.settings);
   renderStrategyInsights(root, viewModel.strategy);
   renderCalendarStatus(root, viewModel.calendar);
@@ -6742,6 +6791,7 @@ export async function hydrateDashboardFromTracker({
     modes,
     settings: effectiveSettings,
     library,
+    agentGuidance: modes?.agentGuidance || null,
   });
   renderDashboardViewModel(viewModel, root);
   return viewModel;

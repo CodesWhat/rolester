@@ -37,6 +37,7 @@ node bin/rolester.mjs start claude        # or: node bin/rolester.mjs start code
 That scaffolds your workspace, installs the skills, opens the dashboard at
 `http://localhost:7777`, and hands off to your agent. Then paste a job posting and
 say "evaluate this" — or try the bundled sample under `examples/sample-jobs/`.
+Run `node bin/rolester.mjs next` any time you want the terse next agent task.
 
 **Update later:**
 
@@ -107,8 +108,9 @@ The full apply-cycle is shipped and working end-to-end:
 - **Guided onboarding** (`ingest-profile`) — conversational interview that
   produces `candidate/` config: targets, comp floor, evidence bank, honesty
   boundaries, writing-style calibration.
-- **Search & intake** (`setup-searches`, `search-jobs`) — build searches from
-  your targets; dedupe, liveness-check, and triage the sourced queue.
+- **Search & intake** (`setup-searches`, `research-boards`,
+  `discover-companies`, `search-jobs`) — build searches from your targets, find
+  boards and employer ATS sources, dedupe, liveness-check, and triage the sourced queue.
 - **Body-read gate** (`evaluate-job`) — reads the full posting; emits
   `GATE / FIT / COMP / ACTION` against your config before any tailoring.
 - **Honest tailoring** (`tailor-application`) — résumé, cover letter, and
@@ -136,6 +138,7 @@ Health check:
 
 ```bash
 npm run doctor
+npm run next
 ```
 
 ### The dashboard

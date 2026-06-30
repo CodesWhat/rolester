@@ -67,8 +67,45 @@ let's get started" (or anything that isn't a specific task):
    additional boards/aggregators, `discover-companies` wires employer ATS boards,
    and only then should `search-jobs` run the first sweep unless the user
    explicitly skips one of the discovery steps.
-7. Once there's enough to be useful, render the tracker and show them where they
+7. **Follow doctor's Agent guidance.** After `npm run doctor`, read the
+   `Agent guidance` block and treat it as the canonical next handoff: tell the
+   user which skill the agent should run next, then run that skill. For clarity:
+   do not treat `npm run searches` or `npm run companies` as the workflow; those commands are
+   source/config views that explain what is missing, while the agent-led skills
+   (`setup-searches`, `research-boards`, `discover-companies`, `search-jobs`) do
+   the work and write durable state.
+8. Once there's enough to be useful, render the tracker and show them where they
    stand. Setup can continue incrementally; don't block on completeness.
+
+## Ongoing Next-Skill Steering
+
+Always steer toward the next useful skill. Rolester is an agentic workflow, not a
+set of passive list commands: when the user asks "what now?", reports something
+changed, or seems stalled, inspect `npm run doctor`, the dashboard's Next agent
+task, and `workspace/tracker.json`, then recommend and run the owning skill.
+
+- If candidate setup is incomplete, run `ingest-profile`; if source setup is
+  incomplete, follow `setup-searches -> research-boards -> discover-companies ->
+  search-jobs` unless the user explicitly skips a discovery step.
+- If sourcing is empty or stale, run `search-jobs`; if broad sources exist but
+  company ATS boards are missing, run `discover-companies` before the sweep.
+- If a sourced role is high-fit or needs a body read, run `evaluate-job`, then
+  `apply-job` only after a KEEP verdict.
+- If an interview is scheduled or an invite arrives, run `interview-prep`; if the
+  scheduling thread itself needs times or confirmation, run `schedule-meeting`.
+- If a recruiter thread needs a reply, follow-up, thank-you, or negotiation
+  draft, run `email-comms`; if mail or in-platform messages need syncing, run
+  `ingest-mail` or `ingest-messages`.
+- If a status changed, a rejection arrived, the user withdrew, or an action was
+  completed out-of-band, run `track-outcomes`; if the status must be read from an
+  ATS dashboard, run `sync-status`.
+- If enough outcomes have accumulated or the funnel looks off, run
+  `reevaluate-strategy`; if company risk becomes relevant, run `company-health`.
+
+After every skill finishes, surface the next handoff in one line. If an optional
+discovery step is intentionally skipped, record it with `rolester next --skip <step> --write`
+where `<step>` is `research-boards` or `discover-companies`, so doctor,
+`rolester next`, and the dashboard stop recommending it.
 
 ## Keeping Current
 

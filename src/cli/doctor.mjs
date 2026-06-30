@@ -13,6 +13,12 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  buildAgentGuidance,
+  formatAgentGuidanceLines,
+  readDiscoverySkips,
+  readSetupState,
+} from "../core/agent-guidance.mjs";
 import { automationStatus, loadAutomation } from "../core/automation/consent.mjs";
 import { detectSession } from "../core/automation/session.mjs";
 import { loadStories } from "../core/interview/story-bank.mjs";
@@ -144,16 +150,10 @@ const modes = loadModes({ root });
 const automationData = loadAutomation({ root }).data;
 const sessionBrowser = detectSession({ data: automationData });
 
-// Setup resume state (workspace/setup-state.json). Written by the ingest-profile
-// skill; read-only here. Absent or malformed = no setup-state (never fails doctor).
-let setupState = null;
-try {
-  const raw = readFileSync(userPath(pathCtx, "workspace/setup-state.json"), "utf8");
-  const parsed = JSON.parse(raw);
-  if (parsed && typeof parsed === "object") setupState = parsed;
-} catch {
-  // absent or unparseable — treat as no state present
-}
+// Setup resume state (workspace/setup-state.json). Written by ingest-profile and
+// the explicit discovery-skip helper; read-only here.
+const setupState = readSetupState({ root });
+const discoverySkips = readDiscoverySkips({ root });
 const setup = setupState
   ? {
       present: true,
@@ -162,11 +162,29 @@ const setup = setupState
       complete: typeof setupState.complete === "boolean" ? setupState.complete : null,
       stepsRecorded: Array.isArray(setupState.completed) ? setupState.completed.length : 0,
       deferredCount: Array.isArray(setupState.deferred) ? setupState.deferred.length : 0,
+      skippedDiscoverySteps: discoverySkips,
     }
-  : { present: false, mode: null, depth: null, complete: null, stepsRecorded: 0, deferredCount: 0 };
+  : {
+      present: false,
+      mode: null,
+      depth: null,
+      complete: null,
+      stepsRecorded: 0,
+      deferredCount: 0,
+      skippedDiscoverySteps: discoverySkips,
+    };
 
 const searchReadiness = loadSearchReadiness();
 const companyAtsReadiness = loadCompanyAtsReadiness();
+const agentGuidance = buildAgentGuidance({
+  missingUser,
+  missingSystem,
+  skillsNotDiscoverable,
+  modes,
+  searchReadiness,
+  companyAtsReadiness,
+  discoverySkips,
+});
 
 const result = {
   ok:
@@ -205,7 +223,9 @@ const result = {
   discovery: {
     broadSources: searchReadiness,
     companyAts: companyAtsReadiness,
+    skippedSteps: discoverySkips,
   },
+  agentGuidance,
   dataRoot: userPaths.dataRoot,
 };
 
@@ -326,7 +346,11 @@ printCompanyAtsReadiness(companyAtsReadiness);
 console.log("");
 
 console.log("Discovery pipeline:");
-printDiscoveryPipeline(searchReadiness, companyAtsReadiness);
+printDiscoveryPipeline(searchReadiness, companyAtsReadiness, discoverySkips);
+console.log("");
+
+console.log("Agent guidance:");
+printAgentGuidance(agentGuidance);
 console.log("");
 
 if (result.ok) {
@@ -439,7 +463,7 @@ function printCompanyAtsReadiness(readiness) {
   }
   if (!readiness.configured) {
     console.log(
-      "- Company ATS scans: not configured — run discover-companies, or add boards with `npm run companies -- --add`."
+      "- Company ATS scans: not configured — ask your agent to run discover-companies, or add boards with `npm run companies -- --add`."
     );
     console.log(
       "  This is the path that wires employer boards such as Ashby, Greenhouse, Lever, Workable, and SmartRecruiters."
@@ -451,7 +475,8 @@ function printCompanyAtsReadiness(readiness) {
   console.log(`- Company ATS scans: ${readiness.total} tracked ${companyWord}${providerText}.`);
 }
 
-function printDiscoveryPipeline(searches, companies) {
+function printDiscoveryPipeline(searches, companies, discoverySkips = []) {
+  const skipped = new Set(discoverySkips);
   console.log(
     "- Order after onboarding: setup-searches -> research-boards -> discover-companies -> search-jobs."
   );
@@ -460,8 +485,18 @@ function printDiscoveryPipeline(searches, companies) {
     return;
   }
   if (!companies.valid || !companies.configured) {
+    if (!skipped.has("research-boards")) {
+      console.log(
+        "  Next discovery step: research-boards; then discover-companies before the first sweep."
+      );
+      return;
+    }
+    if (!skipped.has("discover-companies")) {
+      console.log("  Next discovery step: discover-companies (research-boards skipped).");
+      return;
+    }
     console.log(
-      "  Next discovery step: research-boards; then discover-companies before the first sweep."
+      "  Next discovery step: search-jobs first sweep (board and company discovery skipped)."
     );
     return;
   }
@@ -470,4 +505,8 @@ function printDiscoveryPipeline(searches, companies) {
     return;
   }
   console.log("  Next discovery step: search-jobs refresh.");
+}
+
+function printAgentGuidance(guidance) {
+  for (const line of formatAgentGuidanceLines(guidance)) console.log(line);
 }

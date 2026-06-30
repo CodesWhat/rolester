@@ -221,7 +221,7 @@ Confirm `config/search-sources.yml` passes `config/search-sources.schema.json`. 
 
 **URL spot-check:** For at least one `url-query` or `rss` entry, open the `target` or `rssUrl` value in a browser (or use WebFetch) and confirm it returns job results rather than a 404, redirect loop, or empty feed. If an entry resolves to an error page, disable it (`npm run searches -- --disable <index>`) and report to the user before handing off.
 
-## Hand-off
+## Final handoff
 
 When `config/search-sources.yml` is ready, continue the post-onboarding discovery
 pipeline in this exact order:
@@ -235,6 +235,10 @@ discover companies, scan, dedupe, gate, or score. Hand off next to `research-boa
 unless the user explicitly says to skip board discovery. After `research-boards`, run
 `discover-companies` before the first `search-jobs` sweep so employer ATS boards are
 wired into `config/sourced-scan.json`.
+
+End every run by saying the next agent task plainly: `research-boards` next, or
+`rolester next --skip research-boards --write` if the user explicitly skipped board
+discovery.
 
 ---
 

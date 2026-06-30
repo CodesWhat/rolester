@@ -297,6 +297,14 @@ npm run activity -- append --type sourced --actor agent \
 
 The body-read gate is mandatory and lives in `evaluate-job`.
 
+## Final handoff
+
+End every run with the next agent task. If high-fit sourced roles were found, hand
+off to `evaluate-job` for the top roles before any application work; if there are
+KEEP verdicts ready, hand off to `apply-job`. If the sweep is dry or only returns
+known companies, hand off to `research-boards` or `discover-companies` to expand
+coverage before another refresh.
+
 ## Rules — authenticated browser sources
 
 - **Both gates required.** Never scrape an authenticated source unless the source's `enabled` is `true` AND `npm run automation -- status --json` shows `authenticated_search` `allowed: true` for its platform. If either is false, skip and explain the opt-in steps; do not open a browser.

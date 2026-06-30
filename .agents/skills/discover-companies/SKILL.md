@@ -262,6 +262,13 @@ confirmation) adds them to `config/sourced-scan.json` `tracked_companies[]`. It 
 The artifact this skill produces is rows in `config/sourced-scan.json`. Hand off to `search-jobs`
 to scan them.
 
+## Final handoff
+
+End every run with the next agent task: `search-jobs` next. If no companies were
+added because confirmation is pending, tell the user that `search-jobs` can still
+run on broad sources, but the stronger handoff is to approve or revise the proposed
+companies first.
+
 ---
 
 ## Required output block

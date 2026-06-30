@@ -1,6 +1,6 @@
 {
   "name": "rolester",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -85,6 +85,7 @@
     "install-skills:check": "node scripts/install-skills.mjs --check",
     "doctor": "node src/cli/doctor.mjs",
     "doctor:json": "node src/cli/doctor.mjs --json",
+    "next": "node src/cli/next.mjs",
     "ingest": "node src/cli/ingest.mjs",
     "searches": "node src/cli/searches.mjs",
     "companies": "node src/cli/companies.mjs",

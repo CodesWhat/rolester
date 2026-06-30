@@ -270,6 +270,13 @@ After board discovery, hand off to `discover-companies` so employer ATS boards a
 wired into `config/sourced-scan.json` before the first `search-jobs` sweep. Only go
 straight to `search-jobs` if the user explicitly wants to skip company discovery.
 
+## Final handoff
+
+End every run with the next agent task: `discover-companies` next. If the user
+explicitly skipped employer ATS discovery, record it with
+`rolester next --skip discover-companies --write`. Do not hand straight to
+`search-jobs` unless that skip is recorded or the workspace already has tracked companies.
+
 ---
 
 ## Required output block

@@ -273,15 +273,15 @@ function printRunReadiness(rows) {
     `\n${readiness.enabled} enabled ${searchWord} configured; ${readiness.withLastRun}/${readiness.enabled} have run watermarks.`
   );
   if (readiness.enabled === 0) {
-    console.log("Next: enable or add searches before running the search-jobs skill.");
+    console.log("Next: ask your agent to run setup-searches or enable sources before search-jobs.");
   } else if (readiness.withLastRun === 0) {
     console.log(
-      "Next: run the search-jobs skill to scan these sources. `modes allows search:sweep:broad` reports permission, not run history."
+      "Next: Ask your agent to run search-jobs to scan these sources. `modes allows search:sweep:broad` reports permission, not run history."
     );
   } else if (readiness.withLastRun < readiness.enabled) {
     const missing = readiness.enabled - readiness.withLastRun;
     console.log(
-      `Next: run the search-jobs skill to scan ${missing} enabled ${missing === 1 ? "source" : "sources"} without watermarks.`
+      `Next: Ask your agent to run search-jobs to scan ${missing} enabled ${missing === 1 ? "source" : "sources"} without watermarks.`
     );
   }
 }

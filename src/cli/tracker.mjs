@@ -8,6 +8,7 @@
 //   npm run tracker -- --verify     Validate tracker.json against config/tracker.schema.json
 //   npm run tracker -- --json       Machine-readable output for the current mode
 //   npm run tracker -- --help
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -85,7 +86,9 @@ function runDashboard(data) {
   };
   const settingsSnapshot = loadSettingsSnapshot({ root });
   const librarySnapshot = loadLibrarySnapshot({ root });
+  const agentGuidance = loadAgentGuidanceSnapshot();
   modeSnapshot.settings = settingsSnapshot;
+  modeSnapshot.agentGuidance = agentGuidance;
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, html);
   writeFileSync(OUT_DATA_PATH, dataModule);
@@ -131,6 +134,21 @@ function runDashboard(data) {
   console.log(`Wrote ${displayPath(pathCtx, "workspace/settings.json")}`);
   console.log(`Wrote ${displayPath(pathCtx, "workspace/library.json")}`);
   console.log(renderTrackerSummaryText(data));
+}
+
+function loadAgentGuidanceSnapshot() {
+  const result = spawnSync(process.execPath, [join(root, "src/cli/doctor.mjs"), "--json"], {
+    cwd: root,
+    env: process.env,
+    encoding: "utf8",
+  });
+  if (result.error || !result.stdout) return null;
+  try {
+    const data = JSON.parse(result.stdout);
+    return data?.agentGuidance ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function runSummary(data) {

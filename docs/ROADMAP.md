@@ -24,7 +24,8 @@ nurse, a driver, and an engineer each bring their own config.
   boards and company ATS sources in order, capture postings, dedupe,
   liveness-check, and produce a gated intake queue with a coarse triage fit.
   `doctor` and the source CLIs now surface whether broad searches, board discovery,
-  company discovery, and the first job sweep have actually run.
+  company discovery, and the first job sweep have actually run; `rolester next`
+  and the dashboard's Next agent task card point the agent at the next skill.
 - **Body-read gate** (`evaluate-job`) — a standalone gate that reads the full
   posting and emits a `GATE` / `FIT` / `COMP` / `ACTION` verdict from your config.
   `apply-job` must run or verify it first.

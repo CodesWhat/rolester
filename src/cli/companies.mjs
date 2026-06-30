@@ -79,7 +79,7 @@ function runList() {
   if (companies.length === 0) {
     console.log("No tracked companies yet.");
     console.log(
-      "Company ATS scans are not wired: Run discover-companies to find target employers automatically, or add a scannable ATS board manually."
+      "Company ATS scans are not wired: Ask your agent to run discover-companies next to find target employers automatically, or add a scannable ATS board manually."
     );
     console.log(
       `Until this is populated, search-jobs can use broad board searches but will not scan company ATS boards like ${ATS_FAMILIES}.`
