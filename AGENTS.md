@@ -558,6 +558,15 @@ Rules for intake:
   `rolester automation`) or owning skill (`setup-searches`, or a scoped
   `ingest-profile` step) confirm-first. It never becomes a new way to mutate
   config.
+- If a `rolester` command crashes, throws a stack trace, exits non-zero
+  unexpectedly, or a skill produces clearly-wrong output — or the user says "this
+  is broken", "report a bug", "file an issue", or "tell the devs": use
+  `report-issue`. It first separates a real defect from a config problem (routing
+  setup issues to `configure` / `doctor`), assembles **redacted** diagnostics (no
+  candidate PII, comp, employer/recruiter names, or workspace contents; home paths
+  normalized), and — only with an explicit yes — opens a GitHub issue on the
+  upstream `CodesWhat/rolester` repo under the user's own `gh` identity. It never
+  auto-files and falls back to a prefilled issue URL when `gh` isn't available.
 
 ## Gate Contract
 

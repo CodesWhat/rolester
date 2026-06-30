@@ -163,6 +163,57 @@ test("operational scripts do not hardcode an absolute personal-home path", async
   );
 });
 
+test("scripts reachable from a skill or published npm-run alias are shipped", async () => {
+  const { readdirSync, readFileSync } = await import("node:fs");
+  const pkg = JSON.parse(await readText("package.json"));
+  const files = pkg.files || [];
+  const npmScripts = pkg.scripts || {};
+
+  // Map each `npm run <alias>` to the scripts/X.mjs it executes (if any).
+  const aliasToScript = {};
+  for (const [alias, cmd] of Object.entries(npmScripts)) {
+    const m = cmd.match(/scripts\/[A-Za-z0-9_-]+\.mjs/);
+    if (m) aliasToScript[alias] = m[0];
+  }
+
+  // Scripts that exist only to build/deploy the demo + marketing site. They are
+  // never invoked from a skill or a user install, so they are intentionally not
+  // shipped. Everything else an agent can reach at runtime MUST ship — npm pack
+  // ships exactly the "files" allowlist, so an unshipped-but-referenced script
+  // breaks in every installed/live copy (the missing-verify-tracker.mjs class of bug).
+  const DEV_ONLY = new Set(["scripts/build-demo.mjs", "scripts/deploy-demo.mjs"]);
+
+  const referenced = new Set();
+  // Every script a published npm-run alias points at.
+  for (const s of Object.values(aliasToScript)) referenced.add(s);
+  // Every script a skill tells the agent to run — directly (`scripts/X.mjs`) or
+  // via an `npm run <alias>` that resolves to one.
+  const skillsDir = join(root, ".agents/skills");
+  for (const entry of readdirSync(skillsDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    let text;
+    try {
+      text = readFileSync(join(skillsDir, entry.name, "SKILL.md"), "utf8");
+    } catch {
+      continue;
+    }
+    for (const m of text.matchAll(/scripts\/[A-Za-z0-9_-]+\.mjs/g)) referenced.add(m[0]);
+    for (const m of text.matchAll(/npm run ([a-z][a-z0-9:-]*)/g)) {
+      const script = aliasToScript[m[1]];
+      if (script) referenced.add(script);
+    }
+  }
+
+  const missing = [...referenced].filter((s) => !DEV_ONLY.has(s) && !files.includes(s)).sort();
+
+  assert.deepEqual(
+    missing,
+    [],
+    `Reachable script(s) missing from the package.json "files" allowlist — they break ` +
+      `in every installed/live copy:\n${missing.map((s) => `    ${s}`).join("\n")}`
+  );
+});
+
 function readText(relPath) {
   return readFile(join(root, relPath), "utf8");
 }

@@ -80,6 +80,12 @@ workspace files:
   status change: use `track-outcomes`.
 - If the workspace is new or the candidate profile is incomplete: use
   `ingest-profile`.
+- If a `rolester` command crashes or exits unexpectedly, a skill produces
+  clearly-wrong output, or the user says "this is broken" / "report a bug" /
+  "file an issue": use `report-issue`. It separates a real defect from a config
+  problem, assembles redacted diagnostics (no candidate PII, comp, or workspace
+  contents), and — only with an explicit yes — opens a GitHub issue on the
+  upstream `CodesWhat/rolester` repo. It never auto-files.
 
 ## Mandatory Gate
 

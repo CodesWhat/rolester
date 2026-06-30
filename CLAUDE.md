@@ -32,3 +32,9 @@ morale, "is this a safe place to land"), or to factor company risk into a role, 
 provenance, persists it to the tracker, and feeds the fit score only where it
 cross-cuts a stated candidate need. Cost-gated: auto-fires at the interview stage by
 default; the rating is an internal signal and never enters an outbound artifact.
+
+When a `rolester` command crashes or behaves like it's broken, or the user asks to
+report a bug or file an issue, run `report-issue`. It separates a real defect from a
+config problem, assembles redacted diagnostics (never candidate PII, comp, or
+workspace contents), and only with an explicit yes opens a GitHub issue on the
+upstream `CodesWhat/rolester` repo. It never auto-files.
