@@ -2,8 +2,8 @@ import { APPLY_PATTERNS, classifyLiveness } from "./liveness-core.mjs";
 
 export function htmlToText(html = "") {
   return String(html)
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, " ")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script[^>]*>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style[^>]*>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
