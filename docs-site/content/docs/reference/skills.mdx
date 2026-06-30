@@ -27,6 +27,7 @@ private config, not hardcoded preferences.
 | `research-comp` | Web-search market comp for a role+location and produce a cited `workspace/research/comp-bench-*.md` that feeds evaluate-job COMP CHECK/ANCHOR and a confirm-first gate write-back. |
 | `research-boards` | Web-search and legitimacy-screen new job boards for the candidate's domain/role families, then propose adding to `search-sources.yml` confirm-first. |
 | `discover-companies` | Web-search companies likely to be hiring the candidate's target roles, resolve each to a scannable ATS careers board, legitimacy-screen and dedup, then propose adding to `config/sourced-scan.json` tracked_companies confirm-first. Upstream of search-jobs. |
+| `company-health` | Score a role-scoped company-risk rating (`healthy\|watch\|risky`) from web-searched layoff, hiring-momentum, financial, sentiment, and leadership signals with provenance; persist it to the tracker and feed the fit score only where it cross-cuts a stated candidate need. Cost-gated; an internal signal that never enters an outbound artifact. |
 
 ## Communications
 
@@ -59,3 +60,9 @@ private config, not hardcoded preferences.
 |-------|-------------|
 | `configure` | Show current settings and route changes to the validated CLI or owning skill — never a new mutation path itself. |
 | `calendar-sync` | Write tracker-derived interviews, assessments, follow-ups, prep blocks, and deadlines to Apple Calendar, Google Calendar, Outlook, or approved local automation tools. Opt-in, user-initiated, confirm-first. |
+
+## Diagnostics
+
+| Skill | Description |
+|-------|-------------|
+| `report-issue` | When Rolester itself looks broken — a crash, stack trace, non-zero exit, or clearly-wrong output — separate a real defect from a config problem, assemble redacted diagnostics (no candidate PII, comp, or workspace contents), and, only with an explicit yes, open a GitHub issue on the upstream `CodesWhat/rolester` repo under the user's own `gh` identity. Never auto-files; falls back to a prefilled issue URL when `gh` is unavailable. |

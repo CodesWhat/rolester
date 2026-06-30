@@ -12,7 +12,7 @@
 An agentic, local-first job-search workspace. It helps one person find, vet, tailor,
 track, and prep for roles — from their own data, on their own machine, driven by their own
 AI agent (you). It isn't a site you log into; it's a set of skills you run locally. No
-cloud, no account, no telemetry. Free to self-host, source-available (BUSL-1.1), zero runtime dependencies.
+cloud, no account, no telemetry. Free to self-host, MIT licensed, zero runtime dependencies.
 
 ## Requirements
 
@@ -23,13 +23,11 @@ cloud, no account, no telemetry. Free to self-host, source-available (BUSL-1.1),
 
 ## Install & start
 
-Clone the repo and run it in-tree. The agent runs from source, so a local clone is the canonical path:
+Install the package and launch it with the public `rolester` binary:
 
 ```
-git clone https://github.com/CodesWhat/rolester
-cd rolester
-npm install
-node bin/rolester.mjs start claude        # or: node bin/rolester.mjs start codex
+npm install -g rolester
+rolester start claude        # or: rolester start codex
 ```
 
 `start` scaffolds a local `workspace/`, installs the skills (so `/evaluate-job`,
@@ -43,7 +41,7 @@ The loop is **paste → route → tune**: the user pastes something (a job descr
 recruiter email, a LinkedIn URL), you classify it and run the owning skill, the tracker and
 dashboard update. To get going:
 
-1. **Onboard** — run `ingest-profile` (or `npm run ingest`) to read the user's resume and
+1. **Onboard** — run `ingest-profile` (or `rolester ingest`) to read the user's resume and
    generate their `candidate/*.yml` config plus a personalized `candidate/AGENTS.md`.
 2. **Vet a job** — when the user pastes a JD, run `evaluate-job` before anything else.
 3. **Apply** — `apply-job` (it verifies `evaluate-job` first, then `tailor-application`).
@@ -56,11 +54,11 @@ This file only gets you to the front door — don't improvise procedures it cove
 
 ## The skills
 
-`apply-job` · `calendar-sync` · `configure` · `email-comms` · `evaluate-job` ·
-`ingest-mail` · `ingest-messages` · `ingest-profile` · `interview-prep` ·
-`optimize-linkedin` · `reevaluate-strategy` · `relationship-sourcing` · `research-boards` ·
-`research-comp` · `research-company` · `schedule-meeting` · `search-jobs` ·
-`setup-searches` · `sync-status` · `tailor-application` · `track-outcomes`
+`apply-job` · `calendar-sync` · `company-health` · `configure` · `discover-companies` ·
+`email-comms` · `evaluate-job` · `ingest-mail` · `ingest-messages` · `ingest-profile` ·
+`interview-prep` · `optimize-linkedin` · `reevaluate-strategy` · `relationship-sourcing` ·
+`research-boards` · `research-comp` · `research-company` · `schedule-meeting` ·
+`search-jobs` · `setup-searches` · `sync-status` · `tailor-application` · `track-outcomes`
 
 ## Rules — read before acting for the user
 
@@ -82,7 +80,7 @@ This file only gets you to the front door — don't improvise procedures it cove
 
 ## Keeping current
 
-- **Update an install:** run `node bin/rolester.mjs update` in the `rolester` folder.
+- **Update an install:** run `rolester update`.
   It fetches the latest published code via npm; your `workspace/` and `candidate/` data are
   untouched.
 - **This file** is maintained by hand and versioned with Rolester releases — a short

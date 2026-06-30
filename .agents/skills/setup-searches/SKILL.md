@@ -9,9 +9,9 @@ description: Build and maintain config/search-sources.yml from candidate targeti
 
 ## STEP 0 — Preflight
 
-Run `npm run doctor` and inspect the output.
+Run `rolester doctor` and inspect the output.
 
-- If `candidate/targeting.yml` is missing or fails schema: halt. Instruct the user to run `ingest-profile` (`npm run ingest`) first, then return here.
+- If `candidate/targeting.yml` is missing or fails schema: halt. Instruct the user to run `ingest-profile` (`rolester ingest`) first, then return here.
 - If `candidate/profile.yml` is missing or fails schema: same halt.
 - If `targeting.yml` exists but `role_buckets` is empty or absent: halt. The baseline generator will produce only a stub with no role-specific searches — a search catalog with no titles is useless. Tell the user to populate `role_buckets` in `candidate/targeting.yml` (or re-run `ingest-profile`) before continuing.
 - If both files pass and `role_buckets` is non-empty: proceed to STEP 1.
@@ -35,7 +35,7 @@ Echo a summary to the user: detected domain, board catalog that will be used, `m
 ## STEP 2 — Generate baseline
 
 ```
-npm run searches -- --from-targeting
+rolester searches --from-targeting
 ```
 
 Idempotency: a search is added only when no existing entry matches provider + query (case-insensitive). Existing manual entries are preserved. If the user runs this on an already-populated config, confirm that only new titles will be appended and nothing will be overwritten.
@@ -51,7 +51,7 @@ Perform any curation the user requested (or all of (a)–(d) on initial setup):
 **(a) Add keyword searches** — one per title or per explicit user request:
 
 ```
-npm run searches -- --add-query "<title or keyword>" [--label "<l>"] [--provider <provider>]
+rolester searches --add-query "<title or keyword>" [--label "<l>"] [--provider <provider>]
 ```
 
 > **Default provider:** if `--provider` is omitted, the CLI defaults to `HiringCafe`. For non-tech roles or when the user's `candidate.domain` does not map to HiringCafe, always pass `--provider <provider>` explicitly so the entry is not silently pinned to the wrong source.
@@ -59,7 +59,7 @@ npm run searches -- --add-query "<title or keyword>" [--label "<l>"] [--provider
 **(b) Import a pasted board URL** — when the user pastes a URL from any job board:
 
 ```
-npm run searches -- --add-url "<full URL>" [--label "<label>"]
+rolester searches --add-url "<full URL>" [--label "<label>"]
 ```
 
 For hiring.cafe URLs: the embedded `searchState` and query-string filters are parsed and written into the `searchState` block verbatim. Do not strip, normalize, or drop query params.
@@ -75,13 +75,13 @@ When the user pastes a search or results URL from LinkedIn, Indeed, or Glassdoor
 
 Two switches are required before `search-jobs` will run such a source:
 
-1. **Enable the source** — the normal enable path (`npm run searches -- --enable <index or label>`).
+1. **Enable the source** — the normal enable path (`rolester searches --enable <index or label>`).
 2. **Grant automation consent and enable the capability for that platform** — the user must read the platform's terms of service, then:
 
 ```
-npm run automation -- consent <platform> --write
-npm run automation -- enable authenticated_search <platform> --write
-npm run automation -- status
+rolester automation consent <platform> --write
+rolester automation enable authenticated_search <platform> --write
+rolester automation status
 ```
 
 No credentials are stored. The logged-in session is held by the session browser (extension preferred; Playwright persistent profile as fallback) — see AGENTS.md → Browser Automation Contract and `docs/BROWSER.md`. Do not proceed with the platform if `mayRun({ capability: "authenticated_search", platform })` returns `allowed: false`; surface the `reasons` and stop.
@@ -89,13 +89,13 @@ No credentials are stored. The logged-in session is held by the session browser 
 **(c) Enable / disable entries:**
 
 ```
-npm run searches -- --enable <index or label>
-npm run searches -- --disable <index or label>
+rolester searches --enable <index or label>
+rolester searches --disable <index or label>
 ```
 
-Use `npm run searches -- --list` to get current indices before enabling/disabling by index.
+Use `rolester searches` to get current indices before enabling/disabling by index.
 
-**(d) Surface disabled-by-default entries.** Some providers (e.g. LinkedIn) are in the source catalog but disabled by default due to auth brittleness or rate limits. List them with `npm run searches -- --list` and tell the user which entries are `enabled: false` so they can make an informed choice.
+**(d) Surface disabled-by-default entries.** Some providers (e.g. LinkedIn) are in the source catalog but disabled by default due to auth brittleness or rate limits. List them with `rolester searches` and tell the user which entries are `enabled: false` so they can make an informed choice.
 
 ## STEP 4 — Tune global filters
 
@@ -117,15 +117,15 @@ Review the generated filters and adjust as needed:
     windowHours: 168
     safetyMinutes: 60
   ```
-  After editing, run `npm run doctor` to confirm the schema validates.
+  After editing, run `rolester doctor` to confirm the schema validates.
 
-Use `npm run searches -- --list` to review the current state before finalizing.
+Use `rolester searches` to review the current state before finalizing.
 
 ## STEP 5 — Review aggregator and board catalog
 
 Verify the auto-selected aggregator and board set is appropriate for the candidate's domain:
 
-- If the candidate is **not** in the domain that matches the aggregator (e.g. a trucking candidate with a tech RSS feed), disable or replace the aggregator entry manually via `npm run searches -- --disable <index>` and add domain-appropriate boards via `--add-url` or `--add-query --provider <provider>`.
+- If the candidate is **not** in the domain that matches the aggregator (e.g. a trucking candidate with a tech RSS feed), disable or replace the aggregator entry manually via `rolester searches --disable <index>` and add domain-appropriate boards via `--add-url` or `--add-query --provider <provider>`.
 - If the user mentions a board or aggregator they always want included: add it now, and apply the gate write-back below.
 
 **Auto-seeded portals (review these):**
@@ -166,7 +166,7 @@ Curated Board Registry. This step is optional — skip it if the user declines o
    boards, add each confirmed one via:
 
    ```
-   npm run searches -- --add-url "<url>" --label "<label>"
+   rolester searches --add-url "<url>" --label "<label>"
    ```
 
    For niche boards with no canonical search URL yet, use `--add-query "<role family keyword>" --provider <provider>` if a provider key exists, or note that the board needs a URL once the provider is implemented and skip it.
@@ -192,7 +192,7 @@ regeneration) where possible.
 
 If the user stated a new preference during this session that should survive future regenerations:
 
-- "Never show me LinkedIn" or "exclude provider X" — confirm-first (consequential: affects every future scan). Once confirmed: (1) disable the entry via `npm run searches -- --disable <index>`; (2) add a clearly marked comment at the top of `config/search-sources.yml` in the form `# PERSISTENT: exclude provider=<X> — re-disable after --from-targeting regeneration`; (3) warn the user that this preference will need to be re-applied after any `--from-targeting` run until `candidate/search-preferences.yml` exists.
+- "Never show me LinkedIn" or "exclude provider X" — confirm-first (consequential: affects every future scan). Once confirmed: (1) disable the entry via `rolester searches --disable <index>`; (2) add a clearly marked comment at the top of `config/search-sources.yml` in the form `# PERSISTENT: exclude provider=<X> — re-disable after --from-targeting regeneration`; (3) warn the user that this preference will need to be re-applied after any `--from-targeting` run until `candidate/search-preferences.yml` exists.
 - "Always use [board]" — confirm-first; add the entry, then add a comment `# PERSISTENT: always include <label> (<provider>)` in `config/search-sources.yml`. Same regeneration-loss caveat applies.
 - Unambiguous, low-blast-radius preferences (one extra board the user just pasted) — write-and-report: add the entry via `--add-url` or `--add-query`, then echo `Added to config/search-sources.yml: <label> (<provider>)`.
 
@@ -201,7 +201,7 @@ Do not write board preferences to `candidate/targeting.yml` or `candidate/profil
 ## STEP 7 — Verify
 
 ```
-npm run searches -- --list
+rolester searches
 ```
 
 Confirm for every entry:
@@ -214,16 +214,31 @@ Confirm for every entry:
 Then run:
 
 ```
-npm run doctor
+rolester doctor
 ```
 
 Confirm `config/search-sources.yml` passes `config/search-sources.schema.json`. If the CLI refused to write an invalid config, no errors should appear — but verify explicitly. If the doctor flags errors, fix them before handing off.
 
-**URL spot-check:** For at least one `url-query` or `rss` entry, open the `target` or `rssUrl` value in a browser (or use WebFetch) and confirm it returns job results rather than a 404, redirect loop, or empty feed. If an entry resolves to an error page, disable it (`npm run searches -- --disable <index>`) and report to the user before handing off.
+**URL spot-check:** For at least one `url-query` or `rss` entry, open the `target` or `rssUrl` value in a browser (or use WebFetch) and confirm it returns job results rather than a 404, redirect loop, or empty feed. If an entry resolves to an error page, disable it (`rolester searches --disable <index>`) and report to the user before handing off.
 
-## Hand-off
+## Final handoff
 
-When `config/search-sources.yml` is ready, hand off to `search-jobs`. This skill produces the source config — it does not scan, dedupe, gate, or score. Discovery, deduplication, liveness, and sourced intake belong to `search-jobs`. The fit gate belongs to `evaluate-job`.
+When `config/search-sources.yml` is ready, continue the post-onboarding discovery
+pipeline in this exact order:
+
+```
+setup-searches -> research-boards -> discover-companies -> search-jobs
+```
+
+This skill only produces the baseline source config. It does not discover new boards,
+discover companies, scan, dedupe, gate, or score. Hand off next to `research-boards`
+unless the user explicitly says to skip board discovery. After `research-boards`, run
+`discover-companies` before the first `search-jobs` sweep so employer ATS boards are
+wired into `config/sourced-scan.json`.
+
+End every run by saying the next agent task plainly: `research-boards` next, or
+`rolester next --skip research-boards --write` if the user explicitly skipped board
+discovery.
 
 ---
 
@@ -231,15 +246,15 @@ When `config/search-sources.yml` is ready, hand off to `search-jobs`. This skill
 
 | User intent | Command |
 |---|---|
-| Generate baseline from targeting | `npm run searches -- --from-targeting` |
-| See current searches | `npm run searches -- --list` |
-| See current searches (JSON) | `npm run searches -- --list --json` — emits `{ exists: bool, searches: [ { index, provider, label, target, enabled, recency? } ] }` |
-| Add a keyword search | `npm run searches -- --add-query "<query>" [--label "<label>"] [--provider <p>]` |
-| Import a pasted board URL | `npm run searches -- --add-url "<url>" [--label "<label>"]` |
-| Enable a search | `npm run searches -- --enable <index or label>` |
-| Disable a search | `npm run searches -- --disable <index or label>` |
-| Health check | `npm run doctor` |
-| Bail to onboarding | `npm run ingest` |
+| Generate baseline from targeting | `rolester searches --from-targeting` |
+| See current searches | `rolester searches` |
+| See current searches (JSON) | `rolester searches --json` — emits `{ exists: bool, searches: [ { index, provider, label, target, enabled, recency? } ] }` |
+| Add a keyword search | `rolester searches --add-query "<query>" [--label "<label>"] [--provider <p>]` |
+| Import a pasted board URL | `rolester searches --add-url "<url>" [--label "<label>"]` |
+| Enable a search | `rolester searches --enable <index or label>` |
+| Disable a search | `rolester searches --disable <index or label>` |
+| Health check | `rolester doctor` |
+| Bail to onboarding | `rolester ingest` |
 
 ## Rules
 

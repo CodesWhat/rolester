@@ -14,17 +14,17 @@ dashboard.
 it on its own:
 
 ```bash
-npm run tracker:dev    # live-reloading server on http://localhost:7777
-npm run tracker        # one-shot snapshot → workspace/tracker.html
+rolester tracker-dev    # live-reloading server on http://localhost:7777
+rolester tracker        # one-shot snapshot → workspace/tracker.html
 ```
 
-`tracker:dev` watches `workspace/tracker.json` and your dashboard source files
-and refreshes the open page over Server-Sent Events. A write by the agent reaches
-your screen within ~120 ms — there is no refresh timer.
+`rolester tracker-dev` watches `workspace/tracker.json` and your dashboard source
+files and refreshes the open page over Server-Sent Events. A write by the agent
+reaches your screen within ~120 ms — there is no refresh timer.
 
-The static `workspace/tracker.html` (from `npm run tracker`) fetches its data
+The static `workspace/tracker.html` (from `rolester tracker`) fetches its data
 once at page load. Its "last updated" pill is accurate at open but ages from
-there. For any live session, use `tracker:dev`.
+there. For any live session, use `rolester tracker-dev`.
 
 ## What the dashboard shows
 

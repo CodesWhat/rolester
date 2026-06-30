@@ -48,7 +48,7 @@ if (opts.help) {
 }
 
 // Default verb to "refresh" when flags are present but no positional verb was given,
-// so `npm run analytics -- --write` works without an explicit "refresh" positional.
+// so `rolester analytics --write` works without an explicit "refresh" positional.
 if (opts.positional.length === 0 && process.argv.length > 2) {
   opts.positional.push("refresh");
 }
@@ -125,7 +125,7 @@ function cmdRefresh() {
       console.log("Proposed analytics block for workspace/tracker.json:");
       console.log(JSON.stringify(analytics, null, 2));
       console.log("");
-      console.log("Dry run — pass --write to persist (does not bump the freshness stamp).");
+      console.log("Dry run - pass --write to persist (does not bump the freshness stamp).");
     }
     process.exit(0);
   }
@@ -195,7 +195,7 @@ Commands:
 
 refresh options:
   --at ISO    Override "now" timestamp (ISO 8601; default: current time).
-  --write     Persist the computed block to tracker.json (stamp: false — no freshness bump).
+  --write     Persist the computed block to tracker.json (stamp: false - no freshness bump).
   --json      Machine-readable output.
   --root DIR  Repo root (default: the rolester install).
 

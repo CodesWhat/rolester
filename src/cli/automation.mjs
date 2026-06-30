@@ -205,7 +205,7 @@ if (!opts.write) {
     console.log(`Proposed change to ${automationDisplay} (${label}):`);
     console.log(diff);
     printVerdict(verdict, capability, platform);
-    console.log("Dry run — pass --write to commit.");
+    console.log("Dry run - pass --write to commit.");
   }
   process.exit(0);
 }
@@ -345,7 +345,7 @@ function handleSession(provider) {
       console.log(`Proposed change to ${automationDisplay} (${plan.label}):`);
       console.log(diff);
       console.log(`  → session browser will be: ${provider}${preferredNote}`);
-      console.log("Dry run — pass --write to commit.");
+      console.log("Dry run - pass --write to commit.");
     }
     process.exit(0);
   }
@@ -421,10 +421,10 @@ function printStatus(asJson) {
     console.log("");
   }
   console.log(
-    `Session browser: ${session.provider}${session.profileRoot ? ` (profiles: ${session.profileRoot})` : ""} — prefer extension, Playwright fallback. Change: \`npm run automation -- session <extension|playwright> --write\`.`
+    `Session browser: ${session.provider}${session.profileRoot ? ` (profiles: ${session.profileRoot})` : ""} - prefer extension, Playwright fallback. Change: \`rolester automation session <extension|playwright> --write\`.`
   );
   console.log(
-    "Toggle: `npm run automation -- enable <capability> [platform] --write`, `consent <platform> --write`."
+    "Toggle: `rolester automation enable <capability> [platform] --write`, `consent <platform> --write`."
   );
 }
 

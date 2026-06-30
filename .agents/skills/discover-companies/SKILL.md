@@ -21,6 +21,12 @@ This is the company analog of `research-boards`. `research-boards` finds **board
 `tracked_companies[]` — it has no discovery of its own. This skill is what grows that list, so
 future sweeps reach beyond the set the candidate has already exhausted.
 
+Post-onboarding discovery order:
+
+```
+setup-searches -> research-boards -> discover-companies -> search-jobs
+```
+
 ---
 
 ## Inputs
@@ -36,12 +42,12 @@ future sweeps reach beyond the set the candidate has already exhausted.
 
 ## STEP 0 — Load context (load to decide)
 
-Run `npm run doctor` and confirm it exits clean. If it fails, stop and report.
+Run `rolester doctor` and confirm it exits clean. If it fails, stop and report.
 
 Check usage mode:
 
 ```
-npm run modes -- allows research:companies
+rolester modes allows research:companies
 ```
 
 If it returns `skip` / `downshift`, treat company discovery as discretionary: explain that
@@ -194,8 +200,8 @@ For each company being added (auto or confirmed), use the companies helper — *
 `config/sourced-scan.json`**:
 
 ```
-npm run companies -- --add "<Company Name>" --url "<careers_url>"          # dry-run preview
-npm run companies -- --add "<Company Name>" --url "<careers_url>" --write  # commit
+rolester companies --add "<Company Name>" --url "<careers_url>"          # dry-run preview
+rolester companies --add "<Company Name>" --url "<careers_url>" --write  # commit
 ```
 
 The helper infers the provider from the host, **rejects any URL not on a supported ATS**, dedups
@@ -205,8 +211,8 @@ company cannot be added — leave it in the table as intel only.
 After adding, confirm the result and validate:
 
 ```
-npm run companies -- --list
-npm run doctor
+rolester companies
+rolester doctor
 ```
 
 Confirm `config/sourced-scan.json` still validates before reporting done.
@@ -215,7 +221,7 @@ Then log the discovery to the Activity Pulse feed (see **Activity Pulse** in AGE
 summary event, not one per company:
 
 ```
-npm run activity -- append --type research --actor agent \
+rolester activity append --type research --actor agent \
   --title "Discovered <N> companies to track" \
   --summary "<one line: what kind of companies / for which role families>" \
   --skill discover-companies --operation companies:add --write
@@ -256,6 +262,13 @@ confirmation) adds them to `config/sourced-scan.json` `tracked_companies[]`. It 
 The artifact this skill produces is rows in `config/sourced-scan.json`. Hand off to `search-jobs`
 to scan them.
 
+## Final handoff
+
+End every run with the next agent task: `search-jobs` next. If no companies were
+added because confirmation is pending, tell the user that `search-jobs` can still
+run on broad sources, but the stronger handoff is to approve or revise the proposed
+companies first.
+
 ---
 
 ## Required output block
@@ -290,7 +303,7 @@ NEXT: <"run search-jobs sweep" | "awaiting confirmation">
   silently never sweep).
 - **Comp screen stays internal.** Use `minimum_base` to filter implausible employers; never write
   the figure into the table, an artifact, or any outbound text (Privacy Invariant).
-- **Use the helper.** Additions go through `npm run companies -- --add … --write`. Do not edit
+- **Use the helper.** Additions go through `rolester companies --add … --write`. Do not edit
   `config/sourced-scan.json` directly.
 - **Quality gate.** A company must be a real employer with at least one current, dated, relevant
   role on a resolvable board to be proposed. An inferred board with no visible roles is borderline
@@ -302,9 +315,9 @@ NEXT: <"run search-jobs sweep" | "awaiting confirmation">
 
 | Intent | Command |
 |---|---|
-| See currently tracked companies | `npm run companies -- --list` |
-| Preview adding a company (dry run) | `npm run companies -- --add "<name>" --url "<careers_url>"` |
-| Add a confirmed company | `npm run companies -- --add "<name>" --url "<careers_url>" --write` |
-| Remove a tracked company | `npm run companies -- --remove "<name>" --write` |
+| See currently tracked companies | `rolester companies` |
+| Preview adding a company (dry run) | `rolester companies --add "<name>" --url "<careers_url>"` |
+| Add a confirmed company | `rolester companies --add "<name>" --url "<careers_url>" --write` |
+| Remove a tracked company | `rolester companies --remove "<name>" --write` |
 | Scan the newly added companies | `npm run scan:sourced -- --company "<name>" --write --intake --summary --verify` |
-| Health check after additions | `npm run doctor` |
+| Health check after additions | `rolester doctor` |

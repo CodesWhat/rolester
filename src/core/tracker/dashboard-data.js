@@ -495,7 +495,7 @@ function modeStatusItem(kind, value, valid) {
       value: normalized || "invalid",
       label: "Invalid",
       tone: "warning",
-      title: "Mode config is invalid. Run npm run modes -- status.",
+      title: "Mode config is invalid. Run rolester modes status.",
     };
   }
   return { value: normalized, ...MODE_STATUS_COPY[kind][normalized] };
@@ -517,6 +517,26 @@ function buildModeStatus(modes = {}) {
     source: configured ? "configured" : "defaults",
     usage: modeStatusItem("usage", usageValue, valid),
     application: modeStatusItem("application", applicationValue, valid),
+  };
+}
+
+function buildAgentGuidanceStatus(guidance = null) {
+  const data = guidance && typeof guidance === "object" ? guidance : {};
+  const nextSkill = String(data.nextSkill || "").trim();
+  const command = String(data.command || "").trim();
+  const message =
+    String(data.message || "").trim() ||
+    "Run rolester doctor, then ask the agent to follow the Agent guidance block.";
+  const reason =
+    String(data.reason || "").trim() || "The dashboard could not load a specific handoff yet.";
+  return {
+    ...data,
+    title: "Next agent task",
+    nextSkill,
+    command,
+    message,
+    reason,
+    ctaLabel: nextSkill ? `Run ${nextSkill}` : command ? "Run helper" : "Run doctor",
   };
 }
 
@@ -2813,7 +2833,7 @@ function buildStrategyReviewTrigger(bucket, reviewSignal = {}) {
 }
 
 // Builds a compact view-model from tracker.json#analytics.reevaluation (the
-// persisted block written by `npm run analytics -- --write`). Fully defensive:
+// persisted block written by `rolester analytics --write`). Fully defensive:
 // returns null when the block is absent, incomplete, or has no usable threshold,
 // so callers can short-circuit rendering safely on older trackers.
 function buildReevaluationProgress(reevaluationData) {
@@ -3894,7 +3914,7 @@ function jobDetailFromRow(row, sourceRecord = {}, communications = [], now = new
     // here too so a stale draft left on a sent thread never shows a ghost panel.
     const draftActive = !["waiting", "closed"].includes(comm.status);
     if (draftActive && draft && (draft.subject || draft.body)) {
-      const recipient = (comm.participants || []).find((p) => p && p.name);
+      const recipient = (comm.participants || []).find((p) => p?.name);
       drafts.push({
         subject: draft.subject || comm.subject || "Draft reply",
         body: draft.body || "",
@@ -4762,7 +4782,14 @@ function buildSourcedRoles(trackerData) {
 
 export function buildDashboardViewModel(
   trackerData,
-  { now = new Date(), activityEvents = [], modes = null, settings = null, library = null } = {}
+  {
+    now = new Date(),
+    activityEvents = [],
+    modes = null,
+    settings = null,
+    library = null,
+    agentGuidance = null,
+  } = {}
 ) {
   activeLogoToken = settings?.logoToken || "";
   activeCandidateName = normalizeName(settings?.profile?.candidate || "");
@@ -4778,6 +4805,7 @@ export function buildDashboardViewModel(
     recency: {
       updatedAt: durableUpdatedAt(trackerData),
     },
+    agentGuidance: buildAgentGuidanceStatus(agentGuidance || modes?.agentGuidance || null),
     modes: buildModeStatus(modes),
     settings: buildSettingsStatus(settings),
     library: buildLibraryStatus(library),
@@ -5520,7 +5548,7 @@ function jobActionAttrs(row) {
 // are status, not a task, so they render an empty cell. ("Awaiting isn't an action.")
 const PASSIVE_ACTION_STATES = new Set(["watch", "active", "archived", "high-fit"]);
 function jobActionIsActionable(action = {}) {
-  if (!action || !action.state) return false;
+  if (!action?.state) return false;
   if (action.workstream === "watch" || action.workstream === "archive") return false;
   return !PASSIVE_ACTION_STATES.has(action.state);
 }
@@ -5546,7 +5574,6 @@ function renderJobsExplorerRow(row) {
   const modeLabel = row.modeLabel || "TBD";
   const locationLabel = row.location || "Location TBD";
   const statusLabel = statusDisplayLabel(row);
-  const statusHint = statusTitle(row);
   return `
     <tr data-jobs-row data-detail-id="${esc(row.drawerId)}" data-stage="${esc(row.stage)}" data-source-kind="${esc(row.source)}" data-source-bucket="${esc(row.sourceBucket)}" data-channel="${esc(String(row.channel || "").toLowerCase())}" data-source-label="${esc(sourceLabel.toLowerCase())}" data-terminal="${row.terminal ? "1" : "0"}" data-rounds-reached="${row.roundsReached || 0}" data-needs-review="${row.needsReview ? "1" : "0"}" ${jobActionAttrs(row)} data-search="${esc(row.searchText)}" data-company="${esc(row.company.toLowerCase())}" data-role="${esc(row.role.toLowerCase())}" data-location="${esc(locationLabel.toLowerCase())}" data-mode="${esc(row.mode || modeLabel.toLowerCase())}" data-fit="${esc(row.fit)}" data-base="${esc(row.compMidpointK || row.baseK)}" data-applied="${esc(row.appliedAt || row.appliedLabel)}" data-tip="${tooltipPayload(row)}">
       <td>
@@ -5695,6 +5722,26 @@ function renderModeStatus(root, modes) {
       chip.title = item.title;
       chip.setAttribute("aria-label", `${displayKey} mode: ${item.label}. ${item.title}`);
     }
+  }
+}
+
+function renderAgentGuidance(root, guidance) {
+  const card = root.querySelector("[data-agent-guidance]");
+  if (card) {
+    card.hidden = false;
+    card.dataset.nextSkill = guidance.nextSkill || "";
+    card.dataset.command = guidance.command || "";
+  }
+  setText(root, "[data-agent-guidance-title]", guidance.title);
+  setText(root, "[data-agent-guidance-message]", guidance.message);
+  setText(root, "[data-agent-guidance-reason]", guidance.reason);
+  const cta = root.querySelector("[data-agent-guidance-cta]");
+  if (cta) {
+    cta.textContent = guidance.ctaLabel;
+    cta.dataset.agentGuidanceAction = guidance.nextSkill || guidance.command || "doctor";
+    cta.title = guidance.nextSkill
+      ? `Ask your agent to run ${guidance.nextSkill}.`
+      : guidance.command || "Run rolester doctor.";
   }
 }
 
@@ -6538,6 +6585,7 @@ export function renderDashboardViewModel(viewModel, root = document) {
   }
 
   renderModeStatus(root, viewModel.modes);
+  renderAgentGuidance(root, viewModel.agentGuidance);
   renderSettingsStatus(root, viewModel.settings);
   renderStrategyInsights(root, viewModel.strategy);
   renderCalendarStatus(root, viewModel.calendar);
@@ -6742,6 +6790,7 @@ export async function hydrateDashboardFromTracker({
     modes,
     settings: effectiveSettings,
     library,
+    agentGuidance: modes?.agentGuidance || null,
   });
   renderDashboardViewModel(viewModel, root);
   return viewModel;

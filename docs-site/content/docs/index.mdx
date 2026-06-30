@@ -4,22 +4,21 @@ description: Agentic job-search workspace — find, vet, tailor, track, and prep
 ---
 
 Rolester is a local, skill-driven job-search workspace. A coding agent (Claude
-Code, Codex, or any AGENTS.md-aware tool) runs inside a cloned copy of the repo
-and drives a set of skills that cover every step of the job-search loop — from
+Code, Codex, or any AGENTS.md-aware tool) runs inside the Rolester workspace and
+drives a set of skills that cover every step of the job-search loop — from
 sourcing and vetting to tailoring, tracking, and interview prep.
 
-**The agent is the runtime. The CLI is read-only.** You paste a job posting (or a
-recruiter email, or a link) into the agent chat and say what you want to do. The
-skills handle the rest. The CLI scaffolds the workspace, renders the dashboard,
-and checks health — it does not mutate your data.
+**The agent is the runtime. The CLI is the front door and validated helper
+surface.** You paste a job posting (or a recruiter email, or a link) into the
+agent chat and say what you want to do. The skills handle the work. The CLI
+scaffolds the workspace, renders the dashboard, checks health, and exposes safe
+config helpers — it is not a job board or separate cloud service.
 
 ## Quick start
 
 ```bash
-git clone https://github.com/CodesWhat/rolester
-cd rolester
-npm install
-node bin/rolester.mjs start claude   # or: start codex
+npm install -g rolester
+rolester start claude   # or: rolester start codex
 ```
 
 That scaffolds your workspace, boots the dashboard at `http://localhost:7777`,

@@ -30,6 +30,24 @@ function isTechDomain(domain = "") {
   return TECH_DOMAINS.has(lower) || lower.startsWith("software") || lower.startsWith("tech");
 }
 
+function generatedRecency(targeting) {
+  const postingAge = targeting?.search_preferences?.posting_age;
+  if (postingAge?.mode === "fixed-days") {
+    const days = Number(postingAge.days);
+    if (Number.isFinite(days) && days > 0) {
+      return {
+        mode: "fixed-hours",
+        hours: Math.round(days * 24 * 100) / 100,
+        safetyMinutes: 30,
+      };
+    }
+  }
+  return {
+    mode: "since-last-run",
+    safetyMinutes: 30,
+  };
+}
+
 /**
  * buildSearchSources(targeting, profile) → plain JS object valid against search-sources.schema.json.
  *
@@ -88,6 +106,7 @@ export function buildSearchSources(targeting, profile) {
   // One HiringCafe entry per deduplicated title (order-preserved across buckets).
   const searches = [];
   const seenSearchTitles = new Set();
+  const recency = generatedRecency(targeting);
   for (const bucket of targeting.role_buckets ?? []) {
     for (const title of bucket.titles ?? []) {
       if (!seenSearchTitles.has(title)) {
@@ -98,10 +117,7 @@ export function buildSearchSources(targeting, profile) {
           label: title,
           query: title,
           enabled: true,
-          recency: {
-            mode: "since-last-run",
-            safetyMinutes: 30,
-          },
+          recency: { ...recency },
           searchState: {
             sortBy: "date",
           },

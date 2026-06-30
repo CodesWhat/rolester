@@ -193,6 +193,21 @@ test("Dashboard shell exposes the Strategy insights card hooks", async () => {
   assert.match(dashboardSection, /data-strategy-recommendation/);
 });
 
+test("Dashboard shell exposes the next agent task card hooks", async () => {
+  const html = await readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8");
+  const dashboardSection = html.match(
+    /<section class="page-panel page-shell" data-page-panel="dashboard"[\s\S]*?<section class="page-panel page-shell jobs-page-variant--rail"/
+  )?.[0];
+
+  assert.ok(dashboardSection, "expected dashboard page shell");
+  assert.match(dashboardSection, /data-agent-guidance/);
+  assert.match(dashboardSection, />Next agent task</);
+  assert.match(dashboardSection, /data-agent-guidance-title/);
+  assert.match(dashboardSection, /data-agent-guidance-message/);
+  assert.match(dashboardSection, /data-agent-guidance-reason/);
+  assert.match(dashboardSection, /data-agent-guidance-cta/);
+});
+
 test("Dashboard shell uses one square disclosure control for collapsible dropdowns", async () => {
   const html = await readFile(new URL("src/core/tracker/dashboard-shell.html", root), "utf8");
 
@@ -1520,6 +1535,52 @@ test("Dashboard renderer fills the Strategy insights card", () => {
   assert.match(recommendation.innerHTML, /Double down|Clean up quiet/);
   assert.match(recommendation.innerHTML, /data-strategy-recommendation-cta/);
   assert.doesNotMatch(recommendation.innerHTML, /strategy-summary-row/);
+});
+
+test("Dashboard adapter and renderer expose the next agent task", () => {
+  const tracker = { applications: [], sourced: [], sources: [], communications: [] };
+  const vm = buildDashboardViewModel(tracker, {
+    now: new Date("2026-06-18T12:00:00.000Z"),
+    agentGuidance: {
+      agentLed: true,
+      nextSkill: "search-jobs",
+      command: null,
+      message: "Ask your agent to run search-jobs next for the first sweep.",
+      reason: "Sources are configured, but none have run watermarks yet.",
+      pipeline: ["setup-searches", "research-boards", "discover-companies", "search-jobs"],
+    },
+  });
+
+  assert.equal(vm.agentGuidance.nextSkill, "search-jobs");
+  assert.equal(vm.agentGuidance.title, "Next agent task");
+  assert.equal(vm.agentGuidance.ctaLabel, "Run search-jobs");
+
+  const card = fakeElement();
+  const title = fakeElement();
+  const message = fakeElement();
+  const reason = fakeElement();
+  const cta = fakeElement();
+  const root = {
+    querySelector(selector) {
+      if (selector === "[data-agent-guidance]") return card;
+      if (selector === "[data-agent-guidance-title]") return title;
+      if (selector === "[data-agent-guidance-message]") return message;
+      if (selector === "[data-agent-guidance-reason]") return reason;
+      if (selector === "[data-agent-guidance-cta]") return cta;
+      return null;
+    },
+    querySelectorAll() {
+      return [];
+    },
+  };
+
+  renderDashboardViewModel(vm, root);
+
+  assert.equal(card.dataset.nextSkill, "search-jobs");
+  assert.equal(title.textContent, "Next agent task");
+  assert.match(message.textContent, /run search-jobs next/);
+  assert.match(reason.textContent, /none have run watermarks/);
+  assert.equal(cta.textContent, "Run search-jobs");
 });
 
 test("Dashboard labels portal rows as ATS channel, not source discovery coverage", () => {

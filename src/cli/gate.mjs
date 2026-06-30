@@ -8,11 +8,11 @@ import { existsSync, readFileSync } from "node:fs";
 // hand-editing YAML (see AGENTS.md → Write-back rule).
 //
 // Usage:
-//   node src/cli/gate.mjs <type> <value>            Propose the change (dry run)
-//   node src/cli/gate.mjs <type> <value> --write    Commit it
-//   node src/cli/gate.mjs exclude-company Palantir --write --confirm
-//   node src/cli/gate.mjs --list                     Show gate types
-//   node src/cli/gate.mjs --help
+//   rolester gate <type> <value>            Propose the change (dry run)
+//   rolester gate <type> <value> --write    Commit it
+//   rolester gate exclude-company Palantir --write --confirm
+//   rolester gate --list                    Show gate types
+//   rolester gate --help
 //
 // Default is a DRY RUN: it prints the target file, the exact line that would
 // change, schema validity, and the friction level — and writes nothing. Pass
@@ -84,7 +84,7 @@ const candidatePath = userPath(pathCtx, fileEntry.candidatePath);
 const candidateDisplay = displayPath(pathCtx, fileEntry.candidatePath);
 if (!existsSync(candidatePath)) {
   fail(
-    `${candidateDisplay} not found — run \`npm run ingest\` to create your candidate config first.`
+    `${candidateDisplay} not found — run \`rolester ingest\` to create your candidate config first.`
   );
 }
 const currentText = readFileSync(candidatePath, "utf8");
@@ -156,7 +156,7 @@ if (!opts.write) {
     console.log(
       `Friction: ${plan.friction === "confirm" ? "confirm-first (get the user's yes, then --write --confirm)" : "write-and-report"}`
     );
-    console.log("Dry run — pass --write to commit.");
+    console.log("Dry run - pass --write to commit.");
   }
   process.exit(0);
 }

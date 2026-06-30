@@ -32,7 +32,7 @@ Usage:
   node src/cli/status-map.mjs "<raw status>" --current <status> Classify the transition
   node src/cli/status-map.mjs "<raw status>" --json             Machine-readable
 
-With --current, "autoApplicable" is true only for a high-confidence advance — those
+With --current, "autoApplicable" is true only for a high-confidence advance - those
 are the changes the sync-status skill hands to track-outcomes. Anything else
 (regress, lateral, or low-confidence) is surfaced for you to confirm.`);
   process.exit(opts.help ? 0 : 1);

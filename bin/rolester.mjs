@@ -4,8 +4,10 @@
 //   rolester start [ai]  One command: scaffold + skills + live dashboard + agent
 //   rolester init        Scaffold candidate/ + workspace dirs, print next steps
 //   rolester doctor      Environment health check
+//   rolester next        Show the next agent task
 //   rolester ingest      Guided candidate setup
 //   rolester searches    Build/curate the search-source config
+//   rolester companies   Manage tracked employer ATS boards
 //   rolester evaluate    Run the body-read gate on a saved job
 //   rolester tracker     One-shot tracker snapshot (use `start` for the live dev server)
 //   rolester restore     Recover workspace/tracker.json from a rolling snapshot
@@ -56,13 +58,27 @@ const [command, ...rest] = process.argv.slice(2);
 
 const CLIS = {
   doctor: "src/cli/doctor.mjs",
+  next: "src/cli/next.mjs",
   ingest: "src/cli/ingest.mjs",
   searches: "src/cli/searches.mjs",
+  companies: "src/cli/companies.mjs",
   evaluate: "src/cli/evaluate.mjs",
   tracker: "src/cli/tracker.mjs",
+  "tracker-dev": "src/cli/tracker-dev.mjs",
+  modes: "src/cli/modes.mjs",
   automation: "src/cli/automation.mjs",
+  activity: "src/cli/activity.mjs",
+  research: "src/cli/research.mjs",
+  stories: "src/cli/stories.mjs",
+  "strategy-review": "src/cli/strategy-review.mjs",
+  analytics: "src/cli/analytics.mjs",
+  evidence: "src/cli/evidence.mjs",
+  gate: "src/cli/gate.mjs",
+  learnings: "src/cli/learnings.mjs",
+  "status-map": "src/cli/status-map.mjs",
   export: "src/cli/export.mjs",
   restore: "src/cli/restore.mjs",
+  "install-skills": "scripts/install-skills.mjs",
 };
 
 const WORKSPACE_DIRS = [
@@ -78,8 +94,9 @@ const WORKSPACE_DIRS = [
 ];
 
 // The single starter message that hands a freshly-scaffolded workspace to the
-// agent. It reads AGENTS.md, verifies skills, and runs ingest-profile from here.
-const STARTER_PROMPT = "familiarize yourself and let's get started";
+// agent. It anchors every new session to doctor-driven next-step routing.
+const STARTER_PROMPT =
+  "Read AGENTS.md, run rolester doctor, then guide me through the next unfinished Rolester skill. If setup is complete, follow setup-searches -> research-boards -> discover-companies -> search-jobs before the first job sweep.";
 
 // Agent CLIs we know how to launch, in preference order. Each is started with
 // the starter prompt as a single positional argument (the seed-a-session form
@@ -140,9 +157,9 @@ function runInit(extra) {
   const code = run(join(root, CLIS.ingest), extra);
   if (code === 0) {
     console.log("");
-    console.log(
-      "Workspace ready. Next: fill candidate/*.yml, then `rolester searches --from-targeting`."
-    );
+    console.log("Workspace ready. Open your agent in this folder and say:");
+    console.log(`    ${STARTER_PROMPT}`);
+    console.log("Use `rolester next` anytime to print the current next agent task.");
   }
   return code;
 }
@@ -238,20 +255,26 @@ async function runStart(extra) {
           "  Codex:        npm install -g @openai/codex               (https://github.com/openai/codex)"
         );
       }
-      console.log("Open your agent in this folder and say:\n");
-      console.log(`    ${STARTER_PROMPT}\n`);
-      if (dash) {
-        console.log(
-          `The dashboard is running separately; stop it with the PID in ${displayPath(pathCtx, ".internal/tracker-dev.pid")}.`
-        );
-      }
+      printManualAgentHandoff(dash);
     }
-  } else if (dash) {
-    console.log(
-      `Dashboard live as a separate process; stop it with the PID in ${displayPath(pathCtx, ".internal/tracker-dev.pid")}.`
-    );
+  } else {
+    console.log("");
+    printManualAgentHandoff(dash);
   }
   return exitCode;
+}
+
+function printManualAgentHandoff(dash) {
+  console.log("Open your agent in this folder and say:");
+  console.log("");
+  console.log(`    ${STARTER_PROMPT}`);
+  console.log("");
+  console.log("For a terse CLI handoff, run `rolester next`.");
+  if (dash) {
+    console.log(
+      `The dashboard is running separately; stop it with the PID in ${displayPath(pathCtx, ".internal/tracker-dev.pid")}.`
+    );
+  }
 }
 
 // Spawn the tracker dev server as a detached local process. The PID/log live in
@@ -492,13 +515,27 @@ Usage: rolester <command> [options]
 Commands:
   start [ai]  Scaffold + install skills + live dashboard + launch your agent
   init        Scaffold candidate/ + workspace dirs, print next steps
+  install-skills  Create/repair the .claude/skills -> .agents/skills shim (--check to verify only)
   doctor      Environment health check
+  next        Show the next agent task from doctor guidance
   ingest      Guided candidate setup (profile, targeting, evidence, ...)
   searches    Build and curate the search-source config
+  companies   Manage tracked employer ATS boards
   evaluate    Run the body-read gate on a saved job (GATE/FIT/COMP/ACTION)
   tracker     One-shot tracker snapshot / summary / follow-ups (for the live hot-reloading dev server, use 'rolester start')
+  tracker-dev  Serve the live hot-reloading dashboard without launching an agent
   restore     Recover workspace/tracker.json from a rolling snapshot (list / restore by index or name)
+  modes       Show/change optional usage and application modes
   automation  Show/toggle opt-in browser-automation config (defaults OFF)
+  research    Read/record web-research artifacts
+  gate        Safely update gate data such as comp floors and exclusions
+  learnings   Read/append per-role-family learnings
+  stories     Read/validate/add STAR+R interview stories
+  activity    Read/append/prune the dashboard Activity Pulse feed
+  evidence    Read/validate/add evidence claims
+  analytics   Refresh + inspect the persisted outcome-analytics block (--write)
+  strategy-review  Stamp the "last reviewed" marker after a strategy review
+  status-map  Normalize a raw ATS status label to the canonical tracker status
   export      Render a tailored artifact / packet to PDF or DOCX
   update      Update this install to the latest published version (--check, --rc, --force)
   version     Print the installed Rolester version (also --version, -v)

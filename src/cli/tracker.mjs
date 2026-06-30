@@ -2,12 +2,13 @@
 // Rolester tracker CLI — publish the live dashboard, summarize, check follow-ups, verify.
 //
 // Usage:
-//   npm run tracker                 Publish workspace/tracker.html from the dashboard shell
-//   npm run tracker -- --summary    Print a plaintext status summary
-//   npm run tracker -- --followups  List follow-ups due now
-//   npm run tracker -- --verify     Validate tracker.json against config/tracker.schema.json
-//   npm run tracker -- --json       Machine-readable output for the current mode
-//   npm run tracker -- --help
+//   rolester tracker                 Publish workspace/tracker.html from the dashboard shell
+//   rolester tracker --summary    Print a plaintext status summary
+//   rolester tracker --followups  List follow-ups due now
+//   rolester tracker --verify     Validate tracker.json against config/tracker.schema.json
+//   rolester tracker --json       Machine-readable output for the current mode
+//   rolester tracker --help
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -85,7 +86,9 @@ function runDashboard(data) {
   };
   const settingsSnapshot = loadSettingsSnapshot({ root });
   const librarySnapshot = loadLibrarySnapshot({ root });
+  const agentGuidance = loadAgentGuidanceSnapshot();
   modeSnapshot.settings = settingsSnapshot;
+  modeSnapshot.agentGuidance = agentGuidance;
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, html);
   writeFileSync(OUT_DATA_PATH, dataModule);
@@ -131,6 +134,21 @@ function runDashboard(data) {
   console.log(`Wrote ${displayPath(pathCtx, "workspace/settings.json")}`);
   console.log(`Wrote ${displayPath(pathCtx, "workspace/library.json")}`);
   console.log(renderTrackerSummaryText(data));
+}
+
+function loadAgentGuidanceSnapshot() {
+  const result = spawnSync(process.execPath, [join(root, "src/cli/doctor.mjs"), "--json"], {
+    cwd: root,
+    env: process.env,
+    encoding: "utf8",
+  });
+  if (result.error || !result.stdout) return null;
+  try {
+    const data = JSON.parse(result.stdout);
+    return data?.agentGuidance ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function runSummary(data) {
@@ -225,12 +243,12 @@ function printHelp() {
   console.log(`rolester tracker — dashboard, summary, follow-ups, verify
 
 Usage:
-  npm run tracker                 Publish workspace/tracker.html (also snapshots tracker.json)
-  npm run tracker -- --summary    Plaintext status summary
-  npm run tracker -- --followups  Follow-ups due now
-  npm run tracker -- --verify     Validate against config/tracker.schema.json
-  npm run tracker -- --snapshots  List rolling tracker.json snapshots (workspace/.snapshots/)
-  npm run tracker -- --json       Machine-readable output
+  rolester tracker                 Publish workspace/tracker.html (also snapshots tracker.json)
+  rolester tracker --summary    Plaintext status summary
+  rolester tracker --followups  Follow-ups due now
+  rolester tracker --verify     Validate against config/tracker.schema.json
+  rolester tracker --snapshots  List rolling tracker.json snapshots (workspace/.snapshots/)
+  rolester tracker --json       Machine-readable output
 
 Reads workspace/tracker.json (seed from templates/tracker.json).
 Snapshots: workspace/.snapshots/tracker-<timestamp>.json, newest-20 kept.

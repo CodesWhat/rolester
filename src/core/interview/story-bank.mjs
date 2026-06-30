@@ -28,7 +28,7 @@
 // isolated at the bottom — the same shape as learnings.mjs / research-store.mjs.
 
 import { existsSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { lintArtifact } from "../documents/placeholder-lint.mjs";
 import { displayPath, userPath } from "../paths/workspace.mjs";
@@ -269,7 +269,7 @@ export function coverageGaps({ stories, competencies = COMMON_COMPETENCIES } = {
 export function renderStorySection(matched) {
   const items = Array.isArray(matched) ? matched : [];
   if (items.length === 0) {
-    return "_No prepared stories matched this role yet. Draft STAR+R stories from candidate/evidence.yml via interview-prep (`npm run stories -- gaps` shows what's uncovered)._";
+    return "_No prepared stories matched this role yet. Draft STAR+R stories from candidate/evidence.yml via interview-prep (`rolester stories gaps` shows what's uncovered)._";
   }
   const blocks = items.map((m) => {
     const s = m?.story ? m.story : m;

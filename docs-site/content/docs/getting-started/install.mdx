@@ -1,6 +1,6 @@
 ---
 title: Install & First Run
-description: Clone, install, and launch Rolester in four commands.
+description: Install and launch Rolester in two commands.
 ---
 
 ## Prerequisites
@@ -14,17 +14,11 @@ description: Clone, install, and launch Rolester in four commands.
 
 You need one of those on your PATH before running `rolester start`.
 
-## Clone-canonical install
-
-Rolester runs **in-tree** — the agent needs `cwd` set to the package directory
-to read the skills. Do not use `npx rolester` or `npm install -g rolester`; that
-does not give you the skills directory the agent needs.
+## Public install
 
 ```bash
-git clone https://github.com/CodesWhat/rolester
-cd rolester
-npm install
-node bin/rolester.mjs start claude        # or: node bin/rolester.mjs start codex
+npm install -g rolester
+rolester start claude        # or: rolester start codex
 ```
 
 The `start` command does the whole arc in one shot:
@@ -34,6 +28,19 @@ The `start` command does the whole arc in one shot:
 3. Seeds `workspace/tracker.json` from the demo template if not yet present.
 4. Boots the live dashboard at `http://localhost:7777` with hot reload.
 5. Launches your agent with a starter message.
+
+## Source checkout
+
+Developing from a source checkout uses the same command shape after linking the
+local binary:
+
+```bash
+git clone https://github.com/CodesWhat/rolester
+cd rolester
+npm install
+npm link
+rolester start claude        # or: rolester start codex
+```
 
 ### Useful flags
 
@@ -49,8 +56,7 @@ The `start` command does the whole arc in one shot:
 If you prefer to open your agent yourself:
 
 ```bash
-npm install
-npm run doctor     # verify environment + scaffold state
+rolester doctor     # verify environment + scaffold state
 ```
 
 Then open Claude Code or Codex in the repo root and say:
@@ -67,7 +73,7 @@ By default `workspace/` and `candidate/` live inside the cloned repo. Set
 
 ```bash
 export ROLESTER_HOME=~/rolester-data
-node bin/rolester.mjs start claude
+rolester start claude
 ```
 
 Everything under `ROLESTER_HOME` is gitignored and never touches the repo tree.
@@ -75,7 +81,7 @@ Everything under `ROLESTER_HOME` is gitignored and never touches the repo tree.
 ## Health check
 
 ```bash
-npm run doctor
+rolester doctor
 ```
 
 Reports environment health (Node version, agent CLI on PATH), skills

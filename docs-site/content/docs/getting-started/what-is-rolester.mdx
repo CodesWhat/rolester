@@ -14,13 +14,15 @@ principle.
 
 ## What Rolester actually is
 
-Rolester is an **agent runtime** — a cloned repo that a coding agent (Claude Code,
-Codex, or similar) runs inside. The agent reads a contract file (`AGENTS.md`) that
-tells it how to route your intent to 21 skills. Each skill is a detailed,
-executable procedure. You talk to the agent; the agent drives the skills.
+Rolester is an **agent runtime** — a local workspace that a coding agent (Claude
+Code, Codex, or similar) runs inside. The agent reads a contract file
+(`AGENTS.md`) that tells it how to route your intent to 21 skills. Each skill is
+a detailed, executable procedure. You talk to the agent; the agent drives the
+skills.
 
-The CLI (`node bin/rolester.mjs`) scaffolds the workspace, serves the dashboard,
-and checks health. It does not do job-search work. The agent does.
+The CLI (`rolester`) scaffolds the workspace, serves the dashboard, checks
+health, and exposes validated config helpers. It does not do job-search work.
+The agent does.
 
 ## The intended loop
 
@@ -59,5 +61,4 @@ into evaluation and tailoring so each pass is sharper than the last.
 - Not a job board (it sources from boards you configure; it is not a board itself).
 - Not a one-click mass-apply tool (the gate and confirm-first submission are
   intentional guardrails).
-- Not a subscription service (MIT-licensed and free; clone and run it
-  yourself).
+- Not a subscription service (MIT-licensed and free; install and run it locally).

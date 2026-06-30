@@ -27,12 +27,12 @@ without explicit user confirmation. Never duplicates an already-configured board
 
 ## STEP 0 — Load context
 
-Run `npm run doctor` and confirm it exits clean. If it fails, stop and report.
+Run `rolester doctor` and confirm it exits clean. If it fails, stop and report.
 
 Check usage mode:
 
 ```
-npm run modes -- allows research:boards
+rolester modes allows research:boards
 ```
 
 If it returns `skip`, do not run board discovery by default; explain that lean usage
@@ -182,7 +182,7 @@ boards the user wants added.
 For each board being added (auto or confirmed), use the existing searches CLI:
 
 ```
-npm run searches -- --add-url "<url>" --label "<label>"
+rolester searches --add-url "<url>" --label "<label>"
 ```
 
 Where `<url>` is:
@@ -209,13 +209,13 @@ if a candidate-discovered board lands in it.
 After adding all boards, run:
 
 ```
-npm run searches -- --list
+rolester searches
 ```
 
 Then run:
 
 ```
-npm run doctor
+rolester doctor
 ```
 
 Confirm `config/search-sources.yml` passes schema validation before reporting done.
@@ -223,7 +223,7 @@ Confirm `config/search-sources.yml` passes schema validation before reporting do
 **Optional — record a board-discovery audit note:**
 
 ```
-npm run research -- record "boards" --name board-discovery-<yyyy-mm-dd> --file <draft.md> --write
+rolester research record "boards" --name board-discovery-<yyyy-mm-dd> --file <draft.md> --write
 ```
 
 where `<draft.md>` contains:
@@ -244,7 +244,7 @@ optional — skip if the user did not request it and no persistent audit record 
 When the audit note is written (or when boards are added even without an audit note), log the discovery to the Activity Pulse feed (see **Activity Pulse** in AGENTS.md):
 
 ```
-npm run activity -- append --type research --actor agent \
+rolester activity append --type research --actor agent \
   --title "Discovered <N> job boards" --summary "<one-line: what kind of boards / for what track>" --write
 ```
 
@@ -259,8 +259,23 @@ npm run activity -- append --type research --actor agent \
 - evaluate individual postings for fit (that is `evaluate-job`)
 - tailor, fill, or submit applications
 
-The artifact this skill produces is entries in `config/search-sources.yml`. Hand off to
-`search-jobs` when the user wants to run the scan.
+The artifact this skill produces is entries in `config/search-sources.yml`. It sits in
+the post-onboarding discovery order:
+
+```
+setup-searches -> research-boards -> discover-companies -> search-jobs
+```
+
+After board discovery, hand off to `discover-companies` so employer ATS boards are
+wired into `config/sourced-scan.json` before the first `search-jobs` sweep. Only go
+straight to `search-jobs` if the user explicitly wants to skip company discovery.
+
+## Final handoff
+
+End every run with the next agent task: `discover-companies` next. If the user
+explicitly skipped employer ATS discovery, record it with
+`rolester next --skip discover-companies --write`. Do not hand straight to
+`search-jobs` unless that skip is recorded or the workspace already has tracked companies.
 
 ---
 
@@ -296,7 +311,7 @@ REGISTRY-UPDATED: <yes | no>
   configured sources loaded in STEP 0.
 - **Quality gate.** A board must show at least one real, dated, domain-relevant listing
   to be proposed. An evergreen landing page or talent-pool gate is a rejection.
-- **Use the existing CLI.** Additions go through `npm run searches -- --add-url "<url>" --label "<label>"`. Do not edit `config/search-sources.yml` directly.
+- **Use the existing CLI.** Additions go through `rolester searches --add-url "<url>" --label "<label>"`. Do not edit `config/search-sources.yml` directly.
 - **Registry write-back.** Record every added board in the candidate's gitignored files only —
   `config/search-sources.yml` (via the CLI above) plus the `workspace/research/` log. NEVER write
   discovered boards to `docs/SOURCES.md`; it ships and is published, so it stays field-neutral.
@@ -307,6 +322,6 @@ REGISTRY-UPDATED: <yes | no>
 
 | Intent | Command |
 |---|---|
-| See currently configured sources | `npm run searches -- --list` |
-| Add a confirmed board URL | `npm run searches -- --add-url "<url>" --label "<label>"` |
-| Health check after additions | `npm run doctor` |
+| See currently configured sources | `rolester searches` |
+| Add a confirmed board URL | `rolester searches --add-url "<url>" --label "<label>"` |
+| Health check after additions | `rolester doctor` |

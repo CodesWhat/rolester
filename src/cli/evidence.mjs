@@ -209,7 +209,7 @@ function cmdAdd() {
         `  bank would hold ${plan.nextClaims.length} claim${plan.nextClaims.length === 1 ? "" : "s"} (${evidenceDisplay()}).`
       );
       console.log("");
-      console.log("Dry run — pass --write to commit.");
+      console.log("Dry run - pass --write to commit.");
     }
     process.exit(0);
   }

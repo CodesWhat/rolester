@@ -2107,6 +2107,18 @@ tailwind.config = {
   .strategy-insights-card {
     overflow: hidden;
   }
+  .agent-guidance-card {
+    overflow: hidden;
+  }
+  .agent-guidance-copy {
+    min-width: 0;
+  }
+  .agent-guidance-reason {
+    margin-top: 4px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1.45;
+  }
   .strategy-insights-body {
     display: grid;
     gap: 16px;
@@ -6123,6 +6135,32 @@ tailwind.config = {
           <div id="dashboard-next-steps-slot" class="dashboard-card-slot"></div>
         </section>
 
+        <section class="grid grid-cols-1 gap-y-10">
+          <div class="dashboard-card-shell agent-guidance-card" data-agent-guidance>
+            <div class="dashboard-card-header">
+              <h3 class="font-title-sm text-title-sm card-title">
+                <svg class="card-title-icon card-title-icon--strategy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m9 18 6-6-6-6" />
+                  <path d="M4 12h10" />
+                  <path d="M16 5h4v14h-4" />
+                </svg>
+                <span data-agent-guidance-title>Next agent task</span>
+              </h3>
+              <span class="font-label-caps text-label-caps text-outline uppercase font-data-mono">Agent</span>
+            </div>
+            <div class="dashboard-card-body-lg">
+              <div class="strategy-recommendation">
+                <div class="strategy-recommendation-copy agent-guidance-copy">
+                  <div class="strategy-recommendation-title">Next agent task</div>
+                  <p data-agent-guidance-message>Run npm run doctor, then ask the agent to follow the Agent guidance block.</p>
+                  <p class="agent-guidance-reason" data-agent-guidance-reason>The next recommendation updates when the workspace changes.</p>
+                </div>
+                <button type="button" class="strategy-recommendation-cta" data-agent-guidance-cta>Run doctor</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="dashboard-card-row grid grid-cols-1 gap-y-10 lg:grid-cols-2 lg:gap-x-6">
           <div class="dashboard-card-shell">
             <div class="dashboard-card-header">
@@ -8250,7 +8288,10 @@ function openLibraryDrawer(card) {
   if (noteEl) noteEl.textContent = data.claimNote || '—';
   if (tagsEl) {
     const cardTags = card.querySelector('.library-tag-row');
-    tagsEl.innerHTML = cardTags ? cardTags.innerHTML : '';
+    tagsEl.replaceChildren();
+    if (cardTags) {
+      for (const node of cardTags.childNodes) tagsEl.appendChild(node.cloneNode(true));
+    }
   }
   if (copyBtn) {
     copyBtn.dataset.copyText = data.claimNote || data.claimSummary || '';

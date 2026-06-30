@@ -44,9 +44,9 @@ Every skill that mutates `workspace/tracker.json` must:
 
 1. **Stamp `meta.lastUpdatedAt`** to the current ISO timestamp and increment
    `meta.version` in the same write.
-2. **Verify** with `node src/cli/tracker.mjs --verify`.
-3. **Re-render** with `node src/cli/tracker.mjs` so the dashboard hot-reloads.
-4. **Log one Activity Pulse event** via `npm run activity -- append`.
+2. **Verify** with `rolester tracker --verify`.
+3. **Re-render** with `rolester tracker` so the dashboard hot-reloads.
+4. **Log one Activity Pulse event** via `rolester activity append`.
 
 These four steps are a unit. A partial write (e.g., updating data but not
 stamping) is an incomplete write.

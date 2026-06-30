@@ -9,10 +9,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 import { userPath } from "../src/core/paths/workspace.mjs";
+import { parseYaml } from "../src/core/profile/yaml.mjs";
 import { extractReqId } from "../src/core/scoring/sourced-scanner.mjs";
 
 const pathCtx = { repoRoot: ROOT };
-const DEFAULT_CONFIG = userPath(pathCtx, "config/search-sources.json");
+const DEFAULT_CONFIG = userPath(pathCtx, "config/search-sources.yml");
 const DEFAULT_PROFILE_ROOT = join(homedir(), ".rolester", "board-profiles");
 
 export function hiringCafeSearchUrl(searchQuery, searchState = {}) {
@@ -33,7 +34,7 @@ export function selectSearchSources(
 ) {
   const wantedProvider = provider.toLowerCase();
   const wantedIds = new Set(normalizeList(ids));
-  const sources = Array.isArray(config) ? config : config?.sources || [];
+  const sources = Array.isArray(config) ? config : config?.searches || config?.sources || [];
 
   return sources
     .map(normalizeSearchSource)
@@ -72,7 +73,8 @@ export function stampSourceOffers({ provider, source, searchUrl, capturedUrl, of
 }
 
 export function loadSearchSourceConfig(path = DEFAULT_CONFIG) {
-  return JSON.parse(readFileSync(path, "utf8"));
+  const raw = readFileSync(path, "utf8");
+  return /\.(ya?ml)$/i.test(path) ? parseYaml(raw) : JSON.parse(raw);
 }
 
 export function searchSourceUrl(source) {
@@ -159,6 +161,9 @@ export async function captureSearchSources({
           await settle(page, waitMs);
           if (scrollPages > 0) await scrollPage(page, scrollPages, waitMs);
           await settle(page, waitMs);
+
+          const blocker = await detectCaptureBlocker(page);
+          if (blocker) throw new Error(blocker);
 
           const rawOffers = await extractOffers(page, provider);
           const cappedRawOffers =
@@ -297,12 +302,14 @@ function normalizeSearchSource(source = {}) {
   const provider = String(
     source.provider || inferProviderFromUrl(source.url) || "generic"
   ).toLowerCase();
-  const label = source.label || source.term || source.id || source.url || provider;
+  const term = source.term || source.query || "";
+  const label = source.label || term || source.id || source.url || provider;
   return {
     ...source,
     id: String(source.id || slug(`${provider}-${label}`)),
     provider,
     label,
+    term,
   };
 }
 
@@ -352,6 +359,18 @@ async function scrollPage(page, pages, waitMs) {
     await page.evaluate(() => window.scrollBy(0, Math.floor(window.innerHeight * 0.85)));
     if (waitMs > 0) await page.waitForTimeout(waitMs);
   }
+}
+
+async function detectCaptureBlocker(page) {
+  const state = await page.evaluate(() => ({
+    title: document.title || "",
+    text: (document.body?.innerText || "").slice(0, 1000),
+  }));
+  const haystack = `${state.title}\n${state.text}`;
+  if (/vercel security checkpoint|failed to verify your browser|code 21/i.test(haystack)) {
+    return "browser capture blocked by Vercel Security Checkpoint; rerun headed with the session browser or omit --headless";
+  }
+  return "";
 }
 
 async function promptUser(message) {
@@ -693,7 +712,7 @@ function helpText() {
   npm run capture:search-sources -- --url "https://hiring.cafe/..." --provider hiringcafe --source hiringcafe
 
 Options:
-  --config FILE          Search source config. Default: config/search-sources.json.
+  --config FILE          Search source config. Default: config/search-sources.yml.
   --provider NAME        Only capture sources from hiringcafe, linkedin, or generic.
   --id ID                Only capture a configured source id. Repeat or comma-separate.
   --source-id ID         Alias for --id.

@@ -1,0 +1,435 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import test from "node:test";
+
+const ROOT = new URL("..", import.meta.url).pathname;
+
+function tempHome() {
+  return mkdtempSync(join(tmpdir(), "rolester-readiness-"));
+}
+
+function runCli(script, args, home) {
+  return spawnSync(process.execPath, [script, ...args], {
+    cwd: ROOT,
+    env: { ...process.env, ROLESTER_HOME: home },
+    encoding: "utf8",
+  });
+}
+
+function runRolester(args, home) {
+  return spawnSync(process.execPath, ["bin/rolester.mjs", ...args], {
+    cwd: ROOT,
+    env: { ...process.env, ROLESTER_HOME: home },
+    encoding: "utf8",
+  });
+}
+
+function seedCandidateFiles(home) {
+  mkdirSync(join(home, "candidate"), { recursive: true });
+  writeFileSync(join(home, "candidate", "profile.yml"), "{}\n", "utf8");
+  writeFileSync(join(home, "candidate", "targeting.yml"), "role_buckets: []\n", "utf8");
+  writeFileSync(join(home, "candidate", "evidence.yml"), "claims: []\n", "utf8");
+  writeFileSync(join(home, "candidate", "honesty.yml"), "{}\n", "utf8");
+  writeFileSync(join(home, "candidate", "form-defaults.yml"), "{}\n", "utf8");
+}
+
+test("companies --list explains that empty tracked companies means ATS scans are not wired", () => {
+  const home = tempHome();
+  try {
+    const result = runCli("src/cli/companies.mjs", ["--list"], home);
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /No tracked companies yet\./);
+    assert.match(result.stdout, /Ask your agent to run discover-companies next/);
+    assert.match(result.stdout, /Ashby, Greenhouse, Lever, Workable, or SmartRecruiters/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("doctor surfaces missing company ATS discovery separately from broad search sources", () => {
+  const home = tempHome();
+  try {
+    mkdirSync(join(home, "config"), { recursive: true });
+    writeFileSync(
+      join(home, "config", "search-sources.yml"),
+      `searches:
+  - provider: HiringCafe
+    label: Director of IT
+    query: Director of IT
+    enabled: true
+`,
+      "utf8"
+    );
+
+    const result = runCli("src/cli/doctor.mjs", [], home);
+
+    assert.match(result.stdout, /Search readiness:/);
+    assert.match(result.stdout, /Broad sources: 1 enabled search/);
+    assert.match(result.stdout, /Company ATS scans: not configured/);
+    assert.match(result.stdout, /discover-companies/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("doctor prints the ordered post-onboarding discovery pipeline", () => {
+  const home = tempHome();
+  try {
+    mkdirSync(join(home, "config"), { recursive: true });
+    writeFileSync(
+      join(home, "config", "search-sources.yml"),
+      `searches:
+  - provider: HiringCafe
+    label: Director of IT
+    query: Director of IT
+    enabled: true
+`,
+      "utf8"
+    );
+
+    const result = runCli("src/cli/doctor.mjs", [], home);
+
+    assert.match(result.stdout, /Discovery pipeline:/);
+    assert.match(
+      result.stdout,
+      /setup-searches -> research-boards -> discover-companies -> search-jobs/
+    );
+    assert.match(result.stdout, /Next discovery step: research-boards/);
+    assert.match(result.stdout, /then discover-companies before the first sweep/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("doctor gives an agent-led next action for incomplete discovery", () => {
+  const home = tempHome();
+  try {
+    seedCandidateFiles(home);
+    mkdirSync(join(home, "config"), { recursive: true });
+    writeFileSync(
+      join(home, "config", "search-sources.yml"),
+      `searches:
+  - provider: HiringCafe
+    label: Director of IT
+    query: Director of IT
+    enabled: true
+`,
+      "utf8"
+    );
+
+    const result = runCli("src/cli/doctor.mjs", [], home);
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Agent guidance:/);
+    assert.match(result.stdout, /Rolester is agent-led/);
+    assert.match(result.stdout, /Ask your agent to run research-boards next/);
+    assert.match(result.stdout, /then discover-companies before search-jobs/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("searches --list calls out configured searches that have never run", () => {
+  const home = tempHome();
+  try {
+    mkdirSync(join(home, "config"), { recursive: true });
+    writeFileSync(
+      join(home, "config", "search-sources.yml"),
+      `searches:
+  - provider: HiringCafe
+    label: Director of IT
+    query: Director of IT
+    enabled: true
+`,
+      "utf8"
+    );
+
+    const result = runCli("src/cli/searches.mjs", ["--list"], home);
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /1 enabled search configured/);
+    assert.match(result.stdout, /0\/1 have run watermarks/);
+    assert.match(result.stdout, /Ask your agent to run search-jobs/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("doctor --json exposes the next agent skill after onboarding search setup", () => {
+  const home = tempHome();
+  try {
+    seedCandidateFiles(home);
+    mkdirSync(join(home, "config"), { recursive: true });
+    writeFileSync(
+      join(home, "config", "search-sources.yml"),
+      `searches:
+  - provider: HiringCafe
+    label: Director of IT
+    query: Director of IT
+    enabled: true
+`,
+      "utf8"
+    );
+
+    const result = runCli("src/cli/doctor.mjs", ["--json"], home);
+    const data = JSON.parse(result.stdout);
+
+    assert.equal(data.agentGuidance.nextSkill, "research-boards");
+    assert.match(data.agentGuidance.message, /Ask your agent to run research-boards next/);
+    assert.match(data.agentGuidance.reason, /board discovery and company discovery/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("rolester next prints the next agent skill without the full doctor report", () => {
+  const home = tempHome();
+  try {
+    seedCandidateFiles(home);
+    mkdirSync(join(home, "config"), { recursive: true });
+    writeFileSync(
+      join(home, "config", "search-sources.yml"),
+      `searches:
+  - provider: HiringCafe
+    label: Director of IT
+    query: Director of IT
+    enabled: true
+`,
+      "utf8"
+    );
+
+    const result = runRolester(["next"], home);
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Next: ask your agent to run research-boards/);
+    assert.match(result.stdout, /then discover-companies before search-jobs/);
+    assert.doesNotMatch(result.stdout, /Search readiness:/);
+    assert.doesNotMatch(result.stdout, /Discovery pipeline:/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("rolester next can record skipped discovery steps and advance the handoff", () => {
+  const home = tempHome();
+  try {
+    seedCandidateFiles(home);
+    mkdirSync(join(home, "config"), { recursive: true });
+    writeFileSync(
+      join(home, "config", "search-sources.yml"),
+      `searches:
+  - provider: HiringCafe
+    label: Director of IT
+    query: Director of IT
+    enabled: true
+`,
+      "utf8"
+    );
+
+    const skipBoards = runRolester(["next", "--skip", "research-boards", "--write"], home);
+    assert.equal(skipBoards.status, 0);
+    assert.match(skipBoards.stdout, /Skipped research-boards/);
+    assert.match(skipBoards.stdout, /Next: ask your agent to run discover-companies/);
+
+    const setupState = JSON.parse(readFileSync(join(home, "workspace/setup-state.json"), "utf8"));
+    assert.deepEqual(setupState.skippedDiscoverySteps, ["research-boards"]);
+
+    const next = runRolester(["next"], home);
+    assert.equal(next.status, 0);
+    assert.match(next.stdout, /Next: ask your agent to run discover-companies/);
+    assert.doesNotMatch(next.stdout, /research-boards next/);
+
+    const skipCompanies = runRolester(["next", "--skip", "discover-companies", "--write"], home);
+    assert.equal(skipCompanies.status, 0);
+    assert.match(skipCompanies.stdout, /Skipped discover-companies/);
+    assert.match(skipCompanies.stdout, /Next: ask your agent to run search-jobs/);
+    assert.match(skipCompanies.stdout, /Discovery skip recorded/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("skill handoffs keep post-onboarding discovery in the required order", () => {
+  const files = [
+    "AGENTS.md",
+    ".agents/skills/ingest-profile/SKILL.md",
+    ".agents/skills/setup-searches/SKILL.md",
+    ".agents/skills/research-boards/SKILL.md",
+  ];
+
+  for (const file of files) {
+    const text = readFileSync(join(ROOT, file), "utf8");
+    assert.match(
+      text,
+      /setup-searches -> research-boards -> discover-companies -> search-jobs/,
+      file
+    );
+  }
+});
+
+test("discovery skills end with explicit next-skill handoffs", () => {
+  const expected = [
+    ["setup-searches", /Final handoff[\s\S]*research-boards/i],
+    ["research-boards", /Final handoff[\s\S]*discover-companies/i],
+    ["discover-companies", /Final handoff[\s\S]*search-jobs/i],
+    [
+      "search-jobs",
+      /Final handoff[\s\S]*(evaluate-job|apply-job|research-boards|discover-companies)/i,
+    ],
+  ];
+
+  for (const [skill, pattern] of expected) {
+    const text = readFileSync(join(ROOT, ".agents/skills", skill, "SKILL.md"), "utf8");
+    assert.match(text, pattern, skill);
+  }
+});
+
+test("router tells agents to follow doctor Agent guidance instead of raw list commands", () => {
+  const text = readFileSync(join(ROOT, "AGENTS.md"), "utf8");
+
+  assert.match(text, /Agent guidance/);
+  assert.match(text, /canonical next handoff/);
+  assert.match(text, /do not treat `rolester searches` or `rolester companies` as the workflow/);
+});
+
+test("router makes proactive next-skill recommendations beyond cold start", () => {
+  const text = readFileSync(join(ROOT, "AGENTS.md"), "utf8");
+
+  assert.match(text, /Always steer toward the next useful skill/);
+  assert.match(text, /If sourcing is empty or stale[\s\S]*search-jobs/);
+  assert.match(text, /If an interview is scheduled[\s\S]*interview-prep/);
+  assert.match(text, /If a recruiter thread needs a reply[\s\S]*email-comms/);
+  assert.match(text, /If a status changed[\s\S]*track-outcomes/);
+});
+
+test("user-facing docs use default list commands instead of npm -- --list noise", () => {
+  const files = [
+    "src/cli/searches.mjs",
+    "src/cli/companies.mjs",
+    "src/cli/doctor.mjs",
+    ".agents/skills/search-jobs/SKILL.md",
+    ".agents/skills/setup-searches/SKILL.md",
+    ".agents/skills/research-boards/SKILL.md",
+    ".agents/skills/discover-companies/SKILL.md",
+    "docs/foundations-spec.md",
+  ];
+
+  const offenders = files.filter((file) =>
+    /npm run (?:searches|companies) -- --list/.test(readFileSync(join(ROOT, file), "utf8"))
+  );
+
+  assert.deepEqual(offenders, []);
+});
+
+test("rolester exposes discovery helper commands directly", () => {
+  const home = tempHome();
+  try {
+    const companies = runRolester(["companies", "--json"], home);
+    assert.equal(companies.status, 0);
+    assert.equal(JSON.parse(companies.stdout).total, 0);
+
+    const searchesHelp = runRolester(["searches", "--help"], home);
+    assert.equal(searchesHelp.status, 0);
+    assert.match(searchesHelp.stdout, /Usage:\s+rolester searches/);
+
+    const companiesHelp = runRolester(["companies", "--help"], home);
+    assert.equal(companiesHelp.status, 0);
+    assert.match(companiesHelp.stdout, /Usage:\s+rolester companies/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("product-facing search and company guidance leads with rolester commands", () => {
+  const files = [
+    "bin/rolester.mjs",
+    "src/core/agent-guidance.mjs",
+    "src/cli/searches.mjs",
+    "src/cli/companies.mjs",
+    "src/cli/doctor.mjs",
+    ".agents/skills/search-jobs/SKILL.md",
+    ".agents/skills/setup-searches/SKILL.md",
+    ".agents/skills/research-boards/SKILL.md",
+    ".agents/skills/discover-companies/SKILL.md",
+    "docs/foundations-spec.md",
+  ];
+
+  const offenders = [];
+  for (const file of files) {
+    const text = readFileSync(join(ROOT, file), "utf8");
+    for (const match of text.matchAll(/npm run (?:searches|companies)(?:\s|`|$)/g)) {
+      const line = text.slice(0, match.index).split("\n").length;
+      offenders.push(`${file}:${line}: ${match[0].trim()}`);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("public setup docs teach the rolester binary instead of source-file invocations", () => {
+  const files = ["README.md", "docs/SETUP.md"];
+  const offenders = [];
+
+  for (const file of files) {
+    const text = readFileSync(join(ROOT, file), "utf8");
+    for (const match of text.matchAll(/node bin\/rolester\.mjs/g)) {
+      const line = text.slice(0, match.index).split("\n").length;
+      offenders.push(`${file}:${line}`);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("rolester start prompt anchors the agent to doctor and the discovery order", () => {
+  const text = readFileSync(join(ROOT, "bin/rolester.mjs"), "utf8");
+
+  assert.match(text, /run rolester doctor/);
+  assert.match(text, /next unfinished Rolester skill/);
+  assert.match(text, /setup-searches -> research-boards -> discover-companies -> search-jobs/);
+});
+
+test("rolester start --no-agent prints the manual agent handoff", () => {
+  const home = tempHome();
+  try {
+    const result = runRolester(["start", "--no-agent", "--no-dashboard"], home);
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Open your agent in this folder and say:/);
+    assert.match(result.stdout, /run rolester doctor/);
+    assert.match(result.stdout, /next unfinished Rolester skill/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("CLI output lines that mention flags use ASCII hyphen separators", () => {
+  const home = tempHome();
+  try {
+    const commands = [
+      ["src/cli/doctor.mjs", []],
+      ["src/cli/analytics.mjs", ["--help"]],
+      ["src/cli/activity.mjs", ["--help"]],
+      ["src/cli/status-map.mjs", ["--help"]],
+      ["src/cli/next.mjs", ["--help"]],
+    ];
+    const offenders = [];
+
+    for (const [script, args] of commands) {
+      const result = runCli(script, args, home);
+      for (const [index, line] of `${result.stdout}\n${result.stderr}`.split("\n").entries()) {
+        if (line.includes("--") && line.includes("—")) {
+          offenders.push(`${script}:${index + 1}: ${line}`);
+        }
+      }
+    }
+
+    assert.deepEqual(offenders, []);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});

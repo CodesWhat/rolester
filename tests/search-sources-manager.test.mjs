@@ -348,3 +348,39 @@ test("mergeSearchConfigs dedupes the aggregator by provider + rssUrl", () => {
   const rvcj = merged.searches.filter((s) => s.provider === "RemoteVibeCodingJobs");
   assert.equal(rvcj.length, 1, "should not add a second RVCJ aggregator");
 });
+
+test("mergeSearchConfigs refreshes generated search recency from the baseline", () => {
+  const existing = {
+    ...emptyConfig(),
+    searches: [
+      {
+        provider: "HiringCafe",
+        source_type: "url-query",
+        label: "Forward Deployed",
+        query: "Forward Deployed",
+        enabled: true,
+        recency: {
+          mode: "since-last-run",
+          safetyMinutes: 30,
+          lastRunAt: "2026-06-20T00:00:00.000Z",
+        },
+        searchState: { sortBy: "date" },
+      },
+    ],
+  };
+  const baseline = baselineConfig();
+  baseline.searches[0] = {
+    ...baseline.searches[0],
+    recency: { mode: "fixed-hours", hours: 336, safetyMinutes: 30 },
+  };
+
+  const merged = mergeSearchConfigs(existing, baseline);
+
+  assert.deepEqual(merged.searches[0].recency, {
+    mode: "fixed-hours",
+    hours: 336,
+    safetyMinutes: 30,
+    lastRunAt: "2026-06-20T00:00:00.000Z",
+  });
+  assert.equal(merged.searches.length, 2);
+});

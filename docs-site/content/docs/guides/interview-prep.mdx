@@ -52,9 +52,9 @@ structured as STAR+R (Situation, Task, Action, Result + Reflection) and each
 traces to an evidence claim.
 
 ```bash
-npm run stories -- list            # see all stories
-npm run stories -- add             # add a new story
-npm run stories -- match <role>    # which stories fit this role
+rolester stories list            # see all stories
+rolester stories add --file story.yml --write
+rolester stories match --signals "automation,platform"
 ```
 
 `interview-prep` surfaces relevant stories from the bank for each interview packet.

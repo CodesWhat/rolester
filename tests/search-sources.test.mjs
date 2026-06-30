@@ -5,6 +5,8 @@ import {
   buildSearchSnapshotPath,
   captureSearchSources,
   hiringCafeSearchUrl,
+  loadSearchSourceConfig,
+  searchSourceUrl,
   selectSearchSources,
   stampSourceOffers,
 } from "../scripts/capture-search-sources.mjs";
@@ -45,6 +47,54 @@ test("filters enabled configured sources by provider and id", () => {
     ),
     ["hc-disabled", "li-ai"]
   );
+});
+
+test("loads canonical YAML search-sources config", () => {
+  const config = loadSearchSourceConfig(
+    new URL("../config/search-sources.example.yml", import.meta.url).pathname
+  );
+
+  assert.ok(Array.isArray(config.searches), "expected searches[] from YAML config");
+  assert.ok(config.searches.length > 0, "expected example YAML to contain searches");
+});
+
+test("selects canonical searches[] entries and aliases query to term", () => {
+  const config = {
+    searches: [
+      {
+        provider: "HiringCafe",
+        label: "Forward Deployed Engineer",
+        query: "forward deployed engineer",
+        enabled: true,
+      },
+    ],
+  };
+  const selected = selectSearchSources(config, { provider: "hiringcafe" });
+
+  assert.equal(selected.length, 1);
+  assert.equal(selected[0].id, "hiringcafe-forward-deployed-engineer");
+  assert.equal(selected[0].term, "forward deployed engineer");
+});
+
+test("builds HiringCafe capture URL from canonical query field", () => {
+  const [source] = selectSearchSources(
+    {
+      searches: [
+        {
+          provider: "HiringCafe",
+          label: "Applied AI Engineer",
+          query: "applied AI engineer",
+          enabled: true,
+        },
+      ],
+    },
+    { provider: "hiringcafe" }
+  );
+  const url = new URL(searchSourceUrl(source));
+  const state = JSON.parse(url.searchParams.get("searchState"));
+
+  assert.equal(url.origin, "https://hiring.cafe");
+  assert.equal(state.searchQuery, "applied AI engineer");
 });
 
 test("builds sanitized timestamped batch snapshot paths", () => {
@@ -138,4 +188,47 @@ test("batch snapshots keep raw scanned count when output offers are limited", as
   assert.equal(snapshot.scanned, 2);
   assert.equal(snapshot.offers.length, 1);
   assert.equal(snapshot.source, "hiringcafe-browser");
+});
+
+test("HiringCafe Vercel security checkpoint is reported as a capture error", async () => {
+  const page = {
+    async bringToFront() {},
+    async goto() {},
+    async waitForLoadState() {},
+    async waitForTimeout() {},
+    async evaluate(fn) {
+      if (String(fn).includes("document.title")) {
+        return {
+          title: "Vercel Security Checkpoint",
+          text: "Failed to verify your browser Code 21 Vercel Security Checkpoint",
+        };
+      }
+      return [];
+    },
+    url() {
+      return "https://hiring.cafe/";
+    },
+  };
+  const chromium = {
+    async launchPersistentContext() {
+      return {
+        pages() {
+          return [page];
+        },
+        async close() {},
+      };
+    },
+  };
+
+  const snapshot = await captureSearchSources({
+    sources: [{ id: "hc-fde", provider: "hiringcafe", label: "FDE", url: "https://hiring.cafe/" }],
+    sourceName: "hiringcafe",
+    chromium,
+    waitMs: 0,
+    now: new Date("2026-06-08T12:34:56.000Z"),
+  });
+
+  assert.equal(snapshot.offers.length, 0);
+  assert.equal(snapshot.errors.length, 1);
+  assert.match(snapshot.errors[0].error, /security checkpoint/i);
 });
