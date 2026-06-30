@@ -51,11 +51,12 @@ nurse, a driver, and an engineer each bring their own config.
   installs the skills, brings up the live dashboard, and launches your agent
   (Claude Code, Codex, or any CLI on your PATH) with a starter message, so first
   run is a single line.
-- **Packaging** — `rolester` launcher (`start` / `init` / `doctor` / `next` /
-  `ingest` / `searches` / `companies` / `evaluate` / `tracker` /
-  `tracker-dev` / `modes` / `automation` / `research` / `gate` / `learnings` /
-  `stories` / `activity` / `evidence` / `analytics` / `status-map` / `export` /
-  `restore`), a Docker option, and a sample workspace. `restore` recovers
+- **Packaging** — `rolester` launcher (`start` / `init` / `install-skills` /
+  `doctor` / `next` / `ingest` / `searches` / `companies` / `evaluate` /
+  `tracker` / `tracker-dev` / `modes` / `automation` / `research` / `gate` /
+  `learnings` / `stories` / `activity` / `evidence` / `analytics` /
+  `strategy-review` / `status-map` / `export` / `restore`), a Docker option, and
+  a sample workspace. `restore` recovers
   `tracker.json` from a rolling point-in-time snapshot (confirm-first, backs up
   the current file first).
 - **Live-reload dashboard** (`rolester tracker-dev`) — a dependency-free watch +
