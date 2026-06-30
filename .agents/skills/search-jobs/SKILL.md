@@ -21,12 +21,22 @@ Read all gate files before touching anything else:
 6. `candidate/modes.yml` — optional. Run `npm run modes -- status`; absent = `usage_mode: standard`, `application_mode: balanced`.
 7. `config/search-sources.yml` — `searches[]`, per-source `lastRunAt` watermarks, `recency.postFilterAfter`.
 
-Run `npm run doctor` and confirm it exits clean. If `config/search-sources.yml` is missing or has no enabled entries, stop and run `setup-searches` first:
+Run `npm run doctor` and confirm it exits clean. Read the `Discovery pipeline`
+section before scanning. The post-onboarding order is:
+
+```
+setup-searches -> research-boards -> discover-companies -> search-jobs
+```
+
+If `doctor` says the next discovery step is `setup-searches`, `research-boards`, or
+`discover-companies`, stop and run that owning skill first unless the user explicitly
+overrides and asks for a partial sweep. If `config/search-sources.yml` is missing or
+has no enabled entries, stop and run `setup-searches` first:
 
 > **Available portals:** Wellfound (`wellfound.com`) is auto-seeded for tech-domain candidates; Lever (`jobs.lever.co`) is seeded one entry per company in `targeting.tracked_companies`. Pasting a `wellfound.com` or `jobs.lever.co` URL via `setup-searches` routes it automatically to the correct provider.
 
 ```
-npm run searches -- --list
+npm run searches
 ```
 
 If sources are present but haven't been derived from targeting yet, optionally rebuild:

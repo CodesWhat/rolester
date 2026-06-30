@@ -60,7 +60,14 @@ let's get started" (or anything that isn't a specific task):
    of typing. Opt-in convenience; nothing to install or configure.
 5. Invite a paste-dump: the user can drop résumés, JDs, recruiter emails, LinkedIn
    exports, notes — in any order. Route each piece via **Paste Intake** below.
-6. Once there's enough to be useful, render the tracker and show them where they
+6. Once onboarding has enough profile/targeting data, continue the discovery
+   pipeline in this exact order:
+   `setup-searches -> research-boards -> discover-companies -> search-jobs`.
+   `setup-searches` confirms the baseline source config, `research-boards` finds
+   additional boards/aggregators, `discover-companies` wires employer ATS boards,
+   and only then should `search-jobs` run the first sweep unless the user
+   explicitly skips one of the discovery steps.
+7. Once there's enough to be useful, render the tracker and show them where they
    stand. Setup can continue incrementally; don't block on completeness.
 
 ## Keeping Current

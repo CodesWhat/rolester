@@ -151,6 +151,31 @@ test("buildSearchSources: HiringCafe searches are deduped by title", () => {
   );
 });
 
+test("buildSearchSources: fixed posting-age preference becomes a generated recency window", () => {
+  const result = buildSearchSources(
+    {
+      ...targeting,
+      search_preferences: {
+        posting_age: {
+          mode: "fixed-days",
+          days: 14,
+        },
+      },
+    },
+    profile
+  );
+  const hcEntries = result.searches.filter((s) => s.provider === "HiringCafe");
+
+  assert.ok(hcEntries.length > 0, "expected generated HiringCafe searches");
+  for (const entry of hcEntries) {
+    assert.deepEqual(entry.recency, {
+      mode: "fixed-hours",
+      hours: 336,
+      safetyMinutes: 30,
+    });
+  }
+});
+
 test("buildSearchSources: result validates against search-sources.schema.json", () => {
   const result = buildSearchSources(targeting, profile);
   const { valid, errors } = validate(result, schema);

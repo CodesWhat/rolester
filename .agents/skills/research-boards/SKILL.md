@@ -209,7 +209,7 @@ if a candidate-discovered board lands in it.
 After adding all boards, run:
 
 ```
-npm run searches -- --list
+npm run searches
 ```
 
 Then run:
@@ -259,8 +259,16 @@ npm run activity -- append --type research --actor agent \
 - evaluate individual postings for fit (that is `evaluate-job`)
 - tailor, fill, or submit applications
 
-The artifact this skill produces is entries in `config/search-sources.yml`. Hand off to
-`search-jobs` when the user wants to run the scan.
+The artifact this skill produces is entries in `config/search-sources.yml`. It sits in
+the post-onboarding discovery order:
+
+```
+setup-searches -> research-boards -> discover-companies -> search-jobs
+```
+
+After board discovery, hand off to `discover-companies` so employer ATS boards are
+wired into `config/sourced-scan.json` before the first `search-jobs` sweep. Only go
+straight to `search-jobs` if the user explicitly wants to skip company discovery.
 
 ---
 
@@ -307,6 +315,6 @@ REGISTRY-UPDATED: <yes | no>
 
 | Intent | Command |
 |---|---|
-| See currently configured sources | `npm run searches -- --list` |
+| See currently configured sources | `npm run searches` |
 | Add a confirmed board URL | `npm run searches -- --add-url "<url>" --label "<label>"` |
 | Health check after additions | `npm run doctor` |

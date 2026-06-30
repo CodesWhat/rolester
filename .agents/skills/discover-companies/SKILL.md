@@ -21,6 +21,12 @@ This is the company analog of `research-boards`. `research-boards` finds **board
 `tracked_companies[]` — it has no discovery of its own. This skill is what grows that list, so
 future sweeps reach beyond the set the candidate has already exhausted.
 
+Post-onboarding discovery order:
+
+```
+setup-searches -> research-boards -> discover-companies -> search-jobs
+```
+
 ---
 
 ## Inputs
@@ -205,7 +211,7 @@ company cannot be added — leave it in the table as intel only.
 After adding, confirm the result and validate:
 
 ```
-npm run companies -- --list
+npm run companies
 npm run doctor
 ```
 
@@ -302,7 +308,7 @@ NEXT: <"run search-jobs sweep" | "awaiting confirmation">
 
 | Intent | Command |
 |---|---|
-| See currently tracked companies | `npm run companies -- --list` |
+| See currently tracked companies | `npm run companies` |
 | Preview adding a company (dry run) | `npm run companies -- --add "<name>" --url "<careers_url>"` |
 | Add a confirmed company | `npm run companies -- --add "<name>" --url "<careers_url>" --write` |
 | Remove a tracked company | `npm run companies -- --remove "<name>" --write` |

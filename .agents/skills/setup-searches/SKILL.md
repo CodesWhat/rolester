@@ -93,9 +93,9 @@ npm run searches -- --enable <index or label>
 npm run searches -- --disable <index or label>
 ```
 
-Use `npm run searches -- --list` to get current indices before enabling/disabling by index.
+Use `npm run searches` to get current indices before enabling/disabling by index.
 
-**(d) Surface disabled-by-default entries.** Some providers (e.g. LinkedIn) are in the source catalog but disabled by default due to auth brittleness or rate limits. List them with `npm run searches -- --list` and tell the user which entries are `enabled: false` so they can make an informed choice.
+**(d) Surface disabled-by-default entries.** Some providers (e.g. LinkedIn) are in the source catalog but disabled by default due to auth brittleness or rate limits. List them with `npm run searches` and tell the user which entries are `enabled: false` so they can make an informed choice.
 
 ## STEP 4 — Tune global filters
 
@@ -119,7 +119,7 @@ Review the generated filters and adjust as needed:
   ```
   After editing, run `npm run doctor` to confirm the schema validates.
 
-Use `npm run searches -- --list` to review the current state before finalizing.
+Use `npm run searches` to review the current state before finalizing.
 
 ## STEP 5 — Review aggregator and board catalog
 
@@ -201,7 +201,7 @@ Do not write board preferences to `candidate/targeting.yml` or `candidate/profil
 ## STEP 7 — Verify
 
 ```
-npm run searches -- --list
+npm run searches
 ```
 
 Confirm for every entry:
@@ -223,7 +223,18 @@ Confirm `config/search-sources.yml` passes `config/search-sources.schema.json`. 
 
 ## Hand-off
 
-When `config/search-sources.yml` is ready, hand off to `search-jobs`. This skill produces the source config — it does not scan, dedupe, gate, or score. Discovery, deduplication, liveness, and sourced intake belong to `search-jobs`. The fit gate belongs to `evaluate-job`.
+When `config/search-sources.yml` is ready, continue the post-onboarding discovery
+pipeline in this exact order:
+
+```
+setup-searches -> research-boards -> discover-companies -> search-jobs
+```
+
+This skill only produces the baseline source config. It does not discover new boards,
+discover companies, scan, dedupe, gate, or score. Hand off next to `research-boards`
+unless the user explicitly says to skip board discovery. After `research-boards`, run
+`discover-companies` before the first `search-jobs` sweep so employer ATS boards are
+wired into `config/sourced-scan.json`.
 
 ---
 
@@ -232,8 +243,8 @@ When `config/search-sources.yml` is ready, hand off to `search-jobs`. This skill
 | User intent | Command |
 |---|---|
 | Generate baseline from targeting | `npm run searches -- --from-targeting` |
-| See current searches | `npm run searches -- --list` |
-| See current searches (JSON) | `npm run searches -- --list --json` — emits `{ exists: bool, searches: [ { index, provider, label, target, enabled, recency? } ] }` |
+| See current searches | `npm run searches` |
+| See current searches (JSON) | `npm run searches -- --json` — emits `{ exists: bool, searches: [ { index, provider, label, target, enabled, recency? } ] }` |
 | Add a keyword search | `npm run searches -- --add-query "<query>" [--label "<label>"] [--provider <p>]` |
 | Import a pasted board URL | `npm run searches -- --add-url "<url>" [--label "<label>"]` |
 | Enable a search | `npm run searches -- --enable <index or label>` |

@@ -17,11 +17,14 @@ nurse, a driver, and an engineer each bring their own config.
 
 - **Guided onboarding** (`ingest-profile`) — turns a résumé + preferences into
   validated config: targets and adjacent roles, keep/cut signals, comp floor and
-  expectations, location/mode/travel constraints, work authorization, honesty
-  boundaries, evidence bank, and writing-style calibration.
-- **Search setup & intake** (`setup-searches`, `search-jobs`) — build searches
-  from your targets, capture postings, dedupe, liveness-check, and produce a
-  gated intake queue with a coarse triage fit.
+  expectations, location/mode/travel constraints, work authorization, preferred
+  posting age, honesty boundaries, evidence bank, and writing-style calibration.
+- **Search setup & intake** (`setup-searches`, `research-boards`,
+  `discover-companies`, `search-jobs`) — build searches from your targets, discover
+  boards and company ATS sources in order, capture postings, dedupe,
+  liveness-check, and produce a gated intake queue with a coarse triage fit.
+  `doctor` and the source CLIs now surface whether broad searches, board discovery,
+  company discovery, and the first job sweep have actually run.
 - **Body-read gate** (`evaluate-job`) — a standalone gate that reads the full
   posting and emits a `GATE` / `FIT` / `COMP` / `ACTION` verdict from your config.
   `apply-job` must run or verify it first.

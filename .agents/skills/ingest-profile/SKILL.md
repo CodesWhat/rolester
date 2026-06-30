@@ -204,7 +204,11 @@ own; a project's existence is evidence of building it, not of its business impac
    - Add a `role_bucket` entry with `priority: oe`.
    - Capture OE comp range (STEP 6e).
 3. Ask which job boards or aggregators the candidate typically uses. Write the answer as a candidate-specific board list. (These will be written to `config/search-sources.yml` via `--write-config` in STEP 15 so board selection reflects the candidate's domain, not a hardcoded tech list.)
-4. Ask which role families or seniority bands to exclude → write exclusions to `targeting.yml#cut_signals`.
+4. Ask how fresh sourced postings should be: "When we search, do you want **since last run** (default), **24 hours**, **7 days**, **14 days**, or **30 days**?" Write the answer to `targeting.yml#search_preferences.posting_age`:
+   - Since last run → `mode: "since-last-run"` and omit `days`.
+   - Fixed window → `mode: "fixed-days"` and `days: <1|7|14|30 or user-specified positive number>`.
+   This controls generated source recency (`config/search-sources.yml#searches[].recency`) and LinkedIn-style time-posted filters. It is separate from `targeting.yml#legitimacy.max_posting_age_days`, which only flags stale/evergreen postings during evaluation.
+5. Ask which role families or seniority bands to exclude → write exclusions to `targeting.yml#cut_signals`.
 
 **ONGOING GATE WRITE-BACK:** If the user volunteers a new exclusion, cut signal, or OE preference at any point, write it immediately per the Gate Write-Back Rule below.
 
@@ -411,6 +415,37 @@ Run these commands in sequence. Fix any failure before proceeding to the next.
 
 ---
 
+## STEP 16 — POST-ONBOARDING DISCOVERY HANDOFF
+
+Onboarding complete means the candidate profile and baseline source config exist. It does
+**not** mean the job market has been searched yet.
+
+Hand off in this exact order:
+
+```
+setup-searches -> research-boards -> discover-companies -> search-jobs
+```
+
+1. `setup-searches` — confirm or refresh the baseline `config/search-sources.yml` from
+   targeting and show `npm run searches` readiness.
+2. `research-boards` — find additional boards/aggregators for this candidate's domain.
+   This is confirm-first; run it unless the user explicitly says the baseline sources are
+   enough for now.
+3. `discover-companies` — find employers and wire their Ashby/Greenhouse/Lever/Workable/
+   SmartRecruiters boards into `config/sourced-scan.json`. This is confirm-first; run it
+   before the first sweep unless the user explicitly wants a board-only search.
+4. `search-jobs` — run the first sourced sweep only after the source and company discovery
+   steps are complete or intentionally skipped.
+
+End the onboarding summary with:
+
+```
+NEXT DISCOVERY ORDER: setup-searches -> research-boards -> discover-companies -> search-jobs
+NEXT: run setup-searches, then research-boards, then discover-companies before the first search-jobs sweep.
+```
+
+---
+
 ## ONGOING GATE WRITE-BACK RULE
 
 Any time the user states a new gate during this interview — an exclusion, cut signal, comp floor, honesty boundary, per-company cap, or cooldown — write it to the appropriate `candidate/` file **immediately** and confirm before moving on:
@@ -431,7 +466,7 @@ A stated gate must never live only in chat. It must never be hardcoded into a sk
 
 ## Rules
 
-- **Persistence cadence.** After completing each major step, append its step key to `completed[]` in `workspace/setup-state.json` and refresh `updatedAt` (read-modify-write; keep the JSON minimal). Step keys: `domain`, `identity`, `projects-scan`, `work-history`, `targets`, `keep-cut`, `comp`, `location`, `authorization`, `education`, `exclusions`, `form-defaults`, `proof-points`, `toolchain`, `writing-samples`, `capabilities`, `materialize`. The `setup-state.json` shape also carries `question_style`, `optional_areas`, and `agent_voice` (set in STEP 0a). On a deliberate pause, do the same and tell the user: "Progress saved — re-run `ingest-profile` (or `npm run ingest`) to resume."
+- **Persistence cadence.** After completing each major step, append its step key to `completed[]` in `workspace/setup-state.json` and refresh `updatedAt` (read-modify-write; keep the JSON minimal). Step keys: `domain`, `identity`, `projects-scan`, `work-history`, `targets`, `keep-cut`, `comp`, `location`, `authorization`, `education`, `exclusions`, `form-defaults`, `proof-points`, `toolchain`, `writing-samples`, `capabilities`, `materialize`, `discovery-handoff`. The `setup-state.json` shape also carries `question_style`, `optional_areas`, and `agent_voice` (set in STEP 0a). On a deliberate pause, do the same and tell the user: "Progress saved — re-run `ingest-profile` (or `npm run ingest`) to resume."
 - Never invent facts. Ask or omit — do not guess.
 - Keep `current_base` private. Store it with `current_comp_shareable: false`. It must never appear in any résumé, cover letter, form field, ATS entry, recruiter message, interview packet, or shareable tracker note. This is enforced by field path: always read outbound comp from `expected_base`, `target_base`, or `minimum_base`.
 - Keep `current_base` separate from `expected_base`. They are different fields and must never be conflated. `expected_base` is what goes on forms; `current_base` is a private gate input only.
@@ -472,6 +507,11 @@ A stated gate must never live only in chat. It must never be hardcoded into a sk
   HiringCafe as a general aggregator. Still spot-check the written
   `config/search-sources.yml` against the candidate's stated boards (STEP 4) so the
   source list matches their field — but it is no longer a hardcoded tech list.
+- **Posting-age search preference is schema-backed.** `targeting.yml#search_preferences.posting_age`
+  feeds generated source recency. `mode: "since-last-run"` keeps incremental search
+  behavior; `mode: "fixed-days"` plus `days: <positive number>` always scans that
+  posting-age window. Do not confuse this with `legitimacy.max_posting_age_days`,
+  which is a stale-posting review signal after a posting is found.
 - **`candidate/application-limits.yml` is intentionally schema-less.** There is no
   `application-limits.schema.json`; the file is freeform YAML (per-company caps,
   cooldowns, reevaluation thresholds) consumed directly by the skills. Write it

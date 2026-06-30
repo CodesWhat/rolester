@@ -131,7 +131,7 @@ These already exist — skills must stop calling them "future work":
 | Placeholder lint | `node src/cli/lint-placeholders.mjs <path>` |
 | Writing-style calibrate | `npm run calibrate:style` |
 | Evaluate a saved job | `node src/cli/evaluate.mjs <path-to-job.md>` (exit 0=KEEP, 2=REVIEW, 1=CUT) |
-| List/build searches | `npm run searches -- --list` / `--from-targeting` / `--add-url` / `--add-query` |
+| List/build searches | `npm run searches` / `--from-targeting` / `--add-url` / `--add-query` |
 | Generate config files | `npm run ingest -- --write-config` |
 | Write a stated gate back (safe) | `npm run gate -- <type> <value>` (dry run; `--write`, or `--write --confirm` for confirm-first; `-- --list` for types) |
 | Seed from résumé | `npm run ingest -- --resume <path> --json` |

@@ -8,17 +8,16 @@
 //   --remove "<name>"        Remove by name (dry-run by default, --write to commit).
 //   --json                   Machine-readable output for any mode.
 //   --help / -h              Show usage.
-import { existsSync, mkdirSync, renameSync, writeFileSync } from "node:fs";
+import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { displayPath, userPath } from "../core/paths/workspace.mjs";
+import { userPath } from "../core/paths/workspace.mjs";
 import { inferProvider, loadScannerConfig } from "../core/scoring/sourced-scanner.mjs";
 
 const root = join(fileURLToPath(new URL("../..", import.meta.url)));
 const pathCtx = { repoRoot: root };
 const CONFIG_REL = "config/sourced-scan.json";
 const CONFIG_PATH = userPath(pathCtx, CONFIG_REL);
-const CONFIG_DISPLAY = displayPath(pathCtx, CONFIG_REL);
 
 const SUPPORTED_HOSTS = [
   "jobs.ashbyhq.com",
@@ -29,6 +28,7 @@ const SUPPORTED_HOSTS = [
   "careers.smartrecruiters.com",
   "jobs.smartrecruiters.com",
 ];
+const ATS_FAMILIES = "Ashby, Greenhouse, Lever, Workable, or SmartRecruiters";
 
 const args = process.argv.slice(2);
 const json = args.includes("--json");
@@ -63,11 +63,27 @@ function runList() {
       careers_url: entry.careers_url,
       provider: inferProvider(entry),
     }));
-    console.log(JSON.stringify({ total: companies.length, companies: rows }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          total: companies.length,
+          companies: rows,
+          readiness: companyAtsReadiness(companies),
+        },
+        null,
+        2
+      )
+    );
     return 0;
   }
   if (companies.length === 0) {
     console.log("No tracked companies yet.");
+    console.log(
+      "Company ATS scans are not wired: Run discover-companies to find target employers automatically, or add a scannable ATS board manually."
+    );
+    console.log(
+      `Until this is populated, search-jobs can use broad board searches but will not scan company ATS boards like ${ATS_FAMILIES}.`
+    );
     console.log(
       `Add one: npm run companies -- --add "Acme" --url "https://jobs.ashbyhq.com/acme" --write`
     );
@@ -222,6 +238,19 @@ function loadConfig() {
   return loadScannerConfig(CONFIG_PATH);
 }
 
+function companyAtsReadiness(companies) {
+  const providers = [...new Set(companies.map((entry) => inferProvider(entry)).filter(Boolean))];
+  return {
+    configured: companies.length > 0,
+    total: companies.length,
+    providers,
+    missingAction:
+      companies.length === 0
+        ? "Run discover-companies, or add a scannable ATS board with npm run companies -- --add."
+        : null,
+  };
+}
+
 function writeConfig(config) {
   mkdirSync(dirname(CONFIG_PATH), { recursive: true });
   const tmp = `${CONFIG_PATH}.tmp`;
@@ -239,7 +268,6 @@ function printHelp() {
 
 Usage:
   npm run companies                                         List tracked companies (default)
-  npm run companies -- --list                               List tracked companies
   npm run companies -- --add "<name>" --url "<url>"         Dry-run add (print what would be added)
   npm run companies -- --add "<name>" --url "<url>" --write Append a company and save
   npm run companies -- --remove "<name>"                    Dry-run remove

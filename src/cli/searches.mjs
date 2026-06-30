@@ -88,7 +88,9 @@ function runList() {
   }
   const rows = listSearches(config);
   if (json) {
-    console.log(JSON.stringify({ exists: true, searches: rows }, null, 2));
+    console.log(
+      JSON.stringify({ exists: true, searches: rows, readiness: runReadiness(rows) }, null, 2)
+    );
     return 0;
   }
   printTable(rows);
@@ -226,7 +228,13 @@ function writeConfig(config, meta) {
   writeFileSync(CONFIG_PATH, `${serializeConfig(config)}\n`);
   const rows = listSearches(config);
   if (json) {
-    console.log(JSON.stringify({ ...meta, wrote: CONFIG_DISPLAY, searches: rows }, null, 2));
+    console.log(
+      JSON.stringify(
+        { ...meta, wrote: CONFIG_DISPLAY, searches: rows, readiness: runReadiness(rows) },
+        null,
+        2
+      )
+    );
     return 0;
   }
   console.log(`Wrote ${CONFIG_DISPLAY} (${rows.length} search${rows.length === 1 ? "" : "es"}).`);
@@ -246,6 +254,36 @@ function printTable(rows) {
       `${String(r.index).padStart(2)} ${flag} [${r.provider}] ${r.label} — ${r.target}${ran}`
     );
   }
+  printRunReadiness(rows);
+}
+
+function runReadiness(rows) {
+  const enabled = rows.filter((row) => row.enabled !== false);
+  return {
+    total: rows.length,
+    enabled: enabled.length,
+    withLastRun: enabled.filter((row) => row.lastRunAt).length,
+  };
+}
+
+function printRunReadiness(rows) {
+  const readiness = runReadiness(rows);
+  const searchWord = readiness.enabled === 1 ? "search" : "searches";
+  console.log(
+    `\n${readiness.enabled} enabled ${searchWord} configured; ${readiness.withLastRun}/${readiness.enabled} have run watermarks.`
+  );
+  if (readiness.enabled === 0) {
+    console.log("Next: enable or add searches before running the search-jobs skill.");
+  } else if (readiness.withLastRun === 0) {
+    console.log(
+      "Next: run the search-jobs skill to scan these sources. `modes allows search:sweep:broad` reports permission, not run history."
+    );
+  } else if (readiness.withLastRun < readiness.enabled) {
+    const missing = readiness.enabled - readiness.withLastRun;
+    console.log(
+      `Next: run the search-jobs skill to scan ${missing} enabled ${missing === 1 ? "source" : "sources"} without watermarks.`
+    );
+  }
 }
 
 function optValue(flag) {
@@ -257,13 +295,13 @@ function printHelp() {
   console.log(`rolester searches — build and curate config/search-sources.yml
 
 Usage:
-  npm run searches -- --list                          Show current searches
-  npm run searches -- --from-targeting                Generate/refresh from candidate targeting (idempotent)
+  npm run searches                                      Show current searches
+  npm run searches -- --from-targeting                  Generate/refresh from candidate targeting (idempotent)
   npm run searches -- --add-query "<q>" [--label "<l>"] [--provider HiringCafe]
   npm run searches -- --add-url "<url>" [--label "<l>"]   Import a pasted URL (hiring.cafe filters preserved)
-  npm run searches -- --enable <index or label>       Enable a search
-  npm run searches -- --disable <index or label>      Disable a search
-  npm run searches -- --json                          Machine-readable output for any mode
+  npm run searches -- --enable <index or label>          Enable a search
+  npm run searches -- --disable <index or label>         Disable a search
+  npm run searches -- --json                             Machine-readable output for any mode
 
 This builds the SOURCE list. Running scans, dedupe, and gating belong to search-jobs / evaluate-job.`);
 }

@@ -269,29 +269,49 @@ export function toCaptureSource(search) {
 // source_catalog are taken from the baseline (they reflect current targeting),
 // while existing searches and tracked_companies are preserved. Generated
 // searches are appended only when no existing search already covers them
-// (matched by provider + query, or provider + rssUrl) — so re-running is
-// idempotent and user-added or pasted-URL searches survive.
+// (matched by provider + query, provider + rssUrl, or provider + url) — so
+// re-running is idempotent and user-added or pasted-URL searches survive.
+// Generated recency settings are refreshed from the baseline while preserving
+// source watermarks.
 export function mergeSearchConfigs(existing, baseline) {
   if (!existing || !Array.isArray(existing.searches)) return baseline;
 
   const existingSearches = existing.searches;
-  const covers = (generated) =>
-    existingSearches.some((e) => {
-      if (
-        String(e.provider ?? "").toLowerCase() !== String(generated.provider ?? "").toLowerCase()
-      ) {
-        return false;
-      }
-      const sameQuery =
-        e.query != null &&
-        generated.query != null &&
-        String(e.query).toLowerCase() === String(generated.query).toLowerCase();
-      const sameRss = e.rssUrl != null && e.rssUrl === generated.rssUrl;
-      // URL-only entries (Wellfound, Lever, etc.) are matched by provider + url
-      // so that re-running --from-targeting is idempotent for all providers.
-      const sameUrl = e.url != null && generated.url != null && e.url === generated.url;
-      return sameQuery || sameRss || sameUrl;
-    });
+  const isSameGeneratedSearch = (existingSearch, generated) => {
+    if (
+      String(existingSearch.provider ?? "").toLowerCase() !==
+      String(generated.provider ?? "").toLowerCase()
+    ) {
+      return false;
+    }
+    const sameQuery =
+      existingSearch.query != null &&
+      generated.query != null &&
+      String(existingSearch.query).toLowerCase() === String(generated.query).toLowerCase();
+    const sameRss = existingSearch.rssUrl != null && existingSearch.rssUrl === generated.rssUrl;
+    // URL-only entries (Wellfound, Lever, etc.) are matched by provider + url
+    // so that re-running --from-targeting is idempotent for all providers.
+    const sameUrl =
+      existingSearch.url != null && generated.url != null && existingSearch.url === generated.url;
+    return sameQuery || sameRss || sameUrl;
+  };
+  const covers = (generated) => existingSearches.some((e) => isSameGeneratedSearch(e, generated));
+
+  const refreshGeneratedFields = (existingSearch) => {
+    const generated = (baseline.searches ?? []).find((g) =>
+      isSameGeneratedSearch(existingSearch, g)
+    );
+    if (!generated?.recency) return existingSearch;
+    return {
+      ...existingSearch,
+      recency: {
+        ...generated.recency,
+        ...(existingSearch.recency?.lastRunAt
+          ? { lastRunAt: existingSearch.recency.lastRunAt }
+          : {}),
+      },
+    };
+  };
 
   const appended = (baseline.searches ?? []).filter((g) => !covers(g));
   const tracked =
@@ -302,7 +322,7 @@ export function mergeSearchConfigs(existing, baseline) {
   return {
     ...baseline,
     tracked_companies: tracked,
-    searches: [...existingSearches, ...appended],
+    searches: [...existingSearches.map(refreshGeneratedFields), ...appended],
   };
 }
 

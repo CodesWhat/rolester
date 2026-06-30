@@ -10,7 +10,7 @@
   }
 }
 
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { automationStatus, loadAutomation } from "../core/automation/consent.mjs";
@@ -20,6 +20,8 @@ import { displayPath, resolveUserPaths, userPath } from "../core/paths/workspace
 import { loadEvidence } from "../core/profile/evidence-writer.mjs";
 import { listLearnings } from "../core/profile/learnings.mjs";
 import { loadModes } from "../core/profile/modes.mjs";
+import { parseConfig } from "../core/providers/search-sources.mjs";
+import { inferProvider, loadScannerConfig } from "../core/scoring/sourced-scanner.mjs";
 
 const root = join(fileURLToPath(new URL("../..", import.meta.url)));
 const pathCtx = { repoRoot: root };
@@ -146,7 +148,6 @@ const sessionBrowser = detectSession({ data: automationData });
 // skill; read-only here. Absent or malformed = no setup-state (never fails doctor).
 let setupState = null;
 try {
-  const { readFileSync } = await import("node:fs");
   const raw = readFileSync(userPath(pathCtx, "workspace/setup-state.json"), "utf8");
   const parsed = JSON.parse(raw);
   if (parsed && typeof parsed === "object") setupState = parsed;
@@ -163,6 +164,9 @@ const setup = setupState
       deferredCount: Array.isArray(setupState.deferred) ? setupState.deferred.length : 0,
     }
   : { present: false, mode: null, depth: null, complete: null, stepsRecorded: 0, deferredCount: 0 };
+
+const searchReadiness = loadSearchReadiness();
+const companyAtsReadiness = loadCompanyAtsReadiness();
 
 const result = {
   ok:
@@ -198,6 +202,10 @@ const result = {
     detail: sessionBrowser.presence.detail,
   },
   setup,
+  discovery: {
+    broadSources: searchReadiness,
+    companyAts: companyAtsReadiness,
+  },
   dataRoot: userPaths.dataRoot,
 };
 
@@ -312,6 +320,15 @@ if (setup.present) {
   console.log("");
 }
 
+console.log("Search readiness:");
+printSearchReadiness(searchReadiness);
+printCompanyAtsReadiness(companyAtsReadiness);
+console.log("");
+
+console.log("Discovery pipeline:");
+printDiscoveryPipeline(searchReadiness, companyAtsReadiness);
+console.log("");
+
 if (result.ok) {
   console.log("All required files are present and skills are discoverable.");
 } else if (!modes.valid) {
@@ -326,3 +343,131 @@ if (result.ok) {
 }
 
 process.exit(result.ok ? 0 : 1);
+
+function loadSearchReadiness() {
+  const configPath = userPath(pathCtx, "config/search-sources.yml");
+  if (!existsSync(configPath)) {
+    return {
+      exists: false,
+      valid: true,
+      total: 0,
+      enabled: 0,
+      withLastRun: 0,
+      providers: [],
+    };
+  }
+  try {
+    const config = parseConfig(readFileSync(configPath, "utf8"));
+    const searches = Array.isArray(config?.searches) ? config.searches : [];
+    const enabled = searches.filter((search) => search.enabled !== false);
+    return {
+      exists: true,
+      valid: true,
+      total: searches.length,
+      enabled: enabled.length,
+      withLastRun: searches.filter((search) => search.recency?.lastRunAt).length,
+      providers: [...new Set(enabled.map((search) => search.provider).filter(Boolean))].sort(),
+    };
+  } catch (err) {
+    return {
+      exists: true,
+      valid: false,
+      total: 0,
+      enabled: 0,
+      withLastRun: 0,
+      providers: [],
+      error: err.message,
+    };
+  }
+}
+
+function loadCompanyAtsReadiness() {
+  try {
+    const config = loadScannerConfig(userPath(pathCtx, "config/sourced-scan.json"));
+    const companies = Array.isArray(config?.tracked_companies) ? config.tracked_companies : [];
+    return {
+      configured: companies.length > 0,
+      valid: true,
+      total: companies.length,
+      providers: [
+        ...new Set(companies.map((entry) => inferProvider(entry)).filter(Boolean)),
+      ].sort(),
+    };
+  } catch (err) {
+    return {
+      configured: false,
+      valid: false,
+      total: 0,
+      providers: [],
+      error: err.message,
+    };
+  }
+}
+
+function printSearchReadiness(readiness) {
+  if (!readiness.exists) {
+    console.log("- Broad sources: no config yet — run `npm run searches -- --from-targeting`.");
+    return;
+  }
+  if (!readiness.valid) {
+    console.log(
+      `- Broad sources: config is invalid — fix ${displayPath(pathCtx, "config/search-sources.yml")}.`
+    );
+    if (readiness.error) console.log(`  error: ${readiness.error}`);
+    return;
+  }
+  const searchWord = readiness.enabled === 1 ? "search" : "searches";
+  const providerText = readiness.providers.length
+    ? ` across ${readiness.providers.join(", ")}`
+    : "";
+  const runText =
+    readiness.enabled > 0
+      ? `; ${readiness.withLastRun}/${readiness.enabled} have run watermarks`
+      : "";
+  console.log(
+    `- Broad sources: ${readiness.enabled} enabled ${searchWord}${providerText}${runText}.`
+  );
+}
+
+function printCompanyAtsReadiness(readiness) {
+  if (!readiness.valid) {
+    console.log(
+      `- Company ATS scans: config is invalid — fix ${displayPath(pathCtx, "config/sourced-scan.json")}.`
+    );
+    if (readiness.error) console.log(`  error: ${readiness.error}`);
+    return;
+  }
+  if (!readiness.configured) {
+    console.log(
+      "- Company ATS scans: not configured — run discover-companies, or add boards with `npm run companies -- --add`."
+    );
+    console.log(
+      "  This is the path that wires employer boards such as Ashby, Greenhouse, Lever, Workable, and SmartRecruiters."
+    );
+    return;
+  }
+  const companyWord = readiness.total === 1 ? "company" : "companies";
+  const providerText = readiness.providers.length ? ` (${readiness.providers.join(", ")})` : "";
+  console.log(`- Company ATS scans: ${readiness.total} tracked ${companyWord}${providerText}.`);
+}
+
+function printDiscoveryPipeline(searches, companies) {
+  console.log(
+    "- Order after onboarding: setup-searches -> research-boards -> discover-companies -> search-jobs."
+  );
+  if (!searches.exists || !searches.valid || searches.enabled === 0) {
+    console.log("  Next discovery step: setup-searches.");
+    return;
+  }
+  if (!companies.valid || !companies.configured) {
+    console.log(
+      "  Next discovery step: research-boards; then discover-companies before the first sweep."
+    );
+    return;
+  }
+  if (searches.withLastRun === 0) {
+    console.log("  Next discovery step: search-jobs first sweep.");
+    return;
+  }
+  console.log("  Next discovery step: search-jobs refresh.");
+}

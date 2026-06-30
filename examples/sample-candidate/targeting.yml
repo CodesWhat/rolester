@@ -47,6 +47,10 @@ excluded_companies:
 
 degree_policy: "Do not fabricate education. Apply despite stated degree requirements — Riley's track record speaks for itself."
 
+search_preferences:
+  posting_age:
+    mode: "since-last-run"
+
 # Riley doesn't chase cold applications (the silence usually means no) but does
 # follow through after every interview and keeps inbound threads moving.
 follow_up:

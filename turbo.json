@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalPassThroughEnv": ["PROGRAMFILES", "PROGRAMFILES(X86)"],
+  "globalPassThroughEnv": ["PROGRAMFILES", "PROGRAMFILES(X86)", "BOARD_BROWSER"],
   "tasks": {
     "dev": {
       "cache": false,
