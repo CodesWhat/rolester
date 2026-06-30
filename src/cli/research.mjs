@@ -6,7 +6,7 @@
 // comp band, or new boards and persist cited findings under `workspace/research/`
 // (see AGENTS.md → Research Memory). Skills RECORD through this helper instead of
 // writing the file directly so the citation-hygiene + privacy guards always run —
-// the same reason they call `npm run gate` / `npm run learnings` instead of hand-
+// the same reason they call `rolester gate` / `rolester learnings` instead of hand-
 // editing. Other skills (interview-prep, evaluate-job) READ through it.
 //
 // Usage:
@@ -234,7 +234,7 @@ function cmdRecord(arg) {
         `  fetched: ${fm.fetchedAt}${plan.stale ? " (already past staleness window)" : ""}`
       );
       console.log("");
-      console.log("Dry run — pass --write to commit.");
+      console.log("Dry run - pass --write to commit.");
     }
     process.exit(0);
   }

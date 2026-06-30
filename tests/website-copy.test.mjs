@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
 import test from "node:test";
 
 const HERO_BADGE_COPY = "Fresh roles. Sharp docs. Fast apply.";
@@ -11,6 +12,18 @@ const AI_CHIPS = [
   ["any CLI on PATH", "path"],
 ];
 const UNSUPPORTED_AGENT_ADAPTERS = ["Gemini CLI", "DeepSeek", "Qwen", "Kimi", "Hermes Agent"];
+const STALE_PUBLIC_CLI_PATTERN =
+  /node bin\/rolester\.mjs|npm run (?:doctor|next|ingest|searches|companies|modes|automation|research|gate|learnings|stories|activity|analytics|evidence|strategy-review|status:map|export|install-skills|evaluate|tracker|tracker:dev)(?:\s|`|$)|rolester [a-z:-]+ -- --|tracker:dev/;
+
+async function listFiles(dir, suffix) {
+  const out = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...(await listFiles(path, suffix)));
+    else if (entry.isFile() && path.endsWith(suffix)) out.push(path);
+  }
+  return out;
+}
 
 test("website hero rat badge uses the fresh-role application copy", async () => {
   const page = await readFile("website/src/app/page.tsx", "utf8");
@@ -104,4 +117,33 @@ test("AI compatibility chips show launchable CLIs and leave adapter-specific age
   assert.doesNotMatch(mockup, /ai-chip-icon/);
   assert.doesNotMatch(page, /ai-chip-dot/);
   assert.doesNotMatch(mockup, /ai-chip-dot/);
+});
+
+test("website install copy uses the public rolester CLI convention", async () => {
+  const page = await readFile("website/src/app/page.tsx", "utf8");
+  const publicAgents = await readFile("website/public/AGENTS.md", "utf8");
+  const combined = `${page}\n${publicAgents}`;
+
+  assert.match(page, /npm install -g rolester/);
+  assert.match(page, /rolester start claude/);
+  assert.match(page, /rolester update/);
+  assert.match(publicAgents, /rolester start claude/);
+  assert.match(publicAgents, /rolester ingest/);
+  assert.match(publicAgents, /rolester update/);
+
+  assert.doesNotMatch(combined, STALE_PUBLIC_CLI_PATTERN);
+});
+
+test("docs website source uses the public rolester CLI convention", async () => {
+  const files = await listFiles("docs-site/content", ".mdx");
+  const docs = await Promise.all(files.map(async (file) => readFile(file, "utf8")));
+  const combined = docs.join("\n");
+
+  assert.match(combined, /npm install -g rolester/);
+  assert.match(combined, /rolester start claude/);
+  assert.match(combined, /rolester tracker-dev/);
+  assert.match(combined, /rolester automation status/);
+  assert.match(combined, /rolester update/);
+
+  assert.doesNotMatch(combined, STALE_PUBLIC_CLI_PATTERN);
 });

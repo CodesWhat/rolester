@@ -28,21 +28,30 @@ Tagline:
 **Get it running:**
 
 ```bash
+npm install -g rolester
+rolester start claude    # or: rolester start codex
+```
+
+Developing from a source checkout is the same command shape; link the local
+binary once:
+
+```bash
 git clone https://github.com/CodesWhat/rolester
 cd rolester
 npm install
-node bin/rolester.mjs start claude        # or: node bin/rolester.mjs start codex
+npm link
+rolester start claude    # or: rolester start codex
 ```
 
 That scaffolds your workspace, installs the skills, opens the dashboard at
 `http://localhost:7777`, and hands off to your agent. Then paste a job posting and
 say "evaluate this" — or try the bundled sample under `examples/sample-jobs/`.
-Run `node bin/rolester.mjs next` any time you want the terse next agent task.
+Run `rolester next` any time you want the terse next agent task.
 
 **Update later:**
 
 ```bash
-node bin/rolester.mjs update     # fetches the latest published code; your data is untouched
+rolester update     # fetches the latest published code; your data is untouched
 ```
 
 Nothing you enter leaves your machine. No account, no server, no build step.
@@ -81,7 +90,7 @@ folder and say:
 > read the README and AGENTS.md, set yourself up, and walk me through testing
 > Rolester end to end
 
-**What's normal, not a bug:** until you onboard, `node bin/rolester.mjs doctor`
+**What's normal, not a bug:** until you onboard, `rolester doctor`
 reports that local candidate setup is incomplete and lists `candidate/*.yml` to
 create — that's the expected pre-setup state, and your agent fills it in during
 onboarding.
@@ -137,8 +146,8 @@ The full apply-cycle is shipped and working end-to-end:
 Health check:
 
 ```bash
-npm run doctor
-npm run next
+rolester doctor
+rolester next
 ```
 
 ### The dashboard
@@ -146,8 +155,8 @@ npm run next
 `rolester start` brings the dashboard up for you. To run it on its own:
 
 ```bash
-npm run tracker        # render workspace/tracker.html once — a static snapshot
-npm run tracker:dev    # serve http://localhost:7777 with live reload
+rolester tracker        # render workspace/tracker.html once — a static snapshot
+rolester tracker-dev    # serve http://localhost:7777 with live reload
 ```
 
 `rolester start [agent]` starts the live server as a separate local process and
@@ -155,11 +164,11 @@ records its PID/log at `.internal/tracker-dev.pid` and
 `.internal/tracker-dev.log`, so the dashboard keeps serving while the agent does
 the work.
 
-`npm run tracker` publishes the dashboard shell to `workspace/tracker.html`
+`rolester tracker` publishes the dashboard shell to `workspace/tracker.html`
 and its browser data adapter to `workspace/dashboard-data.js`. Use
-`tracker:dev` for the live command center: it serves the shell, the adapter, and
+`rolester tracker-dev` for the live command center: it serves the shell, the adapter, and
 `workspace/tracker.json`, watches tracker data plus dashboard source, re-renders
-through the same path as `npm run tracker`, and refreshes the open page over
+through the same path as `rolester tracker`, and refreshes the open page over
 Server-Sent Events.
 
 ## Product Notes

@@ -6,7 +6,7 @@
 // evidence.yml: candidate-owned STAR+R stories that interview-prep assembles into
 // packets and reuses across interview loops (see AGENTS.md → Story Bank). Skills
 // call this instead of hand-editing the YAML, for the same reason they call
-// `npm run gate` / `npm run learnings`: one validator, one write path, one firewall.
+// `rolester gate` / `rolester learnings`: one validator, one write path, one firewall.
 //
 // Every story must trace to candidate/evidence.yml — `add` and `check` refuse a
 // story that cites no evidence, cites a claim id that doesn't exist, is missing a
@@ -235,7 +235,7 @@ function cmdGaps() {
   for (const g of gaps) console.log(`  - ${g}`);
   console.log("");
   console.log(
-    "Draft a story for each from candidate/evidence.yml via interview-prep, then `npm run stories -- add`."
+    "Draft a story for each from candidate/evidence.yml via interview-prep, then `rolester stories add`."
   );
 }
 
@@ -283,7 +283,7 @@ function cmdMatch(rest) {
   }
   if (matched.length === 0) {
     console.log(
-      "No stories matched these signals. `npm run stories -- gaps` shows what's uncovered."
+      "No stories matched these signals. `rolester stories gaps` shows what's uncovered."
     );
     return;
   }
@@ -345,7 +345,7 @@ function cmdAdd() {
         `  bank would hold ${plan.nextStories.length} stor${plan.nextStories.length === 1 ? "y" : "ies"} (${storiesDisplay()}).`
       );
       console.log("");
-      console.log("Dry run — pass --write to commit.");
+      console.log("Dry run - pass --write to commit.");
     }
     process.exit(0);
   }
@@ -449,7 +449,7 @@ function cmdSyncEnrichment() {
   }
   if (!opts.write) {
     console.log(
-      `${sync.count} stor${sync.count === 1 ? "y" : "ies"} need context. tracker.storyEnrichment ${sync.changed ? "is STALE — pass --write to update" : "is already in sync"}.`
+      `${sync.count} stor${sync.count === 1 ? "y" : "ies"} need context. tracker.storyEnrichment ${sync.changed ? "is STALE - pass --write to update" : "is already in sync"}.`
     );
     for (const e of sync.entries)
       console.log(`  - ${e.storyId}: ${e.missing.length} open question(s)`);

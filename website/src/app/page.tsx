@@ -654,7 +654,7 @@ export default function Home() {
                   </div>
                   <div className="terminal-prompt">~ rolester $</div>
                   <div className="terminal-command">
-                    node bin/rolester.mjs start claude
+                    rolester start claude
                     <span className="terminal-cursor" aria-hidden="true" />
                   </div>
                   <div className="terminal-comment">
@@ -845,17 +845,13 @@ export default function Home() {
                   </div>
                   <div className="terminal-prompt">~ $</div>
                   <div className="terminal-command">
-                    git clone https://github.com/CodesWhat/rolester
+                    npm install -g rolester
                     <br />
-                    cd rolester
-                    <br />
-                    npm install
-                    <br />
-                    node bin/rolester.mjs start claude
+                    rolester start claude
                     <span className="terminal-cursor" aria-hidden="true" />
                   </div>
                   <div className="terminal-comment">
-                    # or: node bin/rolester.mjs start codex
+                    # or: rolester start codex
                     <br /># scaffolds workspace, installs skills, opens dashboard
                     at localhost:7777
                     <br /># then hands off to the agent
@@ -908,7 +904,7 @@ export default function Home() {
                     </div>
                     <div className="terminal-prompt">~ rolester $</div>
                     <div className="terminal-command">
-                      node bin/rolester.mjs update
+                      rolester update
                       <span className="terminal-cursor" aria-hidden="true" />
                     </div>
                     <div className="terminal-comment">

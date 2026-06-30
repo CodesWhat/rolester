@@ -82,7 +82,7 @@ function runList() {
       console.log(JSON.stringify({ exists: false, searches: [] }, null, 2));
     } else {
       console.log(`No ${CONFIG_DISPLAY} yet.`);
-      console.log("Generate one from targeting: npm run searches -- --from-targeting");
+      console.log("Generate one from targeting: rolester searches --from-targeting");
     }
     return 0;
   }
@@ -100,7 +100,7 @@ function runList() {
 function runFromTargeting() {
   if (!existsSync(TARGETING_PATH) || !existsSync(PROFILE_PATH)) {
     console.error(
-      "Need candidate/targeting.yml and candidate/profile.yml first. Run: npm run ingest"
+      "Need candidate/targeting.yml and candidate/profile.yml first. Run: rolester ingest"
     );
     return 1;
   }
@@ -118,7 +118,7 @@ function runAddQuery() {
   const query = optValue("--add-query");
   if (!query) {
     console.error(
-      'Usage: npm run searches -- --add-query "<query>" [--label "<label>"] [--provider HiringCafe]'
+      'Usage: rolester searches --add-query "<query>" [--label "<label>"] [--provider HiringCafe]'
     );
     return 1;
   }
@@ -143,7 +143,7 @@ function runAddQuery() {
 function runAddUrl() {
   const url = optValue("--add-url");
   if (!url) {
-    console.error('Usage: npm run searches -- --add-url "<full URL>" [--label "<label>"]');
+    console.error('Usage: rolester searches --add-url "<full URL>" [--label "<label>"]');
     return 1;
   }
   const config = loadConfig() || emptyConfig();
@@ -159,14 +159,12 @@ function runAddUrl() {
 
 function runToggle(selector, enabled) {
   if (selector == null) {
-    console.error(
-      `Usage: npm run searches -- --${enabled ? "enable" : "disable"} <index or label>`
-    );
+    console.error(`Usage: rolester searches --${enabled ? "enable" : "disable"} <index or label>`);
     return 1;
   }
   const config = loadConfig();
   if (!config) {
-    console.error(`No ${CONFIG_DISPLAY} yet. Run: npm run searches -- --from-targeting`);
+    console.error(`No ${CONFIG_DISPLAY} yet. Run: rolester searches --from-targeting`);
     return 1;
   }
   const sel = /^\d+$/.test(selector) ? Number(selector) : selector;
@@ -295,13 +293,13 @@ function printHelp() {
   console.log(`rolester searches — build and curate config/search-sources.yml
 
 Usage:
-  npm run searches                                      Show current searches
-  npm run searches -- --from-targeting                  Generate/refresh from candidate targeting (idempotent)
-  npm run searches -- --add-query "<q>" [--label "<l>"] [--provider HiringCafe]
-  npm run searches -- --add-url "<url>" [--label "<l>"]   Import a pasted URL (hiring.cafe filters preserved)
-  npm run searches -- --enable <index or label>          Enable a search
-  npm run searches -- --disable <index or label>         Disable a search
-  npm run searches -- --json                             Machine-readable output for any mode
+  rolester searches                                      Show current searches
+  rolester searches --from-targeting                     Generate/refresh from candidate targeting (idempotent)
+  rolester searches --add-query "<q>" [--label "<l>"] [--provider HiringCafe]
+  rolester searches --add-url "<url>" [--label "<l>"]    Import a pasted URL (hiring.cafe filters preserved)
+  rolester searches --enable <index or label>            Enable a search
+  rolester searches --disable <index or label>           Disable a search
+  rolester searches --json                               Machine-readable output for any mode
 
 This builds the SOURCE list. Running scans, dedupe, and gating belong to search-jobs / evaluate-job.`);
 }

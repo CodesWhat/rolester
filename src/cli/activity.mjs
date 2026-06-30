@@ -5,7 +5,7 @@
 // The Command Center's marquee panel is a reverse-chronological timeline of what the
 // agent did and what happened (workspace/activity.jsonl). Skills append one event at
 // the end of each action via this primitive instead of hand-writing JSONL — the same
-// reason they call `npm run gate` / `npm run learnings` instead of editing files in
+// reason they call `rolester gate` / `rolester learnings` instead of editing files in
 // prose. The CLI/dashboard only RENDER the feed; skills are the only writers
 // (AGENTS.md → capture-is-skills-not-cli).
 //
@@ -21,10 +21,9 @@
 //
 // append is a DRY RUN by default: it canonicalizes + schema-validates the event and
 // checks it for placeholder residue and a private comp leak, then prints the exact
-// line that would be written — and writes nothing. Pass --write to commit (append).
+// line that would be written - and writes nothing. Pass --write to commit (append).
 
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { displayPath, userPath } from "../core/paths/workspace.mjs";
 import { deriveActivityEvents } from "../core/tracker/activity-backfill.mjs";
@@ -167,7 +166,7 @@ function cmdAppend() {
       console.log("Proposed append to workspace/activity.jsonl:");
       console.log(`  | ${plan.line}`);
       console.log("");
-      console.log("Dry run — pass --write to commit.");
+      console.log("Dry run - pass --write to commit.");
     }
     process.exit(0);
   }
@@ -206,7 +205,7 @@ function cmdPrune() {
       );
     else
       console.log(
-        `${events.length} events; cap ${max} → would drop ${drop}. Dry run — pass --write to commit.`
+        `${events.length} events; cap ${max} → would drop ${drop}. Dry run - pass --write to commit.`
       );
     process.exit(0);
   }
@@ -241,7 +240,7 @@ function cmdBackfill() {
       );
       for (const e of preview) console.log(`  · ${e.at}  ${String(e.type).padEnd(13)} ${e.title}`);
       console.log("");
-      console.log("Dry run — pass --write to commit (idempotent; re-running skips existing).");
+      console.log("Dry run - pass --write to commit (idempotent; re-running skips existing).");
     }
     process.exit(0);
   }
@@ -294,7 +293,7 @@ Commands:
   append    Append one event. DRY RUN by default; pass --write to commit (idempotent on id).
   backfill  Derive events from workspace/tracker.json (applied dates, inbound replies,
             status outcomes). DRY RUN by default; --write is idempotent (skips existing).
-  prune     Retention rollup — keep the most recent --max events (default 500).
+  prune     Retention rollup - keep the most recent --max events (default 500).
 
 append options:
   --type TYPE     ${ACTIVITY_TYPES.join(" | ")}

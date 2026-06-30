@@ -10,7 +10,7 @@
 // render forever, since the rolling 30-day counts stay above threshold regardless of
 // whether a review just ran.
 //
-// Like `npm run activity` / `npm run learnings`, the CLI only WRITES this mechanical
+// Like `rolester activity` / `rolester learnings`, the CLI only WRITES this mechanical
 // marker — it makes no strategy judgement (AGENTS.md → capture-is-skills-not-cli). The
 // snapshot is computed with buildStrategyReviewStamp, the SAME predicate the render gate
 // reads, so the stored count and the live count can never diverge.
@@ -20,7 +20,7 @@
 //   node src/cli/strategy-review.mjs status [--json]
 //
 // stamp is a DRY RUN by default: it computes the marker and prints it, writing nothing.
-// Pass --write to commit. Re-render afterwards (node src/cli/tracker.mjs) so the cleared
+// Pass --write to commit. Re-render afterwards (rolester tracker) so the cleared
 // banner shows.
 
 import { existsSync, readFileSync } from "node:fs";
@@ -104,7 +104,7 @@ function cmdStamp() {
       console.log("Proposed strategyReview marker for workspace/tracker.json:");
       console.log(`  ${JSON.stringify(marker)}`);
       console.log("");
-      console.log("Dry run — pass --write to commit, then re-render (node src/cli/tracker.mjs).");
+      console.log("Dry run - pass --write to commit, then re-render (rolester tracker).");
     }
     process.exit(0);
   }
@@ -117,7 +117,7 @@ function cmdStamp() {
     console.log(
       `Stamped strategyReview at ${marker.lastReviewedAt} (outcomes: ${marker.snapshot.outcomes}).`
     );
-    console.log("Re-render to clear the banner: node src/cli/tracker.mjs");
+    console.log("Re-render to clear the banner: rolester tracker");
   }
   process.exit(0);
 }

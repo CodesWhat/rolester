@@ -17,7 +17,7 @@ Once 1.0.0 ships, the standard semver compatibility guarantees apply:
 Before tagging a release:
 
 1. All tests pass: `npm test`
-2. Doctor reports clean: `npm run doctor`
+2. Doctor reports clean: `rolester doctor`
 3. Placeholder linter is clean: `npm run lint:placeholders`
 4. **Privacy/public-split check** — grep all tracked files (`git ls-files`) for
    the private origin codename and any personal identity strings — must return

@@ -119,10 +119,10 @@ These already exist — skills must stop calling them "future work":
 
 | Purpose | Command |
 | --- | --- |
-| Validate tracker schema | `node src/cli/tracker.mjs --verify` |
-| Re-render dashboard | `node src/cli/tracker.mjs` |
-| Tracker summary | `node src/cli/tracker.mjs --summary` |
-| Follow-ups due | `node src/cli/tracker.mjs --followups` |
+| Validate tracker schema | `rolester tracker --verify` |
+| Re-render dashboard | `rolester tracker` |
+| Tracker summary | `rolester tracker --summary` |
+| Follow-ups due | `rolester tracker --followups` |
 | Full sourced sweep | `npm run scan:sourced -- --write --intake --summary --verify` |
 | Targeted company sweep | `npm run scan:sourced -- --company "<Company>" --write --intake --summary --verify` |
 | Incremental delta | `npm run delta:sourced -- --source <provider> --repo-new-only --write` |
@@ -130,12 +130,12 @@ These already exist — skills must stop calling them "future work":
 | Outcome analysis | `node scripts/analyze-outcomes.mjs --summary` (and no-flag for full JSON) |
 | Placeholder lint | `node src/cli/lint-placeholders.mjs <path>` |
 | Writing-style calibrate | `npm run calibrate:style` |
-| Evaluate a saved job | `node src/cli/evaluate.mjs <path-to-job.md>` (exit 0=KEEP, 2=REVIEW, 1=CUT) |
-| List/build searches | `npm run searches` / `--from-targeting` / `--add-url` / `--add-query` |
-| Generate config files | `npm run ingest -- --write-config` |
-| Write a stated gate back (safe) | `npm run gate -- <type> <value>` (dry run; `--write`, or `--write --confirm` for confirm-first; `-- --list` for types) |
-| Seed from résumé | `npm run ingest -- --resume <path> --json` |
-| Health check | `npm run doctor` |
+| Evaluate a saved job | `rolester evaluate <path-to-job.md>` (exit 0=KEEP, 2=REVIEW, 1=CUT) |
+| List/build searches | `rolester searches` / `--from-targeting` / `--add-url` / `--add-query` |
+| Generate config files | `rolester ingest --write-config` |
+| Write a stated gate back (safe) | `rolester gate <type> <value>` (dry run; `--write`, or `--write --confirm` for confirm-first; `--list` for types) |
+| Seed from résumé | `rolester ingest --resume <path> --json` |
+| Health check | `rolester doctor` |
 
 ---
 

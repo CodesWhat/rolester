@@ -22,7 +22,7 @@ No setup needed — Chromium ships with the package.
 Used for:
 - `npm run capture:search-sources` / `npm run capture:board` — bulk-scrape a
   board's listing DOM
-- Document and packet PDF export (`npm run export`)
+- Document and packet PDF export (`rolester export`)
 
 This is for **batch, non-interactive** rendering where the agent does not need to
 reason turn-by-turn.
@@ -65,10 +65,10 @@ All three conditions must be true for a capability to run on a platform:
 3. That platform's one-time ToS consent is recorded.
 
 ```bash
-npm run automation -- status                               # current matrix
-npm run automation -- consent linkedin --write             # record consent
-npm run automation -- enable profile_optimize linkedin --write
-npm run automation -- session extension --write            # set provider
+rolester automation status                               # current matrix
+rolester automation consent linkedin --write             # record consent
+rolester automation enable profile_optimize linkedin --write
+rolester automation session extension --write            # set provider
 ```
 
 ## Safety rules (always enforced)

@@ -97,8 +97,8 @@ function runInit() {
   console.log(
     "3. Drop writing samples into workspace/writing-samples/ and run: npm run calibrate:style"
   );
-  console.log("4. Validate: npm run ingest -- --check");
-  console.log("5. Generate search config + local router: npm run ingest -- --write-config");
+  console.log("4. Validate: rolester ingest --check");
+  console.log("5. Generate search config + local router: rolester ingest --write-config");
   return 0;
 }
 
@@ -127,7 +127,7 @@ function runCheck() {
 
 function runResume(path) {
   if (!path) {
-    console.error("Usage: npm run ingest -- --resume <path-to-resume.md|.txt>");
+    console.error("Usage: rolester ingest --resume <path-to-resume.md|.txt>");
     return 1;
   }
   const resolved = isAbsolute(path) ? path : join(process.cwd(), path);
@@ -257,11 +257,11 @@ function printHelp() {
   console.log(`rolester ingest — guided candidate setup
 
 Usage:
-  npm run ingest                       Initialize candidate/ from templates, then report status
-  npm run ingest -- --check            Validate candidate files + reject placeholders (exit 1 if not ready)
-  npm run ingest -- --resume <path>    Parse a resume into profile/evidence seed YAML (no writes)
-  npm run ingest -- --write-config     Generate config/search-sources.yml + candidate/AGENTS.md
-  npm run ingest -- --json             Machine-readable output for any mode
+  rolester ingest                       Initialize candidate/ from templates, then report status
+  rolester ingest --check            Validate candidate files + reject placeholders (exit 1 if not ready)
+  rolester ingest --resume <path>    Parse a resume into profile/evidence seed YAML (no writes)
+  rolester ingest --write-config     Generate config/search-sources.yml + candidate/AGENTS.md
+  rolester ingest --json             Machine-readable output for any mode
 
 Candidate files (${CANDIDATE_FILES.length}): ${CANDIDATE_FILES.map((f) => f.name).join(", ")}
 All candidate/* output is private user-layer data and is gitignored.`);

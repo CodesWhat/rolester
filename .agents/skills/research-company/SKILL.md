@@ -46,7 +46,7 @@ If `candidate/research-prefs.yml` exists and specifies `research_axes`, use thos
 Then check usage mode:
 
 ```
-npm run modes -- allows research:company
+rolester modes allows research:company
 ```
 
 If it returns `skip`, do not run web search by default; explain that lean usage mode
@@ -61,7 +61,7 @@ continue normally.
 1. Canonicalize the company name as given by the user or inferred from the JD.
 2. Run:
    ```
-   npm run research -- read "<Company>"
+   rolester research read "<Company>"
    ```
    - If the command returns a **non-stale** artifact (within `staleness_days`), show the
      user the artifact summary and offer two choices:
@@ -145,7 +145,7 @@ totals for the Required Output block.
 
 Compose the full artifact to a temporary draft file. Use a path outside
 `workspace/research/` — for example `workspace/research/.<slug>.draft` — so it is
-not itself listed by `npm run research -- list`. Do NOT write a `.md` file directly
+not itself listed by `rolester research list`. Do NOT write a `.md` file directly
 into `workspace/research/`; the `record --write` command is the only write path.
 
 The artifact must follow this exact structure:
@@ -214,7 +214,7 @@ refused by the placeholder lint.
 
 1. Dry-run to validate and preview:
    ```
-   npm run research -- record "<Company>" --file <path-to-draft>
+   rolester research record "<Company>" --file <path-to-draft>
    ```
    Read the output. If `record` refuses (placeholder residue, missing frontmatter field,
    zero sources, `current_base` leak), fix the draft and re-run. Do not proceed to `--write`
@@ -222,13 +222,13 @@ refused by the placeholder lint.
 
 2. Commit:
    ```
-   npm run research -- record "<Company>" --file <path-to-draft> --write
+   rolester research record "<Company>" --file <path-to-draft> --write
    ```
 
 3. Log the research to the Activity Pulse feed (see **Activity Pulse** in AGENTS.md):
 
    ```
-   npm run activity -- append --type research --actor agent \
+   rolester activity append --type research --actor agent \
      --title "Researched <Company>" --summary "<axes covered, e.g. 'product, funding, culture'>" \
      --company "<Company>" --write
    ```
@@ -258,7 +258,7 @@ to apply there", "add them to the exclusion list", "this is a no"):
    `candidate/targeting.yml`?").
 2. On confirmation, run:
    ```
-   npm run gate -- exclude-company "<Company>"
+   rolester gate exclude-company "<Company>"
    ```
 3. Echo `Written to candidate/targeting.yml: excluded_companies[] += <Company>`.
 4. The research artifact can remain — it costs nothing and may be useful for competitive

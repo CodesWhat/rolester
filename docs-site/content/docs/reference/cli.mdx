@@ -1,12 +1,11 @@
 ---
 title: CLI Commands
-description: Every command available from the CLI and npm scripts.
+description: Every public Rolester CLI command plus maintainer-only npm scripts.
 ---
 
-## rolester CLI (bin/rolester.mjs)
+## rolester CLI
 
-The primary entry point. Run as `node bin/rolester.mjs <command>` from the repo
-root, or via the `rolester` binary if you have it on PATH.
+The primary entry point. Run as `rolester <command> [args] [--flags]`.
 
 | Command | What it does |
 |---------|-------------|
@@ -15,11 +14,28 @@ root, or via the `rolester` binary if you have it on PATH.
 | `start codex` | Same, with Codex as the agent |
 | `init` | Scaffold workspace only (no agent, no dashboard) |
 | `doctor` | Environment health check, scaffold state, skills discoverability |
-| `ingest` | Alias for running `ingest-profile` via the agent |
-| `evaluate` | Alias for running `evaluate-job` via the agent |
-| `tracker` | One-shot render of dashboard to `workspace/tracker.html` |
+| `next` | Show the next agent task from doctor guidance |
+| `ingest` | Guided candidate setup (profile, targeting, evidence, etc.) |
+| `searches` | Build and curate the search-source config |
+| `companies` | Manage tracked employer ATS boards |
+| `evaluate` | Run the body-read gate on a saved job |
+| `tracker` | One-shot dashboard snapshot, summary, follow-ups, or `--verify` |
+| `tracker-dev` | Live-reloading dashboard server on `:7777` |
+| `modes` | Show or change optional usage and application modes |
+| `automation` | Show or toggle opt-in browser-automation config |
+| `activity` | Read, append, or prune Activity Pulse events |
+| `research` | Read or record web-research artifacts |
+| `stories` | Read, validate, or add STAR+R interview stories |
+| `strategy-review` | Stamp a strategy-review run |
+| `analytics` | Compute tracker analytics |
+| `evidence` | Read, validate, or add evidence claims |
+| `gate` | Safely update gate data such as comp floors and exclusions |
+| `learnings` | Read or append per-role-family learnings |
+| `status-map` | Inspect ATS status normalization |
+| `export` | Render a tailored artifact or packet to PDF or DOCX |
 | `update` | Pull latest code from npm; data untouched |
 | `restore` | Recover `tracker.json` from a rolling snapshot (confirm-first) |
+| `install-skills` | Re-shim `.claude/skills` to `.agents/skills` |
 | `--version` | Print installed version |
 
 ### start flags
@@ -31,64 +47,42 @@ root, or via the `rolester` binary if you have it on PATH.
 | `--agent <name>` | Override agent CLI (any CLI on PATH) |
 | `--port <n>` | Dashboard port (default 7777) |
 
-## npm scripts (package.json)
+## npm scripts (source checkout)
 
-Run from the repo root with `npm run <script>`.
+Most users should use `rolester <command>`. These npm scripts are useful when
+developing from a source checkout or running lower-level maintenance tools.
 
-### Core
-
-| Script | What it does |
-|--------|-------------|
-| `tracker` | Render dashboard snapshot to `workspace/tracker.html` |
-| `tracker:dev` | Live-reloading dashboard server on `:7777` |
-| `doctor` | Environment health check |
-| `ingest` | Run `ingest-profile` flow via agent |
-| `update` | Pull latest code from npm |
-
-### Config management
+### Development
 
 | Script | What it does |
 |--------|-------------|
-| `gate` | Read or write a candidate gate (comp floor, exclusion, signal) |
-| `modes` | Read or set `usage_mode` / `application_mode` / `agent_voice` |
-| `automation` | Read or toggle browser automation capabilities and consent |
-
-### Data management
-
-| Script | What it does |
-|--------|-------------|
-| `evidence` | Add or validate evidence claims |
-| `learnings` | Manage per-role-family learning files |
-| `stories` | Manage STAR+R story bank |
-| `activity` | Append or manage Activity Pulse events |
-| `research` | Record or read research artifacts |
-| `strategy-review` | Stamp a strategy-review run |
+| `lint` | Run Biome checks |
+| `lint:fix` | Run Biome with safe fixes |
+| `format` | Format files with Biome |
+| `test` | Run the Node test suite |
+| `web:dev` | Run the marketing/docs website locally |
+| `web:build` | Build the marketing/docs website |
+| `build:demo` | Build demo assets |
+| `deploy:demo` | Deploy demo assets |
 
 ### Validation
 
 | Script | What it does |
 |--------|-------------|
 | `verify:tracker` | Validate `workspace/tracker.json` schema and integrity |
-| `install-skills` | Re-shim `.claude/skills` → `.agents/skills` |
-| `install-skills:check` | Report whether skills are discoverable |
+| `lint:placeholders` | Check tailored artifacts for unresolved placeholders |
 
-### Capture and export
+### Capture and analysis
 
 | Script | What it does |
 |--------|-------------|
 | `capture:search-sources` | Bulk-capture board listing pages |
 | `capture:board` | Capture a single board page |
-| `export` | Export a markdown artifact to PDF (or `.docx`) |
-
-### Advanced
-
-| Script | What it does |
-|--------|-------------|
-| `searches` | Build search URLs from `config/search-sources.yml` |
 | `analyze-outcomes` | Read outcome analytics from tracker |
 | `check-job-links` | Check liveness of sourced job links |
-| `backfill-benefits` | Backfill benefits data on tracker rows |
-| `restore` | Recover tracker from rolling snapshot |
+| `scan:sourced` | Scan configured sourced rows |
+| `delta:sourced` | Show sourced-row deltas |
+| `calibrate:style` | Build writing-style calibration artifacts |
 
 ## Environment variables
 

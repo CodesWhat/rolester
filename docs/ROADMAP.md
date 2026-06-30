@@ -51,14 +51,17 @@ nurse, a driver, and an engineer each bring their own config.
   installs the skills, brings up the live dashboard, and launches your agent
   (Claude Code, Codex, or any CLI on your PATH) with a starter message, so first
   run is a single line.
-- **Packaging** — `npx rolester` launcher (`start` / `init` / `doctor` / `ingest` /
-  `searches` / `evaluate` / `tracker` / `restore`), a Docker option, and a sample
-  workspace. `restore` recovers `tracker.json` from a rolling point-in-time snapshot
-  (confirm-first, backs up the current file first).
-- **Live-reload dashboard** (`npm run tracker:dev`) — a dependency-free watch +
+- **Packaging** — `rolester` launcher (`start` / `init` / `doctor` / `next` /
+  `ingest` / `searches` / `companies` / `evaluate` / `tracker` /
+  `tracker-dev` / `modes` / `automation` / `research` / `gate` / `learnings` /
+  `stories` / `activity` / `evidence` / `analytics` / `status-map` / `export` /
+  `restore`), a Docker option, and a sample workspace. `restore` recovers
+  `tracker.json` from a rolling point-in-time snapshot (confirm-first, backs up
+  the current file first).
+- **Live-reload dashboard** (`rolester tracker-dev`) — a dependency-free watch +
   live-reload dev server: edit your tracker data or the dashboard itself and the
   open page refreshes instantly.
-- **Safe config write-back** (`npm run gate`) — when you state a new gate mid-flow
+- **Safe config write-back** (`rolester gate`) — when you state a new gate mid-flow
   ("never that company", "$X floor", "don't claim that tool"), skills persist it to
   the right config file: comment-preserving, schema-validated, atomic, and
   confirm-first on consequential changes. Dry-run by default.
@@ -69,13 +72,13 @@ nurse, a driver, and an engineer each bring their own config.
 - **Document export** — print-quality PDF for tailored artifacts and interview
   packets via the bundled headless Chromium (zero new runtime dependency), plus an
   opt-in `.docx` path that auto-detects pandoc/LibreOffice and otherwise falls back
-  to a built-in writer (`npm run export -- <file.md> --pdf [--docx]`).
+  to a built-in writer (`rolester export <file.md> --pdf [--docx]`).
 - **Dashboard themes + editorial refresh** — Tokyo Night and Gruvbox theme families
   (light + dark) alongside the originals, plus a palette-independent editorial pass:
   tabular figures, eyebrow section labels, a ruled editorial masthead with a
   borderless metric band (no stat-card boxes), monospace metadata, lighter headings,
   and crisper less-rounded cards.
-- **Per-track learning memory** (`npm run learnings`) — durable, private lessons per
+- **Per-track learning memory** (`rolester learnings`) — durable, private lessons per
   role family. The skills that learn from outcomes (interview debriefs, rejection and
   win patterns, strategy reviews) append dated entries; the skills that produce
   artifacts (evaluation, search triage, tailoring) read them, so fit, résumés, and prep
@@ -95,7 +98,7 @@ nurse, a driver, and an engineer each bring their own config.
   firewall (verified evidence / sourced-web / agent-inferred) keeps web findings out
   of résumé claims. *(Shipped and live-validated — the citation firewall and private-comp
   privacy gate held across real research runs.)*
-- **Interview story bank** (`npm run stories`) — a candidate-owned bank of structured
+- **Interview story bank** (`rolester stories`) — a candidate-owned bank of structured
   behavioral stories (STAR + result) reusable across loops, each tracing to a real
   evidence claim and surfaced in interview packets.
 - **Deeper negotiation support** — geographic-discount pushback, competing-offer /
@@ -110,7 +113,7 @@ nurse, a driver, and an engineer each bring their own config.
   (`ingest-messages`), and authenticated one-click apply (LinkedIn Easy Apply, behind the
   existing submit-safety gate), LinkedIn profile optimization, plus opt-in mail sync and
   `mail_access` for generic webmail / Gmail / Outlook. A per-capability, per-platform consent
-  switchboard (`npm run automation`) defaults fully off and stores nothing — nothing runs
+  switchboard (`rolester automation`) defaults fully off and stores nothing — nothing runs
   until you read a platform's terms, record consent, and enable it; every session is
   human-in-the-loop and halts on a CAPTCHA, 2FA, or limit. Onboarding adds basic/advanced
   setup modes and resumable deep/shallow setup (progress saved to
@@ -125,7 +128,7 @@ nurse, a driver, and an engineer each bring their own config.
   then routes every change through the existing validated, confirm-first config commands; it never
   becomes a separate way to mutate your data. `doctor` now reports your session-browser provider
   and a best-effort readiness check.
-- **Mode switchers** (`npm run modes`) — two independent knobs for running Rolester at the
+- **Mode switchers** (`rolester modes`) — two independent knobs for running Rolester at the
   intensity you want. `usage_mode` (`lean | standard | full`) controls discretionary compute and
   scope: broad research, board discovery, deep interview packets, broad sweeps, and agent fan-out
   can downshift, but the core gate/tailor/track/comms loop stays full quality. `application_mode`

@@ -85,7 +85,7 @@ function runList() {
       `Until this is populated, search-jobs can use broad board searches but will not scan company ATS boards like ${ATS_FAMILIES}.`
     );
     console.log(
-      `Add one: npm run companies -- --add "Acme" --url "https://jobs.ashbyhq.com/acme" --write`
+      `Add one: rolester companies --add "Acme" --url "https://jobs.ashbyhq.com/acme" --write`
     );
     return 0;
   }
@@ -102,7 +102,7 @@ function runAdd() {
   const url = optValue("--url");
 
   if (!name || !url) {
-    console.error('Usage: npm run companies -- --add "<name>" --url "<careers_url>" [--write]');
+    console.error('Usage: rolester companies --add "<name>" --url "<careers_url>" [--write]');
     return 2;
   }
 
@@ -176,7 +176,7 @@ function runAdd() {
 function runRemove() {
   const name = optValue("--remove");
   if (!name) {
-    console.error('Usage: npm run companies -- --remove "<name>" [--write]');
+    console.error('Usage: rolester companies --remove "<name>" [--write]');
     return 2;
   }
 
@@ -246,7 +246,7 @@ function companyAtsReadiness(companies) {
     providers,
     missingAction:
       companies.length === 0
-        ? "Run discover-companies, or add a scannable ATS board with npm run companies -- --add."
+        ? "Run discover-companies, or add a scannable ATS board with rolester companies --add."
         : null,
   };
 }
@@ -267,12 +267,12 @@ function printHelp() {
   console.log(`rolester companies — manage config/sourced-scan.json#tracked_companies
 
 Usage:
-  npm run companies                                         List tracked companies (default)
-  npm run companies -- --add "<name>" --url "<url>"         Dry-run add (print what would be added)
-  npm run companies -- --add "<name>" --url "<url>" --write Append a company and save
-  npm run companies -- --remove "<name>"                    Dry-run remove
-  npm run companies -- --remove "<name>" --write            Remove a company and save
-  npm run companies -- --json                               Machine-readable output for any mode
+  rolester companies                                        List tracked companies (default)
+  rolester companies --add "<name>" --url "<url>"           Dry-run add (print what would be added)
+  rolester companies --add "<name>" --url "<url>" --write   Append a company and save
+  rolester companies --remove "<name>"                      Dry-run remove
+  rolester companies --remove "<name>" --write              Remove a company and save
+  rolester companies --json                                 Machine-readable output for any mode
 
 Supported ATS hosts: ${SUPPORTED_HOSTS.join(", ")}
 

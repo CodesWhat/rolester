@@ -293,7 +293,7 @@ test("router tells agents to follow doctor Agent guidance instead of raw list co
 
   assert.match(text, /Agent guidance/);
   assert.match(text, /canonical next handoff/);
-  assert.match(text, /do not treat `npm run searches` or `npm run companies` as the workflow/);
+  assert.match(text, /do not treat `rolester searches` or `rolester companies` as the workflow/);
 });
 
 test("router makes proactive next-skill recommendations beyond cold start", () => {
@@ -325,10 +325,70 @@ test("user-facing docs use default list commands instead of npm -- --list noise"
   assert.deepEqual(offenders, []);
 });
 
+test("rolester exposes discovery helper commands directly", () => {
+  const home = tempHome();
+  try {
+    const companies = runRolester(["companies", "--json"], home);
+    assert.equal(companies.status, 0);
+    assert.equal(JSON.parse(companies.stdout).total, 0);
+
+    const searchesHelp = runRolester(["searches", "--help"], home);
+    assert.equal(searchesHelp.status, 0);
+    assert.match(searchesHelp.stdout, /Usage:\s+rolester searches/);
+
+    const companiesHelp = runRolester(["companies", "--help"], home);
+    assert.equal(companiesHelp.status, 0);
+    assert.match(companiesHelp.stdout, /Usage:\s+rolester companies/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("product-facing search and company guidance leads with rolester commands", () => {
+  const files = [
+    "bin/rolester.mjs",
+    "src/core/agent-guidance.mjs",
+    "src/cli/searches.mjs",
+    "src/cli/companies.mjs",
+    "src/cli/doctor.mjs",
+    ".agents/skills/search-jobs/SKILL.md",
+    ".agents/skills/setup-searches/SKILL.md",
+    ".agents/skills/research-boards/SKILL.md",
+    ".agents/skills/discover-companies/SKILL.md",
+    "docs/foundations-spec.md",
+  ];
+
+  const offenders = [];
+  for (const file of files) {
+    const text = readFileSync(join(ROOT, file), "utf8");
+    for (const match of text.matchAll(/npm run (?:searches|companies)(?:\s|`|$)/g)) {
+      const line = text.slice(0, match.index).split("\n").length;
+      offenders.push(`${file}:${line}: ${match[0].trim()}`);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("public setup docs teach the rolester binary instead of source-file invocations", () => {
+  const files = ["README.md", "docs/SETUP.md"];
+  const offenders = [];
+
+  for (const file of files) {
+    const text = readFileSync(join(ROOT, file), "utf8");
+    for (const match of text.matchAll(/node bin\/rolester\.mjs/g)) {
+      const line = text.slice(0, match.index).split("\n").length;
+      offenders.push(`${file}:${line}`);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
 test("rolester start prompt anchors the agent to doctor and the discovery order", () => {
   const text = readFileSync(join(ROOT, "bin/rolester.mjs"), "utf8");
 
-  assert.match(text, /run npm run doctor/);
+  assert.match(text, /run rolester doctor/);
   assert.match(text, /next unfinished Rolester skill/);
   assert.match(text, /setup-searches -> research-boards -> discover-companies -> search-jobs/);
 });
@@ -340,8 +400,35 @@ test("rolester start --no-agent prints the manual agent handoff", () => {
 
     assert.equal(result.status, 0);
     assert.match(result.stdout, /Open your agent in this folder and say:/);
-    assert.match(result.stdout, /run npm run doctor/);
+    assert.match(result.stdout, /run rolester doctor/);
     assert.match(result.stdout, /next unfinished Rolester skill/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("CLI output lines that mention flags use ASCII hyphen separators", () => {
+  const home = tempHome();
+  try {
+    const commands = [
+      ["src/cli/doctor.mjs", []],
+      ["src/cli/analytics.mjs", ["--help"]],
+      ["src/cli/activity.mjs", ["--help"]],
+      ["src/cli/status-map.mjs", ["--help"]],
+      ["src/cli/next.mjs", ["--help"]],
+    ];
+    const offenders = [];
+
+    for (const [script, args] of commands) {
+      const result = runCli(script, args, home);
+      for (const [index, line] of `${result.stdout}\n${result.stderr}`.split("\n").entries()) {
+        if (line.includes("--") && line.includes("—")) {
+          offenders.push(`${script}:${index + 1}: ${line}`);
+        }
+      }
+    }
+
+    assert.deepEqual(offenders, []);
   } finally {
     rmSync(home, { recursive: true, force: true });
   }

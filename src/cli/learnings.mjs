@@ -5,7 +5,7 @@
 // Rolester compounds: each role-track gets sharper the more it is run. Durable
 // lessons live in `candidate/learnings/<family>.md` (see AGENTS.md → Learning
 // Memory). Skills call this instead of re-deriving the family slug in prose and
-// hand-appending markdown — the same reason they call `npm run gate` instead of
+// hand-appending markdown — the same reason they call `rolester gate` instead of
 // hand-editing YAML.
 //
 // Usage:
@@ -22,7 +22,7 @@
 //
 // append is a DRY RUN by default: it prints the family, target file, and the exact
 // entry that would be written, after checking it for placeholder residue and a
-// private comp leak — and writes nothing. Pass --write to commit (atomic append).
+// private comp leak - and writes nothing. Pass --write to commit (atomic append).
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -195,7 +195,7 @@ function cmdAppend(arg) {
           .join("\n")
       );
       console.log("");
-      console.log("Dry run — pass --write to commit.");
+      console.log("Dry run - pass --write to commit.");
     }
     process.exit(0);
   }

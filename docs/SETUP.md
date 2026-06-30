@@ -14,10 +14,19 @@ renders, and serves the dashboard.
 ## Get It Running
 
 ```bash
+npm install -g rolester
+rolester start claude    # or: rolester start codex
+```
+
+Developing from a source checkout is the same command shape; link the local
+binary once:
+
+```bash
 git clone https://github.com/CodesWhat/rolester
 cd rolester
 npm install
-node bin/rolester.mjs start claude        # or: node bin/rolester.mjs start codex
+npm link
+rolester start claude    # or: rolester start codex
 ```
 
 That scaffolds your workspace, installs the skills, opens the dashboard at
@@ -30,8 +39,8 @@ http://localhost:7777, and hands off to your agent. Then paste a job posting and
 2. Installs skills so Claude Code sees `/apply-job`, `/evaluate-job`, etc.
 3. Seeds `workspace/tracker.json` from the demo template (if not yet present).
 4. Boots the live dashboard at http://localhost:7777 with hot reload.
-5. Launches your agent with the starter message `familiarize yourself and let's
-   get started`.
+5. Launches your agent with the starter message that asks it to read
+   `AGENTS.md`, run `rolester doctor`, and follow the next unfinished skill.
 
 The first bare word picks the agent (`rolester start claude`, `rolester start
 codex`, or any CLI on your PATH). Omit it to use the first one found.
@@ -42,7 +51,7 @@ Flags: `--no-agent` (scaffold + dashboard only), `--no-dashboard`,
 ## Update Later
 
 ```bash
-node bin/rolester.mjs update     # fetches the latest published code; your data is untouched
+rolester update     # fetches the latest published code; your data is untouched
 ```
 
 The update command pulls the latest release from npm and overwrites only the
@@ -54,19 +63,19 @@ Prefer to open the agent yourself?
 
 ```bash
 npm install        # also runs install-skills via postinstall
-npm run doctor     # confirm the scaffold and environment
+rolester doctor     # confirm the scaffold and environment
 ```
 
 Then open your agent in the repo root and send:
 
-> familiarize yourself and let's get started
+> Read AGENTS.md, run rolester doctor, then guide me through the next unfinished Rolester skill.
 
 The agent reads `AGENTS.md`, verifies the skills shim, and runs `ingest-profile`
 conversationally if the candidate profile is not yet set up.
 
 ## Candidate Setup
 
-`ingest-profile` (or `npm run ingest`) interviews you and produces these files
+`ingest-profile` (or `rolester ingest`) interviews you and produces these files
 under `candidate/` (gitignored):
 
 - `profile.yml` — identity, location, comp floor and targets, domain/toolchain
@@ -79,7 +88,7 @@ under `candidate/` (gitignored):
 Until `ingest-profile` has run, the agent will prompt to complete onboarding
 before routing any other intent.
 
-`modes.yml` can also be managed later with `npm run modes`: `usage_mode` changes
+`modes.yml` can also be managed later with `rolester modes`: `usage_mode` changes
 how much discretionary work Rolester runs, while `application_mode` changes how
 aggressively it pursues already-discovered roles. If the file is absent, the safe
 defaults are `standard` usage and `balanced` application mode.
@@ -98,9 +107,9 @@ the main interview begins.
   profile optimization, and `mail_access` for provider-agnostic verification-code
   reads via `webmail` plus Gmail/Outlook webmail ingest). Each
   capability is still individually off by default; nothing runs until you read a
-  platform's terms, record consent, and enable it via `npm run automation`. The
+  platform's terms, record consent, and enable it via `rolester automation`. The
   Chrome extension is the preferred path (no separate credential store needed);
-  `npm run automation -- status` shows what's live. Choosing Advanced during
+  `rolester automation status` shows what's live. Choosing Advanced during
   setup just surfaces the install guidance and opt-in prompts at the right moment
   — you can enable or disable anything later.
 
@@ -111,11 +120,11 @@ the main interview begins.
   Advanced mode) capability opt-ins.
 - **Shallow** — collect the minimum-viable config now, defer the rest. The skill
   saves progress after each step to `workspace/setup-state.json` (written by the
-  agent; gitignored). Re-running `ingest-profile` (or `npm run ingest`) reads
+  agent; gitignored). Re-running `ingest-profile` (or `rolester ingest`) reads
   that file and resumes from where you left off, so you can stop and come back
   without losing ground.
 
-`npm run doctor` reports whether setup is complete or still in progress.
+`rolester doctor` reports whether setup is complete or still in progress.
 
 ## Agent Files
 
@@ -130,15 +139,15 @@ filling, or submitting.
 `rolester start` brings the dashboard up. To run it separately:
 
 ```bash
-npm run tracker        # one-shot snapshot → workspace/tracker.html
-npm run tracker:dev    # live-reloading dev server on :7777
+rolester tracker        # one-shot snapshot → workspace/tracker.html
+rolester tracker-dev    # live-reloading dev server on :7777
 ```
 
 `rolester start [agent]` runs that dashboard as a separate local process and
 writes `.internal/tracker-dev.pid` plus `.internal/tracker-dev.log`, so the page
 stays available while the launched agent works.
 
-`npm run tracker` publishes the dashboard shell plus
+`rolester tracker` publishes the dashboard shell plus
 `workspace/dashboard-data.js`. The live server serves those files alongside
 `workspace/tracker.json`, watches tracker data and dashboard source, and refreshes
 the open page over Server-Sent Events.
@@ -150,7 +159,7 @@ Set `ROLESTER_HOME` to put them somewhere else:
 
 ```bash
 export ROLESTER_HOME=~/rolester-data
-node bin/rolester.mjs start claude
+rolester start claude
 ```
 
 Everything under `ROLESTER_HOME` is gitignored and never touches the repo tree.
@@ -171,7 +180,7 @@ Generated and private artifacts live under `workspace/` (gitignored):
 ## Health Check
 
 ```bash
-npm run doctor
+rolester doctor
 ```
 
 Reports environment health, skills discoverability, workspace scaffold state,

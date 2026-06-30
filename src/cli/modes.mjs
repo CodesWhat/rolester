@@ -171,10 +171,10 @@ function printHelp() {
   console.log(`rolester modes - safe mode-switcher read/write helper
 
 Usage:
-  npm run modes -- status [--json]
-  npm run modes -- allows <operation> [--json]
-  npm run modes -- set usage <lean|standard|full> [--write]
-  npm run modes -- set application <selective|balanced|high-volume> [--write]
+  rolester modes status [--json]
+  rolester modes allows <operation> [--json]
+  rolester modes set usage <lean|standard|full> [--write]
+  rolester modes set application <selective|balanced|high-volume> [--write]
 
 Options:
   --write     Commit the change (default: dry run)
