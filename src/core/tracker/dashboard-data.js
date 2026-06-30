@@ -1652,7 +1652,7 @@ function calendarSlug(value) {
   const slug = String(value || "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/^-|-$/g, "");
   return slug || "calendar";
 }
 
@@ -2914,7 +2914,7 @@ function classifyRoleFamilyLocal(role, targeting) {
   return trimmed
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/^-|-$/g, "");
 }
 
 // The tracker.json#strategyReview stamp the reevaluate-strategy skill writes on

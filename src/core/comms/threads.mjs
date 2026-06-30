@@ -25,7 +25,7 @@ export function slugifyThreadId({ company = "", role = "", channel = "" }) {
     String(s)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
+      .replace(/^-|-$/g, "")
       .replace(/-{2,}/g, "-");
 
   const parts = [slugify(company), slugify(role), slugify(channel)].filter(Boolean);

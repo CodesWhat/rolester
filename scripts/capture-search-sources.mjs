@@ -631,7 +631,7 @@ function leverCompanySlug(source) {
     return String(source.company)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+      .replace(/^-|-$/g, "");
   }
   if (source.url) {
     try {
@@ -702,7 +702,7 @@ function slug(value) {
     String(value || "search-sources")
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "search-sources"
+      .replace(/^-|-$/g, "") || "search-sources"
   );
 }
 

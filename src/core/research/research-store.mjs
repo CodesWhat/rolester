@@ -65,7 +65,7 @@ export function slugifyCompany(name) {
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/^-|-$/g, "");
   return s || "unknown";
 }
 

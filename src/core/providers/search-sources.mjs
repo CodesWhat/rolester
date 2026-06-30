@@ -10,7 +10,7 @@ function slug(s) {
   return String(s)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/^-|-$/g, "");
 }
 
 // Map a hostname to the automation platform an authenticated search source binds
