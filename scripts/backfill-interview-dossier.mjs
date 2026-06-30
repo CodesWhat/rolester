@@ -28,7 +28,7 @@ const slugify = (value) =>
   String(value == null ? "" : value)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/^-|-$/g, "");
 
 const INTERVIEW_RE = /\b(interview|onsite|on-site|panel|loop|technical|hiring|hm|final|screen)\b/i;
 const isInterviewLike = (app) => {

@@ -55,7 +55,7 @@ export function classifyRoleFamily(role = "", targeting) {
   return trimmed
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/^-|-$/g, "");
 }
 
 export function buildOutcomeSummary({ apps = [], sourced = [], prospects, targeting } = {}) {
