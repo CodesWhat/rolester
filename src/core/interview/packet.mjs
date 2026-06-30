@@ -54,7 +54,9 @@ function findClaim(signal, evidence) {
 
 /** Escape pipe characters inside a markdown table cell. */
 function escapeCell(text) {
-  return String(text ?? "").replace(/\|/g, "\\$&");
+  return String(text ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\|/g, "\\|");
 }
 
 // ---------------------------------------------------------------------------

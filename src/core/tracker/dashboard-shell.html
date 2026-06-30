@@ -8288,7 +8288,10 @@ function openLibraryDrawer(card) {
   if (noteEl) noteEl.textContent = data.claimNote || '—';
   if (tagsEl) {
     const cardTags = card.querySelector('.library-tag-row');
-    tagsEl.innerHTML = cardTags ? cardTags.innerHTML : '';
+    tagsEl.replaceChildren();
+    if (cardTags) {
+      for (const node of cardTags.childNodes) tagsEl.appendChild(node.cloneNode(true));
+    }
   }
   if (copyBtn) {
     copyBtn.dataset.copyText = data.claimNote || data.claimSummary || '';
